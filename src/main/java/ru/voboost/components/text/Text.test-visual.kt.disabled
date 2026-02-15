@@ -1,0 +1,487 @@
+package ru.voboost.components.text
+
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onRoot
+import io.github.takahirom.roborazzi.RoborazziRule
+import io.github.takahirom.roborazzi.captureRoboImage
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import ru.voboost.components.i18n.Language
+
+/**
+ * Visual regression tests for Text component Kotlin Compose wrapper.
+ * Tests visual appearance across different themes, roles, languages, and content variations.
+ */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [33])
+class TextTestVisual {
+
+    @get:Rule
+    val composeTestRule = createComposeRule()
+
+    @get:Rule
+    val roborazziRule = RoborazziRule(
+        composeTestRule,
+        captureRootView = true
+    )
+
+    // Test data
+    private val localizedText = mapOf(
+        Language.EN to "Test Text",
+        Language.RU to "Тестовый Текст"
+    )
+    private val shortText = "Short"
+    private val mediumText = "Medium Length Text"
+    private val longText = "This is a very long text that should test text rendering and wrapping capabilities"
+
+    @Test
+    fun textControlRoleFreeLight() {
+        composeTestRule.setContent {
+            Text(
+                text = "Control Text",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_control_free_light_en_compose.png"
+        )
+    }
+
+    @Test
+    fun textControlRoleFreeLightRussian() {
+        composeTestRule.setContent {
+            Text(
+                text = "Текст Управления",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_control_free_light_ru_compose.png"
+        )
+    }
+
+    @Test
+    fun textControlRoleFreeDark() {
+        composeTestRule.setContent {
+            Text(
+                text = "Control Text",
+                theme = TextTheme.FREE_DARK,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_control_free_dark_en_compose.png"
+        )
+    }
+
+    @Test
+    fun textControlRoleFreeDarkRussian() {
+        composeTestRule.setContent {
+            Text(
+                text = "Текст Управления",
+                theme = TextTheme.FREE_DARK,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_control_free_dark_ru_compose.png"
+        )
+    }
+
+    @Test
+    fun textControlRoleDreamerLight() {
+        composeTestRule.setContent {
+            Text(
+                text = "Control Text",
+                theme = TextTheme.DREAMER_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_control_dreamer_light_en_compose.png"
+        )
+    }
+
+    @Test
+    fun textControlRoleDreamerLightRussian() {
+        composeTestRule.setContent {
+            Text(
+                text = "Текст Управления",
+                theme = TextTheme.DREAMER_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_control_dreamer_light_ru_compose.png"
+        )
+    }
+
+    @Test
+    fun textControlRoleDreamerDark() {
+        composeTestRule.setContent {
+            Text(
+                text = "Control Text",
+                theme = TextTheme.DREAMER_DARK,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_control_dreamer_dark_en_compose.png"
+        )
+    }
+
+    @Test
+    fun textControlRoleDreamerDarkRussian() {
+        composeTestRule.setContent {
+            Text(
+                text = "Текст Управления",
+                theme = TextTheme.DREAMER_DARK,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_control_dreamer_dark_ru_compose.png"
+        )
+    }
+
+    @Test
+    fun textTitleRoleFreeLight() {
+        composeTestRule.setContent {
+            Text(
+                text = "Title Text",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.TITLE
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_title_free_light_en_compose.png"
+        )
+    }
+
+    @Test
+    fun textTitleRoleFreeLightRussian() {
+        composeTestRule.setContent {
+            Text(
+                text = "Заголовок",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.TITLE
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_title_free_light_ru_compose.png"
+        )
+    }
+
+    @Test
+    fun textTitleRoleFreeDark() {
+        composeTestRule.setContent {
+            Text(
+                text = "Title Text",
+                theme = TextTheme.FREE_DARK,
+                role = TextRole.TITLE
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_title_free_dark_en_compose.png"
+        )
+    }
+
+    @Test
+    fun textTitleRoleFreeDarkRussian() {
+        composeTestRule.setContent {
+            Text(
+                text = "Заголовок",
+                theme = TextTheme.FREE_DARK,
+                role = TextRole.TITLE
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_title_free_dark_ru_compose.png"
+        )
+    }
+
+    @Test
+    fun textTitleRoleDreamerLight() {
+        composeTestRule.setContent {
+            Text(
+                text = "Title Text",
+                theme = TextTheme.DREAMER_LIGHT,
+                role = TextRole.TITLE
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_title_dreamer_light_en_compose.png"
+        )
+    }
+
+    @Test
+    fun textTitleRoleDreamerLightRussian() {
+        composeTestRule.setContent {
+            Text(
+                text = "Заголовок",
+                theme = TextTheme.DREAMER_LIGHT,
+                role = TextRole.TITLE
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_title_dreamer_light_ru_compose.png"
+        )
+    }
+
+    @Test
+    fun textTitleRoleDreamerDark() {
+        composeTestRule.setContent {
+            Text(
+                text = "Title Text",
+                theme = TextTheme.DREAMER_DARK,
+                role = TextRole.TITLE
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_title_dreamer_dark_en_compose.png"
+        )
+    }
+
+    @Test
+    fun textTitleRoleDreamerDarkRussian() {
+        composeTestRule.setContent {
+            Text(
+                text = "Заголовок",
+                theme = TextTheme.DREAMER_DARK,
+                role = TextRole.TITLE
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_title_dreamer_dark_ru_compose.png"
+        )
+    }
+
+    @Test
+    fun textLocalizedEnglish() {
+        val textData = TextData("test", localizedText)
+
+        composeTestRule.setContent {
+            Text(
+                text = textData,
+                lang = Language.EN,
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_localized_en_compose.png"
+        )
+    }
+
+    @Test
+    fun textLocalizedRussian() {
+        val textData = TextData("test", localizedText)
+
+        composeTestRule.setContent {
+            Text(
+                text = textData,
+                lang = Language.RU,
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_localized_ru_compose.png"
+        )
+    }
+
+    @Test
+    fun textShortContent() {
+        composeTestRule.setContent {
+            Text(
+                text = shortText,
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_short_content_compose.png"
+        )
+    }
+
+    @Test
+    fun textMediumContent() {
+        composeTestRule.setContent {
+            Text(
+                text = mediumText,
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_medium_content_compose.png"
+        )
+    }
+
+    @Test
+    fun textLongContent() {
+        composeTestRule.setContent {
+            Text(
+                text = longText,
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_long_content_compose.png"
+        )
+    }
+
+    @Test
+    fun textEmpty() {
+        composeTestRule.setContent {
+            Text(
+                text = "",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_empty_compose.png"
+        )
+    }
+
+    @Test
+    fun textSpecialCharacters() {
+        composeTestRule.setContent {
+            Text(
+                text = "Special: !@#$%^&*()",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL
+            )
+        }
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_special_chars_compose.png"
+        )
+    }
+
+    @Test
+    fun textWithCustomColor() {
+        var capturedTextView: ru.voboost.components.text.Text? = null
+
+        composeTestRule.setContent {
+            Text(
+                text = "Custom Color",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL,
+                onViewCreated = { textView ->
+                    capturedTextView = textView
+                    textView.setColor(android.graphics.Color.RED)
+                }
+            )
+        }
+
+        // Wait for the view to be created and color to be set
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_custom_color_compose.png"
+        )
+    }
+
+    @Test
+    fun textWithCustomPosition() {
+        var capturedTextView: ru.voboost.components.text.Text? = null
+
+        composeTestRule.setContent {
+            Text(
+                text = "Custom Position",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL,
+                onViewCreated = { textView ->
+                    capturedTextView = textView
+                    textView.setPosition(50f, 50f)
+                }
+            )
+        }
+
+        // Wait for the view to be created and position to be set
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_custom_position_compose.png"
+        )
+    }
+
+    @Test
+    fun textWithLeftAlign() {
+        var capturedTextView: ru.voboost.components.text.Text? = null
+
+        composeTestRule.setContent {
+            Text(
+                text = "Left Align",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL,
+                onViewCreated = { textView ->
+                    capturedTextView = textView
+                    textView.setTextAlign(android.graphics.Paint.Align.LEFT)
+                }
+            )
+        }
+
+        // Wait for the view to be created and alignment to be set
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_position_left_compose.png"
+        )
+    }
+
+    @Test
+    fun textWithCenterAlign() {
+        var capturedTextView: ru.voboost.components.text.Text? = null
+
+        composeTestRule.setContent {
+            Text(
+                text = "Center Align",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL,
+                onViewCreated = { textView ->
+                    capturedTextView = textView
+                    textView.setTextAlign(android.graphics.Paint.Align.CENTER)
+                }
+            )
+        }
+
+        // Wait for the view to be created and alignment to be set
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_position_center_compose.png"
+        )
+    }
+
+    @Test
+    fun textWithRightAlign() {
+        var capturedTextView: ru.voboost.components.text.Text? = null
+
+        composeTestRule.setContent {
+            Text(
+                text = "Right Align",
+                theme = TextTheme.FREE_LIGHT,
+                role = TextRole.CONTROL,
+                onViewCreated = { textView ->
+                    capturedTextView = textView
+                    textView.setTextAlign(android.graphics.Paint.Align.RIGHT)
+                }
+            )
+        }
+
+        // Wait for the view to be created and alignment to be set
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onRoot().captureRoboImage(
+            filePath = "src/main/java/ru/voboost/components/text/Text.screenshots/text_position_right_compose.png"
+        )
+    }
+}

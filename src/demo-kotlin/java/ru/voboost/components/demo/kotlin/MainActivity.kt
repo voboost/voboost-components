@@ -3,27 +3,39 @@ package ru.voboost.components.demo.kotlin
 import android.app.Activity
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
-import ru.voboost.components.radio.Radio
+import ru.voboost.components.radio.Radio as RadioView
 import ru.voboost.components.radio.RadioButton
 import ru.voboost.components.i18n.Language
 import ru.voboost.components.theme.Theme
+import ru.voboost.components.screen.Screen
+import ru.voboost.components.panel.Panel
+import ru.voboost.components.section.Section
+import ru.voboost.components.tabs.Tabs
+import ru.voboost.components.tabs.TabItem
+
+import ru.voboost.components.demo.shared.DemoContent
+import ru.voboost.components.demo.shared.DemoState
+import ru.voboost.components.demo.shared.DemoHelpers
+
+import android.util.Log
 
 /**
- * Demo Kotlin Activity showcasing voboost-components Radio component usage in pure Kotlin projects.
+ * Demo Kotlin Activity showcasing voboost-components proper component hierarchy in pure Kotlin projects.
  *
  * This demo demonstrates:
+ * - Proper component hierarchy: Screen → Panel → Tabs → Section → Radio
  * - Pure Kotlin integration with voboost-components library
  * - Seamless Kotlin-Java interoperability with Java Custom View components
- * - Automotive-oriented layout (1920x720 resolution) with ScrollView compatibility
+ * - Automotive-oriented layout (1920x720 resolution)
  * - Multi-language support (English/Russian) with reactive updates
  * - Theme switching (Light/Dark) with car type variants (Free/Dreamer)
- * - Reactive state management across multiple Radio components
+ * - 7-tab structure with dynamic content
+ * - Reactive state management across all components
  * - Kotlin-specific features: data classes, when expressions, extension functions, property delegates
  * - Comprehensive Android lifecycle management
  * - Advanced error handling with Kotlin null safety
@@ -38,90 +50,32 @@ class MainActivity : Activity() {
         private const val SECTION_SPACING = 24
         private const val TITLE_BOTTOM_MARGIN = 32
         private const val SECTION_TITLE_BOTTOM_MARGIN = 16
-        private const val RADIO_MARGIN_BOTTOM = 32
-
-        // Background colors (lowercase hex!)
-        private const val BACKGROUND_COLOR_LIGHT = "#f1f5fb"
-        private const val BACKGROUND_COLOR_DARK = "#000000"
-
-        // Text colors (lowercase hex!)
-        private const val TEXT_COLOR_LIGHT = "#1a1a1a"
-        private const val TEXT_COLOR_DARK = "#ffffff"
-
-        // Default values
-        private const val DEFAULT_LANGUAGE = "en"
-        private const val DEFAULT_THEME = "light"
-        private const val DEFAULT_CAR_TYPE = "free"
-        private const val DEFAULT_TEST_VALUE = "close"
     }
 
     // UI Components with late initialization
-    private lateinit var scrollView: ScrollView
-    private lateinit var rootLayout: LinearLayout
-    private lateinit var titleText: TextView
-    private lateinit var languageTitle: TextView
-    private lateinit var themeTitle: TextView
-    private lateinit var carTypeTitle: TextView
-    private lateinit var testTitle: TextView
-    internal lateinit var languageRadio: Radio
-    internal lateinit var themeRadio: Radio
-    internal lateinit var carTypeRadio: Radio
-    internal lateinit var testRadio: Radio
-    private lateinit var stateDisplay: TextView
+    private lateinit var screen: Screen
+    private lateinit var tabs: Tabs
 
-    // Global State using Kotlin custom property setters with reactive updates
-    private var currentLanguage: String = DEFAULT_LANGUAGE
-        set(value) {
-            if (field != value) {
-                Log.d(TAG, "Language changing from $field to $value")
-                field = value
-                updateAllComponents()
-            }
-        }
-
-    private var currentTheme: String = DEFAULT_THEME
-        set(value) {
-            if (field != value) {
-                Log.d(TAG, "Theme changing from $field to $value")
-                field = value
-                updateAllComponents()
-            }
-        }
-
-    private var currentCarType: String = DEFAULT_CAR_TYPE
-        set(value) {
-            if (field != value) {
-                Log.d(TAG, "Car type changing from $field to $value")
-                field = value
-                updateAllComponents()
-            }
-        }
-
-    private var currentTestValue: String = DEFAULT_TEST_VALUE
-        set(value) {
-            if (field != value) {
-                Log.d(TAG, "Test value changing from $field to $value")
-                field = value
-                updateAllComponents()
-            }
-        }
-
-    // Computed property for combined theme using Kotlin getter
-    private val combinedTheme: String
-        get() = "$currentCarType-$currentTheme"
+    // Global State using DemoState from shared module
+    private lateinit var demoState: DemoState
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "MainActivity onCreate started")
 
         try {
+            // Initialize demo state
+            demoState = DemoState()
+
             // Enable full-screen immersive mode for automotive display
             setupFullScreenMode()
 
-            setupAutomotiveLayout()
-            setupDemoComponents()
+            // Setup everything
+            setup()
+
+            // Initial update of all components
             updateAllComponents()
-            Log.d(TAG, "MainActivity created successfully")
+            Log.d(TAG, "MainActivity created successfully with proper component hierarchy")
         } catch (e: Exception) {
             Log.e(TAG, "Error during MainActivity creation", e)
             throw e
@@ -148,371 +102,148 @@ class MainActivity : Activity() {
     }
 
     /**
-     * Sets up automotive-oriented full-screen layout with ScrollView for better compatibility
-     * Uses Kotlin apply scope function for concise initialization
+     * Sets up the proper component hierarchy: Screen → Tabs → Panels
      */
-    private fun setupAutomotiveLayout() {
-        // Create ScrollView for automotive display compatibility
-        scrollView = ScrollView(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT
-            )
-            isFillViewport = true
-            // CRITICAL: Disable clipping at parent container level
-            clipChildren = false
-            clipToPadding = false
+    private fun setup() {
+        // Create Screen component as root layout
+        screen = Screen(this)
+        setContentView(screen)
+
+        // Create Tabs component
+        tabs = Tabs(this)
+        screen.setTabs(tabs)
+
+        // Create all panels
+        val panels = createAllPanels()
+        screen.setPanels(panels)
+
+        // Configure tabs with 7 tab items
+        tabs.setItems(DemoContent.getTabItems())
+        tabs.setTheme(Theme.fromValue(demoState.getCombinedTheme()))
+        tabs.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
+
+        // Set initial tab selection - this will trigger the listener and set active panel
+        tabs.setSelectedValue(demoState.getSelectedTab(), false)
+
+        // Set screen lift listener for component interaction
+        screen.setOnScreenLiftListener { state ->
+            Log.d(TAG, "Screen lift state changed to: $state")
+            demoState.setScreenLiftState(state)
+            updateAllComponents()
         }
 
-        // Create main layout container using Kotlin apply
-        rootLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            setPadding(
-                CONTAINER_PADDING_HORIZONTAL,
-                CONTAINER_PADDING_VERTICAL,
-                CONTAINER_PADDING_HORIZONTAL,
-                CONTAINER_PADDING_VERTICAL
-            )
-            // CRITICAL: Turn off clipping on LinearLayout
-            clipChildren = false
-            clipToPadding = false
+        // Set tab selection listener
+        tabs.setOnValueChangeListener { selectedTab ->
+            Log.d(TAG, "Tab changed to: $selectedTab")
+            demoState.setSelectedTab(selectedTab)
+            updateAllComponents()
         }
-
-        scrollView.addView(rootLayout)
-        setContentView(scrollView)
     }
 
     /**
-     * Sets up demo components for showcasing Radio functionality
-     * Enhanced with separate section titles and better organization
+     * Creates all panels for all tabs
      */
-    private fun setupDemoComponents() {
-        // Main title
-        setupTitle()
-
-        // Language Radio Section
-        setupLanguageRadio()
-
-        // Theme Radio Section
-        setupThemeRadio()
-
-        // Car Type Radio Section
-        setupCarTypeRadio()
-
-        // Test Radio Section
-        setupTestRadio()
-
-        // State Display Section
-        setupStateDisplay()
-    }
-
-    /**
-     * Sets up the main title with Kotlin apply scope function
-     */
-    private fun setupTitle() {
-        titleText =
-            TextView(this).apply {
-                text = "Voboost Components - Kotlin Demo"
-                textSize = 24f
-                layoutParams =
-                    LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        setMargins(0, 0, 0, TITLE_BOTTOM_MARGIN)
-                    }
-            }
-        rootLayout.addView(titleText)
-    }
-
-    /**
-     * Sets up Language Radio component using Kotlin features and enhanced error handling
-     */
-    private fun setupLanguageRadio() {
-        // Create section title (separate TextView like Java demo)
-        languageTitle = createSectionTitle("Language Selection:")
-        rootLayout.addView(languageTitle)
-
-        // Create language radio buttons using Kotlin collections and mapOf
-        val languageButtons = createLanguageButtons()
-
-        // Create and configure language radio with enhanced error handling
-        val currentLang = currentLanguage
-        languageRadio =
-            Radio(this).apply {
-                try {
-                    setButtons(languageButtons)
-                    setSelectedValue(currentLang)
-                    setOnValueChangeListener { newValue ->
-                        Log.d(TAG, "Language changed to: $newValue")
-                        this@MainActivity.currentLanguage = newValue
-                    }
-                    layoutParams = createRadioLayoutParams()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error setting up language radio", e)
-                    throw e
-                }
-            }
-        rootLayout.addView(languageRadio)
-    }
-
-    /**
-     * Sets up Theme Radio component using Kotlin features and enhanced error handling
-     */
-    private fun setupThemeRadio() {
-        // Create section title (separate TextView like Java demo)
-        themeTitle = createSectionTitle("Theme Selection:")
-        rootLayout.addView(themeTitle)
-
-        // Create theme radio buttons using Kotlin collections
-        val themeButtons = createThemeButtons()
-
-        // Create and configure theme radio with enhanced error handling
-        val currentThemeVal = currentTheme
-        themeRadio =
-            Radio(this).apply {
-                try {
-                    setButtons(themeButtons)
-                    setSelectedValue(currentThemeVal)
-                    setOnValueChangeListener { newValue ->
-                        Log.d(TAG, "Theme changed to: $newValue")
-                        this@MainActivity.currentTheme = newValue
-                    }
-                    layoutParams = createRadioLayoutParams()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error setting up theme radio", e)
-                    throw e
-                }
-            }
-        rootLayout.addView(themeRadio)
-    }
-
-    /**
-     * Sets up Car Type Radio component using Kotlin features and enhanced error handling
-     */
-    private fun setupCarTypeRadio() {
-        // Create section title (separate TextView like Java demo)
-        carTypeTitle = createSectionTitle("Car Type Selection:")
-        rootLayout.addView(carTypeTitle)
-
-        // Create car type radio buttons using Kotlin collections
-        val carTypeButtons = createCarTypeButtons()
-
-        // Create and configure car type radio with enhanced error handling
-        carTypeRadio =
-            Radio(this).apply {
-                try {
-                    setButtons(carTypeButtons)
-                    setSelectedValue(currentCarType)
-                    setOnValueChangeListener { newValue ->
-                        Log.d(TAG, "Car type changed to: $newValue")
-                        currentCarType = newValue
-                    }
-                    layoutParams = createRadioLayoutParams()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error setting up car type radio", e)
-                    throw e
-                }
-            }
-        rootLayout.addView(carTypeRadio)
-    }
-
-    /**
-     * Sets up Test Radio component for animation testing
-     */
-    private fun setupTestRadio() {
-        // Create section title
-        testTitle = createSectionTitle("Test Selection:")
-        rootLayout.addView(testTitle)
-
-        // Create test radio buttons
-        val testButtons = createTestButtons()
-
-        // Create and configure test radio with enhanced error handling
-        testRadio = Radio(this).apply {
-            try {
-                setButtons(testButtons)
-                setSelectedValue(currentTestValue)
-                setOnValueChangeListener { newValue ->
-                    Log.d(TAG, "Test value changed to: $newValue")
-                    currentTestValue = newValue
-                }
-                layoutParams = createRadioLayoutParams()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error setting up test radio", e)
-                throw e
-            }
-        }
-        rootLayout.addView(testRadio)
-    }
-
-    /**
-     * Sets up the state display section with enhanced layout
-     */
-    private fun setupStateDisplay() {
-        stateDisplay =
-            TextView(this).apply {
-                textSize = 16f
-                layoutParams =
-                    LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        setMargins(0, TITLE_BOTTOM_MARGIN, 0, SECTION_TITLE_BOTTOM_MARGIN)
-                    }
-            }
-        rootLayout.addView(stateDisplay)
-    }
-
-    /**
-     * Creates language radio buttons using Kotlin collections and mapOf
-     */
-    private fun createLanguageButtons(): List<RadioButton> =
-        listOf(
-            RadioButton(
-                "en",
-                mapOf(
-                    "en" to "English",
-                    "ru" to "English"
-                )
-            ),
-            RadioButton(
-                "ru",
-                mapOf(
-                    "en" to "Русский",
-                    "ru" to "Русский"
-                )
-            )
+    private fun createAllPanels(): Array<Panel> {
+        return arrayOf(
+            createPanelForTab("language"),
+            createPanelForTab("theme"),
+            createPanelForTab("car_type"),
+            createPanelForTab("climate"),
+            createPanelForTab("audio"),
+            createPanelForTab("display"),
+            createPanelForTab("system")
         )
+    }
 
     /**
-     * Creates theme radio buttons using Kotlin collections and mapOf
+     * Creates a panel for a specific tab
      */
-    private fun createThemeButtons(): List<RadioButton> =
-        listOf(
-            RadioButton(
-                "light",
-                mapOf(
-                    "en" to "Light",
-                    "ru" to "Светлая"
-                )
-            ),
-            RadioButton(
-                "dark",
-                mapOf(
-                    "en" to "Dark",
-                    "ru" to "Тёмная"
-                )
-            )
-        )
+    private fun createPanelForTab(tabValue: String): Panel {
+        // Create Panel
+        val panel = Panel(this)
 
-    /**
-     * Creates car type radio buttons using Kotlin collections and mapOf
-     */
-    private fun createCarTypeButtons(): List<RadioButton> =
-        listOf(
-            RadioButton(
-                "free",
-                mapOf(
-                    "en" to "Free",
-                    "ru" to "Фри"
-                )
-            ),
-            RadioButton(
-                "dreamer",
-                mapOf(
-                    "en" to "Dreamer",
-                    "ru" to "Дример"
-                )
-            )
-        )
+        // Create Section
+        val section = Section(this).apply {
+            setTitle(DemoContent.getSectionTitle(tabValue))
+        }
 
-    /**
-     * Creates test radio buttons with long text for animation testing
-     */
-    private fun createTestButtons(): List<RadioButton> = listOf(
-        RadioButton(
-            "close",
-            mapOf(
-                "en" to "Close",
-                "ru" to "Закрыть"
-            )
-        ),
-        RadioButton(
-            "normal",
-            mapOf(
-                "en" to "Normal",
-                "ru" to "Обычный"
-            )
-        ),
-        RadioButton(
-            "sync_music",
-            mapOf(
-                "en" to "Sync with Music",
-                "ru" to "Синхронизация с музыкой"
-            )
-        ),
-        RadioButton(
-            "sync_driving",
-            mapOf(
-                "en" to "Sync with Driving",
-                "ru" to "Синхронизация с вождением"
-            )
-        )
-    )
+        // Create Radio with options for this tab
+        val radioButtons = DemoContent.getRadioButtons(tabValue)
+        val radio = RadioView(this).apply {
+            setButtons(radioButtons)
+            setSelectedValue(demoState.getSelectedValueForTab(tabValue))
+            setOnValueChangeListener { newValue ->
+                Log.d(TAG, "Tab $tabValue value changed to: $newValue")
+                demoState.setSelectedValueForTab(tabValue, newValue)
 
-    /**
-     * Creates section titles with consistent styling and layout parameters
-     * Uses Kotlin apply scope function for concise initialization
-     */
-    private fun createSectionTitle(text: String): TextView =
-        TextView(this).apply {
-            this.text = text
-            textSize = 18f
-            layoutParams =
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(0, SECTION_SPACING, 0, SECTION_TITLE_BOTTOM_MARGIN)
+                // Special handling for language, theme, and car type tabs
+                when (tabValue) {
+                    "language" -> demoState.setCurrentLanguage(newValue)
+                    "theme" -> demoState.setCurrentTheme(newValue)
+                    "car_type" -> demoState.setCurrentCarType(newValue)
                 }
+
+                updateAllComponents()
+            }
         }
 
-    /**
-     * Creates radio layout parameters with consistent spacing
-     * Uses Kotlin apply scope function for concise initialization
-     */
-    private fun createRadioLayoutParams(): LinearLayout.LayoutParams =
-        LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            setMargins(0, 0, 0, SECTION_SPACING)
-        }
+        // Add Radio as child of Section (Section is now a ViewGroup)
+        section.addView(radio)
+
+        // Add Section to Panel
+        panel.addView(section)
+
+        return panel
+    }
 
     /**
      * Updates all components with current state using Kotlin when expressions and safe calls
-     * Implements reactive behavior across all Radio components with enhanced error handling
+     * Implements reactive behavior across all components in the hierarchy
      */
     private fun updateAllComponents() {
-        Log.d(TAG, "Updating all components - Language: $currentLanguage, Theme: $combinedTheme")
+        val combinedTheme = demoState.getCombinedTheme()
+
+        Log.d(TAG, "Updating all components - Language: ${demoState.getCurrentLanguage()}, " +
+                "Theme: $combinedTheme, Selected Tab: ${demoState.getSelectedTab()}")
 
         try {
             // Update background color based on theme
-            updateBackgroundColor()
+            updateBackgroundColor(combinedTheme)
 
-            // Update radio components with current language and theme
-            updateRadioComponents()
+            // Update Screen component
+            screen.takeIf { ::screen.isInitialized }?.setTheme(Theme.fromValue(combinedTheme))
 
-            // Update all text elements based on current language
-            updateTextElements()
+            // Update Tabs component
+            tabs.takeIf { ::tabs.isInitialized }?.apply {
+                setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
+                setTheme(Theme.fromValue(combinedTheme))
+            }
 
-            // Update state display
-            updateStateDisplay()
+            // Update all panels
+            val panels = screen.takeIf { ::screen.isInitialized }?.getPanels()
+            panels?.forEach { panel ->
+                panel.setTheme(Theme.fromValue(combinedTheme))
+
+                // Update child views in panel
+                for (i in 0 until panel.childCount) {
+                    val child = panel.getChildAt(i)
+                    when (child) {
+                        is Section -> {
+                            child.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
+                            child.setTheme(Theme.fromValue(combinedTheme))
+
+                            // Update Radio inside Section (Radio is now a child of Section)
+                            for (j in 0 until child.childCount) {
+                                val sectionChild = child.getChildAt(j)
+                                if (sectionChild is RadioView) {
+                                    sectionChild.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
+                                    sectionChild.setTheme(Theme.fromValue(combinedTheme))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error updating components", e)
         }
@@ -521,217 +252,95 @@ class MainActivity : Activity() {
     /**
      * Updates the background color based on current theme
      */
-    private fun updateBackgroundColor() {
+    private fun updateBackgroundColor(combinedTheme: String) {
         val backgroundColor = if (combinedTheme.endsWith("-dark")) {
-            Color.parseColor(BACKGROUND_COLOR_DARK)
+            Color.parseColor("#000000") // Black background for dark themes
         } else {
-            Color.parseColor(BACKGROUND_COLOR_LIGHT)
+            Color.parseColor("#f1f5fb") // Light background for light themes
         }
 
-        scrollView.takeIf { ::scrollView.isInitialized }?.setBackgroundColor(backgroundColor)
-        rootLayout.takeIf { ::rootLayout.isInitialized }?.setBackgroundColor(backgroundColor)
+        // Apply background color to screen
+        screen.takeIf { ::screen.isInitialized }?.setBackgroundColor(backgroundColor)
     }
 
-    /**
-     * Updates all radio components with current language and theme
-     * Uses Kotlin safe call operator and enhanced null safety
-     */
-    private fun updateRadioComponents() {
-        // Update language for all radio components using safe calls
-        languageRadio.takeIf { ::languageRadio.isInitialized }?.setLanguage(Language.fromCode(currentLanguage))
-        themeRadio.takeIf { ::themeRadio.isInitialized }?.setLanguage(Language.fromCode(currentLanguage))
-        carTypeRadio.takeIf { ::carTypeRadio.isInitialized }?.setLanguage(Language.fromCode(currentLanguage))
-        testRadio.takeIf { ::testRadio.isInitialized }?.setLanguage(Language.fromCode(currentLanguage))
 
-        // Update theme for all radio components using safe calls
-        languageRadio.takeIf { ::languageRadio.isInitialized }?.setTheme(Theme.fromValue(combinedTheme))
-        themeRadio.takeIf { ::themeRadio.isInitialized }?.setTheme(Theme.fromValue(combinedTheme))
-        carTypeRadio.takeIf { ::carTypeRadio.isInitialized }?.setTheme(Theme.fromValue(combinedTheme))
-        testRadio.takeIf { ::testRadio.isInitialized }?.setTheme(Theme.fromValue(combinedTheme))
+    // Getter methods for testing
+    internal fun getTabs(): Tabs = tabs
+    internal fun getScreen(): Screen = screen
+    internal fun getDemoState(): DemoState = demoState
+    internal fun getCurrentSection(): Section? {
+        // Get the current panel based on selected tab
+        val selectedTab = demoState.getSelectedTab()
+        val panels = screen.getPanels()
+        val tabIndex = when (selectedTab) {
+            "language" -> 0
+            "theme" -> 1
+            "car_type" -> 2
+            "climate" -> 3
+            "audio" -> 4
+            "display" -> 5
+            "system" -> 6
+            else -> 0
+        }
+
+        // Get the section from the current panel
+        return if (tabIndex < panels.size) {
+            val panel = panels[tabIndex]
+            if (panel.childCount > 0) {
+                val firstChild = panel.getChildAt(0)
+                if (firstChild is Section) firstChild else null
+            } else null
+        } else null
     }
 
-    /**
-     * Updates all text elements based on current language and theme
-     */
-    private fun updateTextElements() {
-        // Determine text color based on theme
-        val textColor = if (currentTheme == "dark") {
-            Color.parseColor(TEXT_COLOR_DARK)
-        } else {
-            Color.parseColor(TEXT_COLOR_LIGHT)
-        }
+    internal fun getCurrentRadio(): RadioView? {
+        // Get the current section first
+        val section = getCurrentSection()
+        if (section == null) return null
 
-        // Update title text based on language using when expression and safe calls
-        titleText.takeIf { ::titleText.isInitialized }?.apply {
-            text = when (currentLanguage) {
-                "ru" -> "Voboost Components - Kotlin Демо"
-                else -> "Voboost Components - Kotlin Demo"
+        // Radio is now a child of Section
+        for (i in 0 until section.childCount) {
+            val child = section.getChildAt(i)
+            if (child is RadioView) {
+                return child
             }
-            setTextColor(textColor)
         }
-
-        // Update section titles using when expressions and safe calls
-        languageTitle.takeIf { ::languageTitle.isInitialized }?.apply {
-            text = when (currentLanguage) {
-                "ru" -> "Выбор языка:"
-                else -> "Language Selection:"
-            }
-            setTextColor(textColor)
-        }
-
-        themeTitle.takeIf { ::themeTitle.isInitialized }?.apply {
-            text = when (currentLanguage) {
-                "ru" -> "Выбор темы:"
-                else -> "Theme Selection:"
-            }
-            setTextColor(textColor)
-        }
-
-        carTypeTitle.takeIf { ::carTypeTitle.isInitialized }?.apply {
-            text = when (currentLanguage) {
-                "ru" -> "Выбор типа авто:"
-                else -> "Car Type Selection:"
-            }
-            setTextColor(textColor)
-        }
-
-        testTitle.takeIf { ::testTitle.isInitialized }?.apply {
-            text = when (currentLanguage) {
-                "ru" -> "Тестовый выбор:"
-                else -> "Test Selection:"
-            }
-            setTextColor(textColor)
-        }
+        return null
     }
 
-    /**
-     * Updates state display using Kotlin string templates, when expressions, and buildString
-     */
-    private fun updateStateDisplay() {
-        val textColor = if (currentTheme == "dark") {
-            Color.parseColor(TEXT_COLOR_DARK)
-        } else {
-            Color.parseColor(TEXT_COLOR_LIGHT)
+    internal fun getPanel(): Panel? {
+        // Get the current panel based on selected tab
+        val selectedTab = demoState.getSelectedTab()
+        val panels = screen.getPanels()
+        val tabIndex = when (selectedTab) {
+            "language" -> 0
+            "theme" -> 1
+            "car_type" -> 2
+            "climate" -> 3
+            "audio" -> 4
+            "display" -> 5
+            "system" -> 6
+            else -> 0
         }
 
-        stateDisplay.takeIf { ::stateDisplay.isInitialized }?.apply {
-            text = buildStateText()
-            setTextColor(textColor)
-        }
+        return if (tabIndex < panels.size) panels[tabIndex] else null
     }
-
-    /**
-     * Builds the state display text using Kotlin buildString and when expressions
-     */
-    private fun buildStateText(): String =
-        when (currentLanguage) {
-            "ru" -> buildString {
-                appendLine("Текущее состояние:")
-                appendLine("Язык: ${currentLanguage.toDisplayLanguage()}")
-                appendLine("Тема: ${currentTheme.toDisplayTheme()}")
-                appendLine("Тип авто: ${currentCarType.toDisplayCarType()}")
-                appendLine("Тест: ${currentTestValue.toDisplayTestValue()}")
-                append("Комбинированная тема: $combinedTheme")
-            }
-            else -> buildString {
-                appendLine("Current State:")
-                appendLine("Language: ${currentLanguage.toDisplayLanguage()}")
-                appendLine("Theme: ${currentTheme.toDisplayTheme()}")
-                appendLine("Car Type: ${currentCarType.toDisplayCarType()}")
-                appendLine("Test: ${currentTestValue.toDisplayTestValue()}")
-                append("Combined Theme: $combinedTheme")
-            }
-        }
-
-    /**
-     * Extension functions for converting internal values to display strings (Kotlin-specific)
-     */
-    private fun String.toDisplayLanguage(): String =
-        when (this) {
-            "ru" -> if (currentLanguage == "ru") "Русский" else "Russian"
-            else -> if (currentLanguage == "ru") "English" else "English"
-        }
-
-    private fun String.toDisplayTheme(): String =
-        when (this) {
-            "light" -> if (currentLanguage == "ru") "Светлая" else "Light"
-            else -> if (currentLanguage == "ru") "Тёмная" else "Dark"
-        }
-
-    private fun String.toDisplayCarType(): String =
-        when (this) {
-            "free" -> if (currentLanguage == "ru") "Фри" else "Free"
-            else -> if (currentLanguage == "ru") "Дример" else "Dreamer"
-        }
-
-    private fun String.toDisplayTestValue(): String =
-        when (this) {
-            "close" -> if (currentLanguage == "ru") "Закрыть" else "Close"
-            "normal" -> if (currentLanguage == "ru") "Обычный" else "Normal"
-            "sync_music" -> if (currentLanguage == "ru") "Синхронизация с музыкой" else "Sync with Music"
-            "sync_driving" -> if (currentLanguage == "ru") "Синхронизация с вождением" else "Sync with Driving"
-            else -> this
-        }
 
     /**
      * Android lifecycle methods with enhanced logging
      */
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "MainActivity resumed - Current state: ${getCurrentState()}")
+        Log.d(TAG, "MainActivity resumed with component hierarchy - Current state: ${demoState.toString()}")
     }
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "MainActivity paused - Current state: ${getCurrentState()}")
+        Log.d(TAG, "MainActivity paused - Current state: ${demoState.toString()}")
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "MainActivity destroyed")
-    }
-
-    /**
-     * Data class for representing demo state (Kotlin-specific feature)
-     * Enhanced with additional computed properties and validation
-     */
-    data class DemoState(
-        val language: String,
-        val theme: String,
-        val carType: String,
-        val testValue: String
-    ) {
-        val combinedTheme: String
-            get() = "$carType-$theme"
-
-        val isValidState: Boolean
-            get() = language in listOf("en", "ru") &&
-                theme in listOf("light", "dark") &&
-                carType in listOf("free", "dreamer") &&
-                testValue in listOf("close", "normal", "sync_music", "sync_driving")
-
-        fun toLogString(): String =
-            "DemoState(lang=$language, theme=$theme, car=$carType, test=$testValue, combined=$combinedTheme)"
-    }
-
-    /**
-     * Gets current state as data class (Kotlin-specific feature)
-     */
-    private fun getCurrentState(): DemoState =
-        DemoState(
-            currentLanguage,
-            currentTheme,
-            currentCarType,
-            currentTestValue
-        )
-
-    /**
-     * Extension function for logging state changes (Kotlin-specific feature)
-     */
-    private fun DemoState.logStateChange() {
-        Log.d(TAG, "State changed: ${this.toLogString()}")
-        if (!this.isValidState) {
-            Log.w(TAG, "Invalid state detected: ${this.toLogString()}")
-        }
     }
 }

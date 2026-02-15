@@ -1,10 +1,12 @@
 # Kotlin Demo Application
 
-This demo application demonstrates the integration of voboost-components library in a Kotlin Android project using modern Kotlin language features and patterns.
+This demo application demonstrates the integration of voboost-components library in a Kotlin Android project using modern Kotlin language features and patterns with the new 7-tab structure.
 
 ## Purpose
 
 This demo showcases:
+- **7-Tab Navigation Structure**: Language, Theme, Car Type, Climate, Audio, Display, System, and Screen Lift
+- **Proper Component Hierarchy**: Screen → Panel → Tabs → Section → Radio
 - **Kotlin Language Integration**: How to use voboost-components with Kotlin-specific features
 - **Modern Android Patterns**: Kotlin-friendly APIs and extension functions
 - **Automotive UI Optimization**: Kotlin-based state management for automotive displays
@@ -12,10 +14,13 @@ This demo showcases:
 
 ## Architecture Principles
 
+- **7-Tab Structure**: Unified navigation across all demo applications
+- **Proper Component Hierarchy**: Screen → Panel → Tabs → Section → Radio
 - **Kotlin-First Design**: Uses Kotlin language features like data classes, when expressions, and extension functions
 - **Automotive-Optimized**: Designed for 1920x720 automotive displays with proper touch targets
 - **Traditional Android Callbacks**: Uses standard Android callback patterns for value changes
 - **Type-Safe APIs**: Leverages Kotlin's null safety and type inference
+- **Shared Demo Module**: Uses demo-shared module for consistent functionality
 
 ## Building and Running
 
@@ -73,11 +78,13 @@ java/ru/voboost/components/demo/kotlin/
 ```
 
 Standard test scenarios:
-1. **demo_kotlin_default** - Default state: English, Light, Free
-2. **demo_kotlin_russian** - Russian language: Russian, Light, Free
-3. **demo_kotlin_dark** - Dark theme: English, Dark, Free
-4. **demo_kotlin_dreamer** - Dreamer car type: English, Light, Dreamer
-5. **demo_kotlin_full_combination** - Full combination: Russian, Dark, Dreamer
+1. **demo_kotlin_default** - Default state: English, Light, Free, Language tab
+2. **demo_kotlin_russian** - Russian language: Russian, Light, Free, Language tab
+3. **demo_kotlin_dark** - Dark theme: English, Dark, Free, Theme tab
+4. **demo_kotlin_dreamer** - Dreamer car type: English, Light, Dreamer, Car Type tab
+5. **demo_kotlin_full_combination** - Full combination: Russian, Dark, Dreamer, Language tab
+6. **demo_kotlin_all_tabs** - All 7 tabs with default values
+7. **demo_kotlin_component_hierarchy** - Component hierarchy verification
 
 ```bash
 # Run visual tests
@@ -106,10 +113,11 @@ Standard test scenarios:
 2. **Launch**: Find "Kotlin Demo" app on your device/emulator
 
 3. **Test Functionality**:
+   - Navigate through all 7 tabs: Language, Theme, Car Type, Climate, Audio, Display, System, Screen Lift
    - Experience Kotlin-friendly API patterns
    - Test reactive state management
    - Verify automotive-appropriate interactions
-   - Test the Test Radio component with animation options (Close, Normal, Sync with Music, Sync with Driving)
+   - Test proper component hierarchy: Screen → Panel → Tabs → Section → Radio
 
 ## Integration Example
 

@@ -1,10 +1,12 @@
 # Compose Demo Application
 
-This demo application demonstrates the integration of voboost-components library in a Jetpack Compose project using modern declarative UI patterns.
+This demo application demonstrates the integration of voboost-components library in a Jetpack Compose project using modern declarative UI patterns with the new 7-tab structure.
 
 ## Purpose
 
 This demo showcases:
+- **7-Tab Navigation Structure**: Language, Theme, Car Type, Climate, Audio, Display, System, and Screen Lift
+- **Proper Component Hierarchy**: Screen → Panel → Tabs → Section → Radio
 - **Jetpack Compose Integration**: How to use voboost-components in modern Compose-based projects
 - **Declarative UI Patterns**: Reactive state management with Compose state primitives
 - **Automotive Compose UI**: Best practices for automotive displays using Compose
@@ -12,10 +14,13 @@ This demo showcases:
 
 ## Architecture Principles
 
+- **7-Tab Structure**: Unified navigation across all demo applications
+- **Proper Component Hierarchy**: Screen → Panel → Tabs → Section → Radio
 - **Compose-First Design**: Uses Compose wrapper components with AndroidView integration
 - **Automotive-Optimized**: Designed for 1920x720 automotive displays with Compose layouts
 - **Reactive State**: Leverages Compose state management (`remember`, `mutableStateOf`)
 - **Declarative Patterns**: Functional UI composition with automatic recomposition
+- **Shared Demo Module**: Uses demo-shared module for consistent functionality
 
 ## Building and Running
 
@@ -73,11 +78,13 @@ java/ru/voboost/components/demo/compose/
 ```
 
 Standard test scenarios:
-1. **demo_compose_default** - Default state: English, Light, Free
-2. **demo_compose_russian** - Russian language: Russian, Light, Free
-3. **demo_compose_dark** - Dark theme: English, Dark, Free
-4. **demo_compose_dreamer** - Dreamer car type: English, Light, Dreamer
-5. **demo_compose_full_combination** - Full combination: Russian, Dark, Dreamer
+1. **demo_compose_default** - Default state: English, Light, Free, Language tab
+2. **demo_compose_russian** - Russian language: Russian, Light, Free, Language tab
+3. **demo_compose_dark** - Dark theme: English, Dark, Free, Theme tab
+4. **demo_compose_dreamer** - Dreamer car type: English, Light, Dreamer, Car Type tab
+5. **demo_compose_full_combination** - Full combination: Russian, Dark, Dreamer, Language tab
+6. **demo_compose_all_tabs** - All 7 tabs with default values
+7. **demo_compose_component_hierarchy** - Component hierarchy verification
 
 ```bash
 # Run visual tests
@@ -106,10 +113,11 @@ Standard test scenarios:
 2. **Launch**: Find "Compose Demo" app on your device/emulator
 
 3. **Test Functionality**:
+   - Navigate through all 7 tabs: Language, Theme, Car Type, Climate, Audio, Display, System, Screen Lift
    - Experience declarative UI updates
    - Test Compose state management
    - Verify automotive-appropriate Compose layouts
-   - Test the Test Radio component with animation options (Close, Normal, Sync with Music, Sync with Driving)
+   - Test proper component hierarchy: Screen → Panel → Tabs → Section → Radio
 
 ## Integration Example
 

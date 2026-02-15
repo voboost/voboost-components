@@ -133,7 +133,7 @@ data class ComponentOption(
 
 ## Demo Applications
 
-The library includes three comprehensive demo applications that showcase integration patterns for different development approaches:
+The library includes three comprehensive demo applications that showcase integration patterns for different development approaches with a unified 7-tab structure:
 
 ### Available Demos
 
@@ -144,11 +144,31 @@ The library includes three comprehensive demo applications that showcase integra
 ### Demo Features
 
 Each demo application demonstrates:
+- **7-Tab Navigation Structure**: Language, Theme, Car Type, Climate, Audio, Display, System, and Screen Lift
+- **Proper Component Hierarchy**: Screen → Panel → Tabs → Section → Radio
 - **Automotive UI Patterns**: Optimized for 1920x720 automotive displays
 - **Multi-language Support**: English and Russian localization
 - **Theme Management**: Dynamic switching between vehicle themes
 - **State Management**: Reactive component updates and event handling
 - **Performance Optimization**: 60fps rendering for automotive hardware
+
+### Demo Application Structure
+
+All demo applications follow the same BEM co-located test structure:
+
+```
+demo-{type}/
+└── java/ru/voboost/components/demo/{type}/
+    ├── MainActivity.{java|kt}
+    ├── MainActivity.tests/
+    │   └── MainActivityTestVisual.{java|kt}
+    └── MainActivity.screenshots/
+        ├── demo_{type}_default.png
+        ├── demo_{type}_russian.png
+        ├── demo_{type}_dark.png
+        ├── demo_{type}_dreamer.png
+        └── demo_{type}_full_combination.png
+```
 
 ### Building and Running Demos
 
@@ -168,6 +188,11 @@ Each demo application demonstrates:
 ./gradlew installDemoJava
 ./gradlew installDemoKotlin
 ./gradlew installDemoCompose
+
+# Start demo applications
+./gradlew startDemoJava
+./gradlew startDemoKotlin
+./gradlew startDemoCompose
 ```
 
 ### Testing Demo Applications
@@ -193,8 +218,25 @@ The demo applications are:
 - **Excluded from Distribution**: Not included in library artifacts
 - **CI/CD Integrated**: Automatically tested in continuous integration
 - **Documentation by Example**: Serve as living documentation for integration patterns
+- **Shared Module**: Common functionality in `demo-shared` module for consistency
 
 ## Component Usage
+
+### Component Hierarchy
+
+The library implements a comprehensive component hierarchy optimized for automotive applications:
+
+```
+Screen → Panel → Tabs → Section → Radio
+```
+
+### Available Components
+
+- **Screen Component**: Root container with screen lift functionality
+- **Panel Component**: Content container within the screen
+- **Tabs Component**: 7-tab navigation system
+- **Section Component**: Content section with title
+- **Radio Component**: Interactive radio button group
 
 ### Radio Component
 
@@ -204,6 +246,13 @@ The Radio component supports three usage patterns:
 - **Pure Java Projects**: Direct instantiation of Java Custom View
 - **Pure Kotlin Projects**: Java Custom View with Kotlin syntax
 - **Jetpack Compose Projects**: Kotlin wrapper using AndroidView integration
+
+### Demo-Shared Module
+
+The demo applications share common functionality through the `demo-shared` module:
+- **DemoContent**: Provides 7-tab structure and content
+- **DemoState**: Manages application state across all demos
+- **DemoHelpers**: Utility functions for demo applications
 
 ## Development Guide
 

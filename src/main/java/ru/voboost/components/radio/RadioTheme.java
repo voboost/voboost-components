@@ -44,14 +44,14 @@ class RadioColors {
 class RadioDimensions {
     // Component dimensions (in pixels)
     public static final float HEIGHT_PX = 70f;
-    public static final float CORNER_RADIUS_PX = 34f;
+    public static final float CORNER_RADIUS_PX = 35f;
     public static final float BORDER_WIDTH_PX = 2f;
 
     // Text dimensions (in pixels)
-    public static final float TEXT_SIZE_PX = 24f;
+    public static final float TEXT_SIZE_PX = 28f;
 
     // Item dimensions (in pixels)
-    public static final float ITEM_PADDING_HORIZONTAL_PX = 32f;
+    public static final float ITEM_PADDING_HORIZONTAL_PX = 26f;
     public static final float ITEM_MIN_WIDTH_PX = 120f;
 
     // Animation padding (in pixels) - increased for OVERSHOOT_TENSION
@@ -79,8 +79,8 @@ class RadioColorSchemes {
             Color.parseColor("#ffffff"), // background
             Color.parseColor("#ffffff"), // selectedText
             Color.parseColor("#2d3442"), // unselectedText
-            Color.parseColor("#55a2ef"), // selectedGradientStart
-            Color.parseColor("#2681dd"), // selectedGradientEnd
+            Color.parseColor("#79bbfd"), // selectedGradientStart
+            Color.parseColor("#2781dd"), // selectedGradientEnd
             Color.parseColor("#8dc6ff"), // selectedBorderTop
             Color.parseColor("#519ae5"), // selectedBorderSide
             Color.parseColor("#1875d2") // selectedBorderBottom
@@ -88,9 +88,9 @@ class RadioColorSchemes {
         SCHEMES.put(Theme.FREE_DARK, new RadioColors(
             Color.parseColor("#373f4a"), // background
             Color.parseColor("#ffffff"), // selectedText
-            Color.parseColor("#cacaca"), // unselectedText
-            Color.parseColor("#55a2ef"), // selectedGradientStart
-            Color.parseColor("#2681dd"), // selectedGradientEnd
+            Color.parseColor("#CACACA"), // unselectedText
+            Color.parseColor("#79bbfd"), // selectedGradientStart
+            Color.parseColor("#2781dd"), // selectedGradientEnd
             Color.parseColor("#8dc6ff"), // selectedBorderTop
             Color.parseColor("#519ae5"), // selectedBorderSide
             Color.parseColor("#1875d2") // selectedBorderBottom
@@ -108,7 +108,7 @@ class RadioColorSchemes {
         SCHEMES.put(Theme.DREAMER_DARK, new RadioColors(
             Color.parseColor("#40444a"), // background
             Color.parseColor("#2f2e36"), // selectedText
-            Color.parseColor("#cacaca"), // unselectedText
+            Color.parseColor("#80ffffff"), // unselectedText - 50% white opacity
             Color.parseColor("#eadac8"), // selectedGradientStart
             Color.parseColor("#9c8069"), // selectedGradientEnd
             Color.parseColor("#eadac8"), // selectedBorderTop

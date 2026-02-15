@@ -234,7 +234,7 @@ dependencies {
     testImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("io.mockk:mockk-android:1.13.8")
-    testImplementation("org.robolectric:robolectric:4.11.1") {
+    testImplementation("org.robolectric:robolectric:4.14.1") {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
     }
     testImplementation("com.google.truth:truth:1.1.5")

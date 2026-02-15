@@ -12,14 +12,16 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.os.Bundle;
+
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 
-import ru.voboost.components.theme.Theme;
 import ru.voboost.components.i18n.Language;
+import ru.voboost.components.font.Font;
+import ru.voboost.components.theme.Theme;
 
 /**
  * Radio component with internal theming and external localization
@@ -103,11 +105,24 @@ public class Radio extends View {
         // Initialize paint objects with default colors (will be updated when theme is set)
         initPaintsWithDefaults();
 
-        // Set pixel dimensions (no conversion needed - already in pixels per .roorules)
-        setPixelDimensions();
+        // Set pixel dimensions
+        setDimensions();
 
         // Enable hardware acceleration for better performance
         setLayerType(LAYER_TYPE_HARDWARE, null);
+
+        // Load custom font AFTER paints are initialized (requires context)
+        loadFont();
+    }
+
+    /**
+     * Loads the project font and applies it to text paint.
+     * Must be called after initPaintsWithDefaults() creates textPaint.
+     */
+    private void loadFont() {
+        if (textPaint != null) {
+            textPaint.setTypeface(Font.getRegular(getContext()));
+        }
     }
 
     private void updateTheme() {
@@ -129,7 +144,7 @@ public class Radio extends View {
 
         if (textPaint == null) {
             textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            textPaint.setTypeface(Typeface.DEFAULT);
+            textPaint.setTypeface(Font.getRegular(getContext()));
             textPaint.setTextAlign(Paint.Align.CENTER);
         }
     }
@@ -144,14 +159,13 @@ public class Radio extends View {
         selectedBorderPaint.setStyle(Paint.Style.STROKE);
 
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setTypeface(Typeface.DEFAULT);
+        // Typeface set in loadFont() which runs immediately after
         textPaint.setTextAlign(Paint.Align.CENTER);
     }
 
-    private void setPixelDimensions() {
-        // All dimensions are already in pixels as required by .roorules
-        heightPx = RadioDimensions.HEIGHT_PX;
+    private void setDimensions() {
         cornerRadiusPx = RadioDimensions.CORNER_RADIUS_PX;
+        heightPx = RadioDimensions.HEIGHT_PX;
         borderWidthPx = RadioDimensions.BORDER_WIDTH_PX;
         textSizePx = RadioDimensions.TEXT_SIZE_PX;
         itemPaddingHorizontalPx = RadioDimensions.ITEM_PADDING_HORIZONTAL_PX;
@@ -160,6 +174,7 @@ public class Radio extends View {
         if (textPaint != null) {
             textPaint.setTextSize(textSizePx);
         }
+
         if (selectedBorderPaint != null) {
             selectedBorderPaint.setStrokeWidth(borderWidthPx);
         }
@@ -348,21 +363,31 @@ public class Radio extends View {
         itemWidths.clear();
         itemPositions.clear();
 
-        // Measure items and calculate their positions
+        // Calculate equal width for all items (like layout_weight="1")
+        int itemCount = buttons.size();
         float currentX = 0f;
-        float maxItemWidth = 0f;
 
+        // First, measure all texts to find the maximum width needed
+        float maxTextWidth = 0f;
         for (RadioButton button : buttons) {
             if (button == null) continue;
 
             String text = button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
-            float textWidth = textPaint != null ? textPaint.measureText(text) : 0;
-            float itemWidth = Math.max(textWidth + 2 * itemPaddingHorizontalPx, itemMinWidthPx);
 
-            itemWidths.add(itemWidth);
+            // Measure with bold typeface to ensure enough space for selected state
+            textPaint.setTypeface(Font.getBold(getContext(), text));
+            float boldTextWidth = textPaint != null ? textPaint.measureText(text) : 0;
+            maxTextWidth = Math.max(maxTextWidth, boldTextWidth);
+        }
+
+        // Calculate equal width for all items based on the widest text
+        float equalItemWidth = Math.max(maxTextWidth + 2 * itemPaddingHorizontalPx, itemMinWidthPx);
+
+        // Assign equal width to all items
+        for (int i = 0; i < itemCount; i++) {
+            itemWidths.add(equalItemWidth);
             itemPositions.add(currentX);
-            currentX += itemWidth;
-            maxItemWidth = Math.max(maxItemWidth, itemWidth);
+            currentX += equalItemWidth;
         }
 
         contentWidth = currentX;
@@ -597,17 +622,20 @@ public class Radio extends View {
     private void drawSelectionLayer(Canvas canvas) {
         if (selectedBackgroundPaint == null) return;
 
-        RectF selectedRect = new RectF(animatedX, 0, animatedX + animatedWidth, totalHeight);
+        // Selection rectangle with 1px inset from top and bottom
+        RectF selectedRect = new RectF(
+                animatedX + 1f,  // 1px inset from left
+                1f,              // 1px inset from top
+                animatedX + animatedWidth,
+                totalHeight - 1f);  // 1px inset from bottom (symmetric with top)
 
         // Create gradient depending on theme
         LinearGradient gradient = createSelectionGradient(selectedRect);
         selectedBackgroundPaint.setShader(gradient);
         canvas.drawRoundRect(selectedRect, cornerRadiusPx, cornerRadiusPx, selectedBackgroundPaint);
 
-        // Draw border for free theme
-        if (currentTheme != null && currentTheme.isFree()) {
-            drawSelectionBorder(canvas, selectedRect);
-        }
+        // Note: Original implementation has a transparent stroke, but testing showed
+        // it doesn't improve pixel-perfect matching. The corner radius fix is sufficient.
     }
 
     private LinearGradient createSelectionGradient(RectF rect) {
@@ -644,7 +672,8 @@ public class Radio extends View {
     private void drawSelectionBorder(Canvas canvas, RectF selectedRect) {
         if (selectedBorderPaint == null) return;
 
-        float borderInset = borderWidthPx / 2f;
+        // Border is drawn 1px inside the selected rect (half of 2px stroke width)
+        float borderInset = 1f;
         RectF borderRect =
                 new RectF(
                         selectedRect.left + borderInset,
@@ -680,6 +709,7 @@ public class Radio extends View {
         // LAYER 3: Text - width same as background layer
         if (textPaint == null) return;
 
+        // Base text Y position (for unselected items)
         float textY = totalHeight / 2f - (textPaint.descent() + textPaint.ascent()) / 2f;
 
         // Find the target index (where animation is heading to)
@@ -689,6 +719,9 @@ public class Radio extends View {
             for (int i = 0; i < buttons.size(); i++) {
                 RadioButton button = buttons.get(i);
                 if (button == null) continue;
+
+                // Get text FIRST — needed for font selection
+                String text = button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
 
                 // Calculate text position - positions already include centering
                 float itemWidth = itemWidths.get(i);
@@ -709,9 +742,21 @@ public class Radio extends View {
                             shouldUseSelectedColor ? colors.selectedText : colors.unselectedText);
                 }
 
-                // Draw text
-                String text = button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
-                canvas.drawText(text, textX, textY, textPaint);
+                // Set font: bold for selected, regular for unselected
+                if (shouldUseSelectedColor) {
+                    textPaint.setTypeface(Font.getBold(getContext(), text));
+                } else {
+                    textPaint.setTypeface(Font.getRegular(getContext()));
+                }
+
+                // Set text size
+                textPaint.setTextSize(textSizePx);
+
+                // Unselected text needs +1px offset for visual centering compensation
+                float itemTextY = shouldUseSelectedColor ? textY : textY + 1f;
+
+                // Draw text (text variable already available)
+                canvas.drawText(text, textX, itemTextY, textPaint);
             }
         }
     }

@@ -1,112 +1,111 @@
 package ru.voboost.components.demo.compose
 
-import android.graphics.Color as AndroidColor
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import ru.voboost.components.radio.Radio
+import ru.voboost.components.radio.Radio as RadioView
 import ru.voboost.components.radio.RadioButton
 import ru.voboost.components.i18n.Language
 import ru.voboost.components.theme.Theme
+import ru.voboost.components.screen.Screen
+import ru.voboost.components.panel.Panel
+import ru.voboost.components.section.Section
+import ru.voboost.components.tabs.Tabs
+import ru.voboost.components.tabs.TabItem
+
+import ru.voboost.components.demo.shared.DemoContent
+import ru.voboost.components.demo.shared.DemoState
+import ru.voboost.components.demo.shared.DemoHelpers
+
+import android.util.Log
 
 /**
- * Demo Compose Activity showcasing voboost-components Radio component usage in Jetpack Compose projects.
+ * Demo Compose Activity showcasing voboost-components proper component hierarchy in Jetpack Compose projects.
  *
  * This demo demonstrates:
- * - Jetpack Compose integration with voboost-components library
+ * - Proper component hierarchy: Screen → Panel → Tabs → Section → Radio
+ * - Pure View integration with voboost-components library (same as demo-kotlin)
+ * - ComponentActivity as base class for Compose compatibility
  * - Automotive-oriented layout (1920x720 resolution)
- * - Multi-language support (English/Russian)
- * - Theme switching (Light/Dark)
- * - Car type selection (Free/Dreamer)
- * - Reactive state management using Compose state
- * - Modern Compose patterns and best practices
+ * - Multi-language support (English/Russian) with reactive updates
+ * - Theme switching (Light/Dark) with car type variants (Free/Dreamer)
+ * - 7-tab structure with dynamic content
+ * - Reactive state management across all components
+ * - Dynamic view references for testing
  */
 class MainActivity : ComponentActivity() {
     /**
      * Root layout for screenshot capture in tests.
-     * This FrameLayout wraps the ComposeView to enable View-based screenshot capture.
+     * This FrameLayout wraps the Screen View to enable View-based screenshot capture.
      */
     lateinit var rootLayout: FrameLayout
         private set
 
-    // Radio view references for testing
-    var languageRadioView: ru.voboost.components.radio.Radio? = null
-    var themeRadioView: ru.voboost.components.radio.Radio? = null
-    var carTypeRadioView: ru.voboost.components.radio.Radio? = null
-    var testRadioView: ru.voboost.components.radio.Radio? = null
+    // Component view references for testing
+    var tabsView: ru.voboost.components.tabs.Tabs? = null
+    var screenView: ru.voboost.components.screen.Screen? = null
+    var currentSectionView: ru.voboost.components.section.Section? = null
+    var currentRadioView: ru.voboost.components.radio.Radio? = null
+    var panelView: ru.voboost.components.panel.Panel? = null
 
     companion object {
         private const val TAG = "ComposeDemo"
 
-        // Layout constants (using dp that approximate px on automotive displays)
-        const val CONTAINER_PADDING_HORIZONTAL = 64
-        const val CONTAINER_PADDING_VERTICAL = 48
-        const val SECTION_SPACING = 24
-        const val TITLE_BOTTOM_MARGIN = 32
-        const val SECTION_TITLE_BOTTOM_MARGIN = 16
-        const val RADIO_MARGIN_BOTTOM = 32
-
-        // Background colors (lowercase hex!)
-        const val BACKGROUND_COLOR_LIGHT = 0xFFF1F5FB
-        const val BACKGROUND_COLOR_DARK = 0xFF000000
-
-        // Text colors (lowercase hex!)
-        const val TEXT_COLOR_LIGHT = 0xFF1A1A1A
-        const val TEXT_COLOR_DARK = 0xFFFFFFFF
+        // Automotive display constants (in pixels, not dp!)
+        private const val CONTAINER_PADDING_HORIZONTAL = 64
+        private const val CONTAINER_PADDING_VERTICAL = 48
+        private const val SECTION_SPACING = 24
+        private const val TITLE_BOTTOM_MARGIN = 32
+        private const val SECTION_TITLE_BOTTOM_MARGIN = 16
     }
+
+    // UI Components with late initialization
+    private lateinit var screen: Screen
+    private lateinit var tabs: Tabs
+
+    // Global State using DemoState from shared module
+    private lateinit var demoState: DemoState
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "MainActivity onCreate started")
 
-        // Enable full-screen immersive mode for automotive display
-        setupFullScreenMode()
+        try {
+            // Initialize demo state
+            demoState = DemoState()
 
-        // Create FrameLayout as root container
-        rootLayout = FrameLayout(this).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-        }
+            // Enable full-screen immersive mode for automotive display
+            setupFullScreenMode()
 
-        // Create ComposeView and add it to FrameLayout
-        val composeView = ComposeView(this).apply {
-            setContent {
-                DemoTheme {
-                    DemoScreen(activity = this@MainActivity)
-                }
+            // Create FrameLayout as root container for screenshot capture
+            rootLayout = FrameLayout(this).apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                )
             }
+
+            // Setup everything
+            setup()
+
+            // Add Screen to FrameLayout
+            rootLayout.addView(screen)
+
+            // Set FrameLayout as content view
+            setContentView(rootLayout)
+
+            // Initial update of all components
+            updateAllComponents()
+            Log.d(TAG, "MainActivity created successfully with proper component hierarchy")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during MainActivity creation", e)
+            throw e
         }
-
-        // Add ComposeView to FrameLayout
-        rootLayout.addView(composeView)
-
-        // Set FrameLayout as content view
-        setContentView(rootLayout)
     }
 
     /**
@@ -127,465 +126,254 @@ class MainActivity : ComponentActivity() {
         // Keep screen on for automotive use
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
-}
 
-@Composable
-fun DemoScreen(activity: MainActivity? = null) {
-    // Compose state management using remember and mutableStateOf
-    var currentLanguage by remember { mutableStateOf("en") }
-    var currentTheme by remember { mutableStateOf("light") }
-    var currentCarType by remember { mutableStateOf("free") }
-    var currentTestValue by remember { mutableStateOf("close") }
+    /**
+     * Sets up the proper component hierarchy: Screen → Tabs → Panels
+     */
+    private fun setup() {
+        // Create Screen component as root layout
+        screen = Screen(this)
+        screenView = screen
 
-    // Computed property for combined theme
-    val combinedTheme = "$currentCarType-$currentTheme"
+        // Create Tabs component
+        tabs = Tabs(this)
+        tabsView = tabs
+        screen.setTabs(tabs)
 
-    // Determine colors based on theme
-    val backgroundColor = if (currentTheme == "dark") {
-        Color(MainActivity.BACKGROUND_COLOR_DARK)
-    } else {
-        Color(MainActivity.BACKGROUND_COLOR_LIGHT)
-    }
+        // Create all panels
+        val panels = createAllPanels()
+        screen.setPanels(panels)
 
-    val textColor = if (currentTheme == "dark") {
-        Color(MainActivity.TEXT_COLOR_DARK)
-    } else {
-        Color(MainActivity.TEXT_COLOR_LIGHT)
-    }
+        // Configure tabs with 7 tab items
+        tabs.setItems(DemoContent.getTabItems())
+        tabs.setTheme(Theme.fromValue(demoState.getCombinedTheme()))
+        tabs.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
 
-    // Log state changes for debugging
-    Log.d("ComposeDemo", "State - Language: $currentLanguage, Theme: $combinedTheme")
+        // Set initial tab selection - this will trigger the listener and set active panel
+        tabs.setSelectedValue(demoState.getSelectedTab(), false)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-            // Automotive-appropriate spacing (using dp that approximate px)
-            .padding(MainActivity.CONTAINER_PADDING_HORIZONTAL.dp, MainActivity.CONTAINER_PADDING_VERTICAL.dp)
-    ) {
-        // Title with reactive text based on language
-        Text(
-            text = when (currentLanguage) {
-                "ru" -> "Voboost Components - Compose Демо"
-                else -> "Voboost Components - Compose Demo"
-            },
-            fontSize = 24.sp,
-            color = textColor,
-            modifier = Modifier.padding(bottom = MainActivity.TITLE_BOTTOM_MARGIN.dp)
-        )
-
-        // Language Radio Section
-        LanguageRadioSection(
-            currentLanguage = currentLanguage,
-            combinedTheme = combinedTheme,
-            textColor = textColor,
-            onLanguageChange = { newLanguage ->
-                Log.d("ComposeDemo", "Language changed to: $newLanguage")
-                currentLanguage = newLanguage
-            },
-            onViewCreated = { activity?.languageRadioView = it }
-        )
-
-        Spacer(modifier = Modifier.height(MainActivity.SECTION_SPACING.dp))
-
-        // Theme Radio Section
-        ThemeRadioSection(
-            currentLanguage = currentLanguage,
-            currentTheme = currentTheme,
-            combinedTheme = combinedTheme,
-            textColor = textColor,
-            onThemeChange = { newTheme ->
-                Log.d("ComposeDemo", "Theme changed to: $newTheme")
-                currentTheme = newTheme
-            },
-            onViewCreated = { activity?.themeRadioView = it }
-        )
-
-        Spacer(modifier = Modifier.height(MainActivity.SECTION_SPACING.dp))
-
-        // Car Type Radio Section
-        CarTypeRadioSection(
-            currentLanguage = currentLanguage,
-            currentCarType = currentCarType,
-            combinedTheme = combinedTheme,
-            textColor = textColor,
-            onCarTypeChange = { newCarType ->
-                Log.d("ComposeDemo", "Car type changed to: $newCarType")
-                currentCarType = newCarType
-            },
-            onViewCreated = { activity?.carTypeRadioView = it }
-        )
-
-        Spacer(modifier = Modifier.height(MainActivity.SECTION_SPACING.dp))
-
-        // Test Radio Section
-        TestRadioSection(
-            currentLanguage = currentLanguage,
-            currentTestValue = currentTestValue,
-            combinedTheme = combinedTheme,
-            textColor = textColor,
-            onTestValueChange = { newTestValue ->
-                Log.d("ComposeDemo", "Test value changed to: $newTestValue")
-                currentTestValue = newTestValue
-            },
-            onViewCreated = { activity?.testRadioView = it }
-        )
-
-        Spacer(modifier = Modifier.height(MainActivity.TITLE_BOTTOM_MARGIN.dp))
-
-        // Current State Display
-        StateDisplaySection(
-            currentLanguage = currentLanguage,
-            currentTheme = currentTheme,
-            currentCarType = currentCarType,
-            currentTestValue = currentTestValue,
-            combinedTheme = combinedTheme,
-            textColor = textColor
-        )
-    }
-}
-
-@Composable
-fun LanguageRadioSection(
-    currentLanguage: String,
-    combinedTheme: String,
-    textColor: Color,
-    onLanguageChange: (String) -> Unit,
-    onViewCreated: ((ru.voboost.components.radio.Radio) -> Unit)? = null
-) {
-    Column {
-        Text(
-            text = when (currentLanguage) {
-                "ru" -> "Выбор языка:"
-                else -> "Language Selection:"
-            },
-            fontSize = 18.sp,
-            color = textColor,
-            modifier = Modifier.padding(bottom = MainActivity.SECTION_TITLE_BOTTOM_MARGIN.dp)
-        )
-
-        // Create language radio buttons using Compose-friendly approach
-        val languageButtons = remember {
-            listOf(
-                RadioButton(
-                    "en",
-                    mapOf(
-                        "en" to "English",
-                        "ru" to "English"
-                    )
-                ),
-                RadioButton(
-                    "ru",
-                    mapOf(
-                        "en" to "Русский",
-                        "ru" to "Русский"
-                    )
-                )
-            )
+        // Set screen lift listener for component interaction
+        screen.setOnScreenLiftListener { state ->
+            Log.d(TAG, "Screen lift state changed to: $state")
+            demoState.setScreenLiftState(state)
+            updateAllComponents()
         }
 
-        Radio(
-            buttons = languageButtons,
-            lang = Language.fromCode(currentLanguage),
-            theme = Theme.fromValue(combinedTheme),
-            value = currentLanguage,
-            onValueChange = onLanguageChange,
-            onViewCreated = onViewCreated
-        )
-    }
-}
-
-@Composable
-fun ThemeRadioSection(
-    currentLanguage: String,
-    currentTheme: String,
-    combinedTheme: String,
-    textColor: Color,
-    onThemeChange: (String) -> Unit,
-    onViewCreated: ((ru.voboost.components.radio.Radio) -> Unit)? = null
-) {
-    Column {
-        Text(
-            text = when (currentLanguage) {
-                "ru" -> "Выбор темы:"
-                else -> "Theme Selection:"
-            },
-            fontSize = 18.sp,
-            color = textColor,
-            modifier = Modifier.padding(bottom = MainActivity.SECTION_TITLE_BOTTOM_MARGIN.dp)
-        )
-
-        // Create theme radio buttons using Compose-friendly approach
-        val themeButtons = remember {
-            listOf(
-                RadioButton(
-                    "light",
-                    mapOf(
-                        "en" to "Light",
-                        "ru" to "Светлая"
-                    )
-                ),
-                RadioButton(
-                    "dark",
-                    mapOf(
-                        "en" to "Dark",
-                        "ru" to "Тёмная"
-                    )
-                )
-            )
-        }
-
-        Radio(
-            buttons = themeButtons,
-            lang = Language.fromCode(currentLanguage),
-            theme = Theme.fromValue(combinedTheme),
-            value = currentTheme,
-            onValueChange = onThemeChange,
-            onViewCreated = onViewCreated
-        )
-    }
-}
-
-@Composable
-fun CarTypeRadioSection(
-    currentLanguage: String,
-    currentCarType: String,
-    combinedTheme: String,
-    textColor: Color,
-    onCarTypeChange: (String) -> Unit,
-    onViewCreated: ((ru.voboost.components.radio.Radio) -> Unit)? = null
-) {
-    Column {
-        Text(
-            text = when (currentLanguage) {
-                "ru" -> "Выбор типа авто:"
-                else -> "Car Type Selection:"
-            },
-            fontSize = 18.sp,
-            color = textColor,
-            modifier = Modifier.padding(bottom = MainActivity.SECTION_TITLE_BOTTOM_MARGIN.dp)
-        )
-
-        // Create car type radio buttons using Compose-friendly approach
-        val carTypeButtons = remember {
-            listOf(
-                RadioButton(
-                    "free",
-                    mapOf(
-                        "en" to "Free",
-                        "ru" to "Фри"
-                    )
-                ),
-                RadioButton(
-                    "dreamer",
-                    mapOf(
-                        "en" to "Dreamer",
-                        "ru" to "Дример"
-                    )
-                )
-            )
-        }
-
-        Radio(
-            buttons = carTypeButtons,
-            lang = Language.fromCode(currentLanguage),
-            theme = Theme.fromValue(combinedTheme),
-            value = currentCarType,
-            onValueChange = onCarTypeChange,
-            onViewCreated = onViewCreated
-        )
-    }
-}
-
-@Composable
-fun TestRadioSection(
-    currentLanguage: String,
-    currentTestValue: String,
-    combinedTheme: String,
-    textColor: Color,
-    onTestValueChange: (String) -> Unit,
-    onViewCreated: ((ru.voboost.components.radio.Radio) -> Unit)? = null
-) {
-    Column {
-        Text(
-            text = when (currentLanguage) {
-                "ru" -> "Тестовый выбор:"
-                else -> "Test Selection:"
-            },
-            fontSize = 18.sp,
-            color = textColor,
-            modifier = Modifier.padding(bottom = MainActivity.SECTION_TITLE_BOTTOM_MARGIN.dp)
-        )
-
-        // Create test radio buttons with long text for animation testing
-        val testButtons = remember {
-            listOf(
-                RadioButton(
-                    "close",
-                    mapOf(
-                        "en" to "Close",
-                        "ru" to "Закрыть"
-                    )
-                ),
-                RadioButton(
-                    "normal",
-                    mapOf(
-                        "en" to "Normal",
-                        "ru" to "Обычный"
-                    )
-                ),
-                RadioButton(
-                    "sync_music",
-                    mapOf(
-                        "en" to "Sync with Music",
-                        "ru" to "Синхронизация с музыкой"
-                    )
-                ),
-                RadioButton(
-                    "sync_driving",
-                    mapOf(
-                        "en" to "Sync with Driving",
-                        "ru" to "Синхронизация с вождением"
-                    )
-                )
-            )
-        }
-
-        Radio(
-            buttons = testButtons,
-            lang = Language.fromCode(currentLanguage),
-            theme = Theme.fromValue(combinedTheme),
-            value = currentTestValue,
-            onValueChange = onTestValueChange,
-            onViewCreated = onViewCreated
-        )
-    }
-}
-
-@Composable
-fun StateDisplaySection(
-    currentLanguage: String,
-    currentTheme: String,
-    currentCarType: String,
-    currentTestValue: String,
-    combinedTheme: String,
-    textColor: Color
-) {
-    val stateText = when (currentLanguage) {
-        "ru" -> buildString {
-            appendLine("Текущее состояние:")
-            appendLine("Язык: ${if (currentLanguage == "ru") "Русский" else "English"}")
-            appendLine("Тема: ${if (currentTheme == "light") "Светлая" else "Тёмная"}")
-            appendLine("Тип авто: ${if (currentCarType == "free") "Фри" else "Дример"}")
-            appendLine("Тест: ${getTestValueDisplayName(currentTestValue, currentLanguage)}")
-            append("Комбинированная тема: $combinedTheme")
-        }
-        else -> buildString {
-            appendLine("Current State:")
-            appendLine("Language: ${if (currentLanguage == "ru") "Russian" else "English"}")
-            appendLine("Theme: ${if (currentTheme == "light") "Light" else "Dark"}")
-            appendLine("Car Type: ${if (currentCarType == "free") "Free" else "Dreamer"}")
-            appendLine("Test: ${getTestValueDisplayName(currentTestValue, currentLanguage)}")
-            append("Combined Theme: $combinedTheme")
+        // Set tab selection listener
+        tabs.setOnValueChangeListener { selectedTab ->
+            Log.d(TAG, "Tab changed to: $selectedTab")
+            demoState.setSelectedTab(selectedTab)
+            updateAllComponents()
         }
     }
 
-    Text(
-        text = stateText,
-        fontSize = 16.sp,
-        color = textColor
-    )
-}
+    /**
+     * Creates all panels for all tabs
+     */
+    private fun createAllPanels(): Array<Panel> {
+        return arrayOf(
+            createPanelForTab("language"),
+            createPanelForTab("theme"),
+            createPanelForTab("car_type"),
+            createPanelForTab("climate"),
+            createPanelForTab("audio"),
+            createPanelForTab("display"),
+            createPanelForTab("system")
+        )
+    }
 
-/**
- * Gets display name for test value based on language
- */
-private fun getTestValueDisplayName(testValue: String, language: String): String {
-    return if (language == "ru") {
-        when (testValue) {
-            "close" -> "Закрыть"
-            "normal" -> "Обычный"
-            "sync_music" -> "Синхронизация с музыкой"
-            "sync_driving" -> "Синхронизация с вождением"
-            else -> testValue
+    /**
+     * Creates a panel for a specific tab
+     */
+    private fun createPanelForTab(tabValue: String): Panel {
+        // Create Panel
+        val panel = Panel(this)
+
+        // Create Section
+        val section = Section(this).apply {
+            setTitle(DemoContent.getSectionTitle(tabValue))
         }
-    } else {
-        when (testValue) {
-            "close" -> "Close"
-            "normal" -> "Normal"
-            "sync_music" -> "Sync with Music"
-            "sync_driving" -> "Sync with Driving"
-            else -> testValue
+
+        // Create Radio with options for this tab
+        val radioButtons = DemoContent.getRadioButtons(tabValue)
+        val radio = RadioView(this).apply {
+            setButtons(radioButtons)
+            setSelectedValue(demoState.getSelectedValueForTab(tabValue))
+            setOnValueChangeListener { newValue ->
+                Log.d(TAG, "Tab $tabValue value changed to: $newValue")
+                demoState.setSelectedValueForTab(tabValue, newValue)
+
+                // Special handling for language, theme, and car type tabs
+                when (tabValue) {
+                    "language" -> demoState.setCurrentLanguage(newValue)
+                    "theme" -> demoState.setCurrentTheme(newValue)
+                    "car_type" -> demoState.setCurrentCarType(newValue)
+                }
+
+                updateAllComponents()
+            }
+        }
+
+        // Set view references for testing (only for the first tab)
+        if (tabValue == "language") {
+            currentSectionView = section
+            currentRadioView = radio
+            panelView = panel
+        }
+
+        // Add Radio as child of Section (Section is now a ViewGroup)
+        section.addView(radio)
+
+        // Add Section to Panel
+        panel.addView(section)
+
+        return panel
+    }
+
+    /**
+     * Updates all components with current state using Kotlin when expressions and safe calls
+     * Implements reactive behavior across all components in the hierarchy
+     */
+    private fun updateAllComponents() {
+        val combinedTheme = demoState.getCombinedTheme()
+
+        Log.d(TAG, "Updating all components - Language: ${demoState.getCurrentLanguage()}, " +
+                "Theme: $combinedTheme, Selected Tab: ${demoState.getSelectedTab()}")
+
+        try {
+            // Update background color based on theme
+            updateBackgroundColor(combinedTheme)
+
+            // Update Screen component
+            screen.takeIf { ::screen.isInitialized }?.setTheme(Theme.fromValue(combinedTheme))
+
+            // Update Tabs component
+            tabs.takeIf { ::tabs.isInitialized }?.apply {
+                setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
+                setTheme(Theme.fromValue(combinedTheme))
+            }
+
+            // Update all panels
+            val panels = screen.takeIf { ::screen.isInitialized }?.getPanels()
+            panels?.forEach { panel ->
+                panel.setTheme(Theme.fromValue(combinedTheme))
+
+                // Update child views in panel
+                for (i in 0 until panel.childCount) {
+                    val child = panel.getChildAt(i)
+                    when (child) {
+                        is Section -> {
+                            child.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
+                            child.setTheme(Theme.fromValue(combinedTheme))
+
+                            // Update Radio inside Section (Radio is now a child of Section)
+                            for (j in 0 until child.childCount) {
+                                val sectionChild = child.getChildAt(j)
+                                if (sectionChild is RadioView) {
+                                    sectionChild.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
+                                    sectionChild.setTheme(Theme.fromValue(combinedTheme))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating components", e)
         }
     }
-}
 
-@Composable
-fun DemoTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        content = content
-    )
-}
+    /**
+     * Updates the background color based on current theme
+     */
+    private fun updateBackgroundColor(combinedTheme: String) {
+        val backgroundColor = if (combinedTheme.endsWith("-dark")) {
+            Color.parseColor("#000000") // Black background for dark themes
+        } else {
+            Color.parseColor("#f1f5fb") // Light background for light themes
+        }
 
-@Preview(showBackground = true, widthDp = 1920, heightDp = 720)
-@Composable
-fun DemoScreenPreview() {
-    DemoTheme {
-        DemoScreen()
+        // Apply background color to screen
+        screen.takeIf { ::screen.isInitialized }?.setBackgroundColor(backgroundColor)
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun LanguageRadioPreview() {
-    DemoTheme {
-        LanguageRadioSection(
-            currentLanguage = "en",
-            combinedTheme = "free-light",
-            textColor = Color(MainActivity.TEXT_COLOR_LIGHT),
-            onLanguageChange = {}
-        )
+    // Getter methods for testing
+    internal fun getTabs(): Tabs = tabs
+    internal fun getScreen(): Screen = screen
+    internal fun getDemoState(): DemoState = demoState
+    internal fun getCurrentSection(): Section? {
+        // Get the current panel based on selected tab
+        val selectedTab = demoState.getSelectedTab()
+        val panels = screen.getPanels()
+        val tabIndex = when (selectedTab) {
+            "language" -> 0
+            "theme" -> 1
+            "car_type" -> 2
+            "climate" -> 3
+            "audio" -> 4
+            "display" -> 5
+            "system" -> 6
+            else -> 0
+        }
+
+        // Get the section from the current panel
+        return if (tabIndex < panels.size) {
+            val panel = panels[tabIndex]
+            if (panel.childCount > 0) {
+                val firstChild = panel.getChildAt(0)
+                if (firstChild is Section) firstChild else null
+            } else null
+        } else null
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun ThemeRadioPreview() {
-    DemoTheme {
-        ThemeRadioSection(
-            currentLanguage = "en",
-            currentTheme = "light",
-            combinedTheme = "free-light",
-            textColor = Color(MainActivity.TEXT_COLOR_LIGHT),
-            onThemeChange = {}
-        )
+    internal fun getCurrentRadio(): RadioView? {
+        // Get the current section first
+        val section = getCurrentSection()
+        if (section == null) return null
+
+        // Radio is now a child of Section
+        for (i in 0 until section.childCount) {
+            val child = section.getChildAt(i)
+            if (child is RadioView) {
+                return child
+            }
+        }
+        return null
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun CarTypeRadioPreview() {
-    DemoTheme {
-        CarTypeRadioSection(
-            currentLanguage = "en",
-            currentCarType = "free",
-            combinedTheme = "free-light",
-            textColor = Color(MainActivity.TEXT_COLOR_LIGHT),
-            onCarTypeChange = {}
-        )
+    internal fun getPanel(): Panel? {
+        // Get the current panel based on selected tab
+        val selectedTab = demoState.getSelectedTab()
+        val panels = screen.getPanels()
+        val tabIndex = when (selectedTab) {
+            "language" -> 0
+            "theme" -> 1
+            "car_type" -> 2
+            "climate" -> 3
+            "audio" -> 4
+            "display" -> 5
+            "system" -> 6
+            else -> 0
+        }
+
+        return if (tabIndex < panels.size) panels[tabIndex] else null
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun TestRadioPreview() {
-    DemoTheme {
-        TestRadioSection(
-            currentLanguage = "en",
-            currentTestValue = "close",
-            combinedTheme = "free-light",
-            textColor = Color(MainActivity.TEXT_COLOR_LIGHT),
-            onTestValueChange = {}
-        )
+    /**
+     * Android lifecycle methods with enhanced logging
+     */
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "MainActivity resumed with component hierarchy - Current state: ${demoState.toString()}")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "MainActivity paused - Current state: ${demoState.toString()}")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "MainActivity destroyed")
     }
 }

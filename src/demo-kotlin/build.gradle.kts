@@ -31,7 +31,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -55,6 +56,12 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/*.kotlin_module"
+            excludes += "/META-INF/DEPENDENCIES"
+            excludes += "/META-INF/LICENSE*"
+            excludes += "/META-INF/NOTICE*"
+            excludes += "DebugProbesKt.bin"
+            excludes += "META-INF/com.android.tools/**"
         }
     }
 
@@ -91,20 +98,29 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
     }
 }
 
+// Exclude Compose debug dependencies from root project
+configurations {
+    debugImplementation {
+        exclude(group = "androidx.compose.ui", module = "ui-tooling")
+        exclude(group = "androidx.compose.ui", module = "ui-test-manifest")
+    }
+}
+
 dependencies {
     // Main voboost-components library
     implementation(project(":"))
 
+    // Demo shared module
+    implementation(project(":demo-shared"))
+
     // Android Core
     implementation("androidx.core:core-ktx:1.12.0")
+
+    // These are required for Kotlin Compose wrappers
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
-
-    // Activity and Fragment KTX
     implementation("androidx.activity:activity-ktx:1.8.2")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
-
-    // Lifecycle components
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
 
@@ -112,7 +128,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("io.github.takahirom.roborazzi:roborazzi:1.48.0")
     testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:1.48.0")
-    testImplementation("org.robolectric:robolectric:4.11.1")
+    testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

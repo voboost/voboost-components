@@ -31,3 +31,9 @@ project(":demo-kotlin").projectDir = file("src/demo-kotlin")
 
 include(":demo-compose")
 project(":demo-compose").projectDir = file("src/demo-compose")
+
+include(":demo-shared")
+project(":demo-shared").projectDir = file("src/demo-shared")
+
+include(":demo-pixel")
+project(":demo-pixel").projectDir = file("src/demo-pixel")

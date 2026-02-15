@@ -1,10 +1,12 @@
 # Java Demo Application
 
-This demo application demonstrates the integration of voboost-components library in a pure Java Android project using traditional Android development approaches.
+This demo application demonstrates the integration of voboost-components library in a pure Java Android project using traditional Android development approaches with the new 7-tab structure.
 
 ## Purpose
 
 This demo showcases:
+- **7-Tab Navigation Structure**: Language, Theme, Car Type, Climate, Audio, Display, System, and Screen Lift
+- **Proper Component Hierarchy**: Screen → Panel → Tabs → Section → Radio
 - **Java Custom View Integration**: How to use voboost-components in traditional Java Android projects
 - **Automotive UI Patterns**: Best practices for automotive screen layouts and interactions
 - **State Management**: Reactive component updates and event handling in Java
@@ -12,10 +14,13 @@ This demo showcases:
 
 ## Architecture Principles
 
+- **7-Tab Structure**: Unified navigation across all demo applications
+- **Proper Component Hierarchy**: Screen → Panel → Tabs → Section → Radio
 - **Pure Java Implementation**: Uses Java Custom View components directly without Kotlin wrappers
 - **Automotive-First Design**: Optimized for 1920x720 automotive displays with appropriate touch targets
 - **Reactive State Management**: Centralized state with automatic component updates
 - **Performance Focused**: 60fps rendering with minimal memory footprint
+- **Shared Demo Module**: Uses demo-shared module for consistent functionality
 
 ## Building and Running
 
@@ -73,11 +78,13 @@ java/ru/voboost/components/demo/java/
 ```
 
 Standard test scenarios:
-1. **demo_java_default** - Default state: English, Light, Free
-2. **demo_java_russian** - Russian language: Russian, Light, Free
-3. **demo_java_dark** - Dark theme: English, Dark, Free
-4. **demo_java_dreamer** - Dreamer car type: English, Light, Dreamer
-5. **demo_java_full_combination** - Full combination: Russian, Dark, Dreamer
+1. **demo_java_default** - Default state: English, Light, Free, Language tab
+2. **demo_java_russian** - Russian language: Russian, Light, Free, Language tab
+3. **demo_java_dark** - Dark theme: English, Dark, Free, Theme tab
+4. **demo_java_dreamer** - Dreamer car type: English, Light, Dreamer, Car Type tab
+5. **demo_java_full_combination** - Full combination: Russian, Dark, Dreamer, Language tab
+6. **demo_java_all_tabs** - All 7 tabs with default values
+7. **demo_java_component_hierarchy** - Component hierarchy verification
 
 ```bash
 # Run visual tests
@@ -106,10 +113,11 @@ Standard test scenarios:
 2. **Launch**: Find "Java Demo" app on your device/emulator
 
 3. **Test Functionality**:
+   - Navigate through all 7 tabs: Language, Theme, Car Type, Climate, Audio, Display, System, Screen Lift
    - Interact with components to see reactive updates
    - Test language switching and theme changes
    - Verify automotive-appropriate touch targets and spacing
-   - Test the Test Radio component with animation options (Close, Normal, Sync with Music, Sync with Driving)
+   - Test proper component hierarchy: Screen → Panel → Tabs → Section → Radio
 
 ## Integration Example
 

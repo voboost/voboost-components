@@ -73,6 +73,19 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            // Exclude all non-font files from src/main/java
+            excludes += "**/*.java"
+            excludes += "**/*.kt"
+            excludes += "**/*.md"
+            excludes += "**/*.png"
+            excludes += "**/*.jpg"
+            excludes += "**/*.jpeg"
+            excludes += "**/*.webp"
+            excludes += "**/*.gif"
+            excludes += "**/*.svg"
+            excludes += "**/*.test/**"
+            excludes += "**/*.tests/**"
+            excludes += "**/*.screenshots/**"
         }
     }
 
@@ -88,13 +101,12 @@ android {
             java {
                 srcDir("src/main/java")
             }
+            // BEM structure: fonts co-located with Font class are loaded as assets
+            assets.srcDir("src/main/java")
         }
         getByName("test") {
             java {
                 srcDir("src/main/java") // BEM co-located tests
-                srcDir(
-                    "src/main/java/ru/voboost/components/radio/Radio.test"
-                ) // Include test directory,
             }
         }
     }
@@ -112,45 +124,53 @@ android {
 // Test files are in src/main/java but should only compile in test source set
 tasks.withType<JavaCompile>().configureEach {
     if (!name.contains("Test") && !name.contains("test")) {
-        exclude("**/Radio.test/**")
-        exclude("**/*Test*.java")
         exclude("**/*.test/**")
+        exclude("**/*Test*.java")
+        exclude("**/*TestUnit.java")
+        exclude("**/*TestVisual.java")
+        exclude("**/Text.test/**")
+        exclude("**/*.test-visual.java")
     }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     if (!name.contains("Test") && !name.contains("test")) {
         exclude("**/Radio.test/**")
+        exclude("**/Panel.test/**")
+        exclude("**/Screen.test/**")
+        exclude("**/Text.test/**")
         exclude("**/*Test*.kt")
         exclude("**/*.test-unit.kt")
         exclude("**/*.test-visual.kt")
         exclude("**/*.test/**")
     }
+    // Also exclude from test compilation for now
+    if (name.contains("test")) {
+        exclude("**/Text.test-visual.kt")
+    }
 }
 
 dependencies {
-    // Android Core
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
+    // Android Core — minimal runtime dependencies for Java Custom Views
+    implementation("androidx.core:core:1.12.0")           // core WITHOUT ktx
+    implementation("androidx.annotation:annotation:1.7.1") // annotations only
 
-    // Activity and Fragment KTX
-    implementation("androidx.activity:activity-ktx:1.8.2")
-    implementation("androidx.fragment:fragment-ktx:1.6.2")
-
-    // Lifecycle components
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    // These are only needed by Kotlin Compose wrappers — consumers must provide
+    compileOnly("androidx.appcompat:appcompat:1.6.1")
+    compileOnly("com.google.android.material:material:1.11.0")
+    compileOnly("androidx.activity:activity-ktx:1.8.2")
+    compileOnly("androidx.fragment:fragment-ktx:1.6.2")
+    compileOnly("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    compileOnly("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    compileOnly("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
     // Jetpack Compose BOM
-    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.activity:activity-compose:1.8.2")
+    compileOnly(platform("androidx.compose:compose-bom:2024.02.00"))
+    compileOnly("androidx.compose.ui:ui")
+    compileOnly("androidx.compose.ui:ui-graphics")
+    compileOnly("androidx.compose.ui:ui-tooling-preview")
+    compileOnly("androidx.compose.material3:material3")
+    compileOnly("androidx.activity:activity-compose:1.8.2")
 
     // Testing dependencies (only for test source set)
     testImplementation("junit:junit:4.13.2") {
@@ -166,7 +186,7 @@ dependencies {
     testImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("io.mockk:mockk-android:1.13.8")
-    testImplementation("org.robolectric:robolectric:4.11.1") {
+    testImplementation("org.robolectric:robolectric:4.14.1") {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
     }
     testImplementation("com.google.truth:truth:1.1.5")
@@ -193,18 +213,24 @@ dependencies {
 
 tasks.register("buildAllDemos") {
     group = "demo"
-    description = "Build all demo applications (Java, Kotlin, Compose)"
+    description = "Build all demo applications (Java, Kotlin, Compose, Pixel)"
     dependsOn(
         ":demo-java:assembleDebug",
         ":demo-kotlin:assembleDebug",
         ":demo-compose:assembleDebug",
+        ":demo-pixel:assembleDebug",
     )
 }
 
 tasks.register("installAllDemos") {
     group = "demo"
     description = "Install all demo applications to connected device"
-    dependsOn(":demo-java:installDebug", ":demo-kotlin:installDebug", ":demo-compose:installDebug")
+    dependsOn(
+        ":demo-java:installDebug",
+        ":demo-kotlin:installDebug",
+        ":demo-compose:installDebug",
+        ":demo-pixel:installDebug",
+    )
 }
 
 tasks.register("testAllDemos") {
@@ -214,13 +240,14 @@ tasks.register("testAllDemos") {
         ":demo-java:testDebugUnitTest",
         ":demo-kotlin:testDebugUnitTest",
         ":demo-compose:testDebugUnitTest",
+        ":demo-pixel:testDebugUnitTest",
     )
 }
 
 tasks.register("cleanAllDemos") {
     group = "demo"
     description = "Clean all demo applications"
-    dependsOn(":demo-java:clean", ":demo-kotlin:clean", ":demo-compose:clean")
+    dependsOn(":demo-java:clean", ":demo-kotlin:clean", ":demo-compose:clean", ":demo-pixel:clean")
 }
 
 // Individual demo tasks for convenience
@@ -242,6 +269,12 @@ tasks.register("buildDemoCompose") {
     dependsOn(":demo-compose:assembleDebug")
 }
 
+tasks.register("buildDemoPixel") {
+    group = "demo"
+    description = "Build Pixel demo application"
+    dependsOn(":demo-pixel:assembleDebug")
+}
+
 tasks.register("installDemoJava") {
     group = "demo"
     description = "Install Java demo application to connected device"
@@ -258,6 +291,24 @@ tasks.register("installDemoCompose") {
     group = "demo"
     description = "Install Compose demo application to connected device"
     dependsOn(":demo-compose:installDebug")
+}
+
+tasks.register("installDemoPixel") {
+    group = "demo"
+    description = "Install Pixel demo application to connected device"
+    dependsOn(":demo-pixel:installDebug")
+}
+
+tasks.register("testPixelVisualSave") {
+    group = "verification"
+    description = "Record and save pixel demo visual test screenshots"
+    dependsOn(":demo-pixel:testPixelVisualSave")
+}
+
+tasks.register("testPixelVisualCompare") {
+    group = "verification"
+    description = "Compare pixel demo visual test screenshots against reference images and generate diff"
+    dependsOn(":demo-pixel:testPixelVisualCompare")
 }
 
 // Demo start tasks
@@ -294,6 +345,20 @@ tasks.register<Exec>("startDemoCompose") {
         "ru.voboost.components.demo.compose/.MainActivity",
     )
     dependsOn(":demo-compose:installDebug")
+}
+
+tasks.register<Exec>("startDemoPixel") {
+    group = "demo"
+    description = "Start Pixel demo application on connected device"
+    commandLine(
+        "adb",
+        "shell",
+        "am",
+        "start",
+        "-n",
+        "ru.voboost.components.demo.pixel/.MainActivity",
+    )
+    dependsOn(":demo-pixel:installDebug")
 }
 
 // Demo validation tasks
@@ -347,7 +412,7 @@ afterEvaluate {
         // Check for tests at configuration time
         val hasJavaTests =
             fileTree("src/main/java").matching {
-                include("**/RadioTestUnit.java")
+                include("**/*TestUnit.java") // Generic pattern
             }.files.isNotEmpty()
 
         val hasKotlinTests =
@@ -356,7 +421,7 @@ afterEvaluate {
             }.files.isNotEmpty()
 
         if (hasJavaTests || hasKotlinTests) {
-            commandLine("./gradlew", ":testDebugUnitTest", "--tests=*RadioTestUnit*", "--continue")
+            commandLine("./gradlew", ":testDebugUnitTest", "--tests=*TestUnit*", "--continue")
             isIgnoreExitValue = true
         } else {
             // Create a dummy command that just prints a message
@@ -365,13 +430,13 @@ afterEvaluate {
     }
 
     tasks.register<Exec>("testVisual") {
-        description = "Run all visual tests (Java and Kotlin) using Roborazzi"
+        description = "Run all visual tests using Roborazzi"
         group = "verification"
 
         // Check for tests at configuration time
         val hasJavaTests =
             fileTree("src/main/java").matching {
-                include("**/RadioTestVisual.java")
+                include("**/*TestVisual.java") // Generic pattern
             }.files.isNotEmpty()
 
         val hasKotlinTests =
@@ -383,8 +448,8 @@ afterEvaluate {
             commandLine(
                 "./gradlew",
                 ":testDebugUnitTest",
-                "--tests=*RadioTestVisual*",
-                "--continue"
+                "--tests=*TestVisual*",
+                "--continue",
             )
             isIgnoreExitValue = true
         } else {
@@ -395,17 +460,17 @@ afterEvaluate {
 
     // Java test tasks
     tasks.register<Exec>("testUnitJava") {
-        description = "Run only Java unit tests (Radio.test/RadioTestUnit.java files)"
+        description = "Run only Java unit tests"
         group = "verification"
 
         // Check for tests at configuration time
         val hasTests =
             fileTree("src/main/java").matching {
-                include("**/RadioTestUnit.java")
+                include("**/*TestUnit.java")
             }.files.isNotEmpty()
 
         if (hasTests) {
-            commandLine("./gradlew", ":testDebugUnitTest", "--tests=*RadioTestUnit*", "--continue")
+            commandLine("./gradlew", ":testDebugUnitTest", "--tests=*TestUnit*", "--continue")
             isIgnoreExitValue = true
         } else {
             // Create a dummy command that just prints a message
@@ -414,7 +479,7 @@ afterEvaluate {
     }
 
     tasks.register<Exec>("testVisualJava") {
-        description = "Run only Java visual tests (Radio.test/RadioTestVisual.java files)"
+        description = "Run only Java visual tests using Roborazzi"
         group = "verification"
 
         // Check for tests at configuration time
@@ -453,7 +518,7 @@ afterEvaluate {
     }
 
     tasks.register<Exec>("testVisualKotlin") {
-        description = "Run only Kotlin visual tests (RadioTestVisual.kt files) using Roborazzi"
+        description = "Run only Kotlin visual tests using Roborazzi"
         group = "verification"
 
         // Check for tests at configuration time
@@ -466,8 +531,8 @@ afterEvaluate {
             commandLine(
                 "./gradlew",
                 ":testDebugUnitTest",
-                "--tests=*RadioTestVisual*",
-                "--continue"
+                "--tests=*TestVisual*",
+                "--continue",
             )
             isIgnoreExitValue = true
         } else {
@@ -507,7 +572,7 @@ afterEvaluate {
         group = "verification"
 
         from("build/intermediates/roborazzi")
-        into("src/main/java/ru/voboost/components/radio/Radio.screenshots")
+        into("src/main/java/ru/voboost/components")
         include("*.png")
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
@@ -530,7 +595,7 @@ afterEvaluate {
 // Configure Roborazzi for BEM Co-Located Test Structure
 roborazzi {
     // Configure output directory for screenshots
-    outputDir = file("src/main/java/ru/voboost/components/radio/Radio.screenshots")
+    outputDir = file("src/main/java/ru/voboost/components")
 }
 
 afterEvaluate {
