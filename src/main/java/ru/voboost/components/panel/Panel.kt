@@ -9,26 +9,18 @@ import ru.voboost.components.theme.Theme
  *
  * A customizable container with rounded corners and shadow.
  *
- * @param theme Theme identifier (e.g., "free-light", "dreamer-dark")
- * @param content Composable content to display inside the panel
+ * @param theme Theme enum value
  */
 @Composable
-fun Panel(
-    theme: String,
-    content: @Composable () -> Unit,
-) {
+fun Panel(theme: Theme) {
     AndroidView(
         factory = { context ->
             ru.voboost.components.panel.Panel(context).apply {
-                setTheme(Theme.fromValue(theme))
+                setTheme(theme)
             }
         },
         update = { panelView ->
-            panelView.setTheme(Theme.fromValue(theme))
+            panelView.setTheme(theme)
         },
     )
-
-    // Note: content parameter is not used in this implementation
-    // as the Java Panel component handles its own content
 }
-

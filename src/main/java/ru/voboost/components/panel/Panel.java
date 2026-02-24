@@ -4,13 +4,10 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import ru.voboost.components.theme.Theme;
@@ -126,6 +123,86 @@ public class Panel extends ViewGroup {
         return currentTheme;
     }
 
+    /**
+     * Propagates the theme to all child components.
+     *
+     * @param theme the theme to propagate
+     */
+    public void propagateTheme(Theme theme) {
+        if (theme == null) {
+            return;
+        }
+
+        // Propagate theme to all child views
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child instanceof ru.voboost.components.section.Section) {
+                ru.voboost.components.section.Section section =
+                        (ru.voboost.components.section.Section) child;
+                section.setTheme(theme);
+                section.propagateTheme(theme);
+            } else if (child instanceof android.widget.ScrollView) {
+                android.widget.ScrollView scrollView = (android.widget.ScrollView) child;
+                if (scrollView.getChildCount() > 0) {
+                    View scrollChild = scrollView.getChildAt(0);
+                    if (scrollChild instanceof android.widget.LinearLayout) {
+                        android.widget.LinearLayout layout =
+                                (android.widget.LinearLayout) scrollChild;
+                        for (int j = 0; j < layout.getChildCount(); j++) {
+                            View layoutChild = layout.getChildAt(j);
+                            if (layoutChild instanceof ru.voboost.components.section.Section) {
+                                ru.voboost.components.section.Section section =
+                                        (ru.voboost.components.section.Section) layoutChild;
+                                section.setTheme(theme);
+                                section.propagateTheme(theme);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Propagates the language to all child components.
+     *
+     * @param language the language to propagate
+     */
+    public void propagateLanguage(ru.voboost.components.i18n.Language language) {
+        if (language == null) {
+            return;
+        }
+
+        // Propagate language to all child views
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child instanceof ru.voboost.components.section.Section) {
+                ru.voboost.components.section.Section section =
+                        (ru.voboost.components.section.Section) child;
+                section.setLanguage(language);
+                section.propagateLanguage(language);
+            } else if (child instanceof android.widget.ScrollView) {
+                android.widget.ScrollView scrollView = (android.widget.ScrollView) child;
+                if (scrollView.getChildCount() > 0) {
+                    View scrollChild = scrollView.getChildAt(0);
+                    if (scrollChild instanceof android.widget.LinearLayout) {
+                        android.widget.LinearLayout layout =
+                                (android.widget.LinearLayout) scrollChild;
+                        for (int j = 0; j < layout.getChildCount(); j++) {
+                            View layoutChild = layout.getChildAt(j);
+                            if (layoutChild instanceof ru.voboost.components.section.Section) {
+                                ru.voboost.components.section.Section section =
+                                        (ru.voboost.components.section.Section) layoutChild;
+                                section.setLanguage(language);
+                                section.propagateLanguage(language);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // ============================================================
     // MEASUREMENT
     // ============================================================
@@ -146,12 +223,11 @@ public class Panel extends ViewGroup {
             if (child.getVisibility() == GONE) continue;
 
             // Give children the full panel width
-            int childWidthSpec = MeasureSpec.makeMeasureSpec(
-                    widthSize - getPaddingLeft() - getPaddingRight(),
-                    MeasureSpec.EXACTLY);
-            int childHeightSpec = MeasureSpec.makeMeasureSpec(
-                    heightSize - totalHeight,
-                    MeasureSpec.AT_MOST);
+            int childWidthSpec =
+                    MeasureSpec.makeMeasureSpec(
+                            widthSize - getPaddingLeft() - getPaddingRight(), MeasureSpec.EXACTLY);
+            int childHeightSpec =
+                    MeasureSpec.makeMeasureSpec(heightSize - totalHeight, MeasureSpec.AT_MOST);
 
             child.measure(childWidthSpec, childHeightSpec);
 
@@ -164,14 +240,14 @@ public class Panel extends ViewGroup {
         if (maxWidth == 0) maxWidth = minSize;
         if (totalHeight == 0) totalHeight = minSize;
 
-        int finalWidth = widthMode == MeasureSpec.EXACTLY ? widthSize :
-                Math.max(maxWidth + getPaddingLeft() + getPaddingRight(), 0);
-        int finalHeight = heightMode == MeasureSpec.EXACTLY ? heightSize :
-                Math.max(totalHeight, 0);
+        int finalWidth =
+                widthMode == MeasureSpec.EXACTLY
+                        ? widthSize
+                        : Math.max(maxWidth + getPaddingLeft() + getPaddingRight(), 0);
+        int finalHeight = heightMode == MeasureSpec.EXACTLY ? heightSize : Math.max(totalHeight, 0);
 
         setMeasuredDimension(finalWidth, finalHeight);
     }
-
 
     // ============================================================
     // DRAWING
@@ -212,8 +288,7 @@ public class Panel extends ViewGroup {
                 left + borderOffset,
                 top + borderOffset,
                 right - borderOffset,
-                bottom - borderOffset
-        );
+                bottom - borderOffset);
     }
 
     private void drawShadow(Canvas canvas) {
@@ -221,24 +296,30 @@ public class Panel extends ViewGroup {
         float shadowOffset = PanelTheme.ELEVATION;
         shadowPaint.setColor(PanelTheme.getShadow(currentTheme));
 
-        RectF shadowRect = new RectF(
-                backgroundRect.left + shadowOffset,
-                backgroundRect.top + shadowOffset,
-                backgroundRect.right + shadowOffset,
-                backgroundRect.bottom + shadowOffset
-        );
+        RectF shadowRect =
+                new RectF(
+                        backgroundRect.left + shadowOffset,
+                        backgroundRect.top + shadowOffset,
+                        backgroundRect.right + shadowOffset,
+                        backgroundRect.bottom + shadowOffset);
 
-        canvas.drawRoundRect(shadowRect, PanelTheme.CORNER_RADIUS, PanelTheme.CORNER_RADIUS, shadowPaint);
+        canvas.drawRoundRect(
+                shadowRect, PanelTheme.CORNER_RADIUS, PanelTheme.CORNER_RADIUS, shadowPaint);
     }
 
     private void drawBackground(Canvas canvas) {
         backgroundPaint.setColor(PanelTheme.getBackground(currentTheme));
-        canvas.drawRoundRect(backgroundRect, PanelTheme.CORNER_RADIUS, PanelTheme.CORNER_RADIUS, backgroundPaint);
+        canvas.drawRoundRect(
+                backgroundRect,
+                PanelTheme.CORNER_RADIUS,
+                PanelTheme.CORNER_RADIUS,
+                backgroundPaint);
     }
 
     private void drawBorder(Canvas canvas) {
         borderPaint.setColor(PanelTheme.getBorder(currentTheme));
-        canvas.drawRoundRect(borderRect, PanelTheme.CORNER_RADIUS, PanelTheme.CORNER_RADIUS, borderPaint);
+        canvas.drawRoundRect(
+                borderRect, PanelTheme.CORNER_RADIUS, PanelTheme.CORNER_RADIUS, borderPaint);
     }
 
     // ============================================================
@@ -269,40 +350,6 @@ public class Panel extends ViewGroup {
             child.layout(childLeft, currentTop, childRight, childBottom);
 
             currentTop = childBottom;
-        }
-    }
-
-    // ============================================================
-    // STATE PERSISTENCE
-    // ============================================================
-
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        Bundle bundle = new Bundle();
-
-        bundle.putParcelable("superState", super.onSaveInstanceState());
-        bundle.putString("currentTheme", currentTheme != null ? currentTheme.getValue() : null);
-
-        return bundle;
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        if (state instanceof Bundle) {
-            Bundle bundle = (Bundle) state;
-
-            String themeValue = bundle.getString("currentTheme");
-            currentTheme = themeValue != null ? Theme.fromValue(themeValue) : null;
-
-            super.onRestoreInstanceState(bundle.getParcelable("superState"));
-
-            if (currentTheme != null) {
-                updateColors();
-            }
-
-            invalidate();
-        } else {
-            super.onRestoreInstanceState(state);
         }
     }
 }

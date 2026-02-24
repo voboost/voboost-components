@@ -38,7 +38,7 @@ panel.addView(textView);
 @Composable
 fun MyScreen() {
     Panel(
-        theme = "free-light"
+        theme = Theme.FREE_LIGHT
     ) {
         Text("Content inside panel")
         Button(onClick = { /* Handle click */ }) {
@@ -63,45 +63,3 @@ fun MyScreen() {
 |-----------|------|-------------|
 | theme | String | Theme identifier |
 | content | @Composable () -> Unit | Content to display inside the panel |
-
-## Themes
-
-| Theme | Description |
-|-------|-------------|
-| free-light | Free car model, light theme |
-| free-dark | Free car model, dark theme |
-| dreamer-light | Dreamer car model, light theme |
-| dreamer-dark | Dreamer car model, dark theme |
-
-## Dimensions
-
-All dimensions are in pixels (automotive requirement):
-
-| Dimension | Value | Description |
-|-----------|-------|-------------|
-| CORNER_RADIUS | 24px | Corner radius for the panel |
-| PADDING | 24px | Default padding inside the panel |
-| ELEVATION | 8px | Shadow elevation |
-| BORDER_WIDTH | 1px | Border width |
-
-## Colors
-
-### Free Light Theme
-- Background: #ffffff (white)
-- Border: #e0e0e0 (light gray)
-- Shadow: #1a000000 (semi-transparent black)
-
-### Free Dark Theme
-- Background: #2a2a2a (dark gray)
-- Border: #404040 (medium gray)
-- Shadow: #1a000000 (semi-transparent black)
-
-### Dreamer Light Theme
-- Background: #ffffff (white)
-- Border: #d0d0d0 (light gray)
-- Shadow: #1a000000 (semi-transparent black)
-
-### Dreamer Dark Theme
-- Background: #1a1a1a (very dark gray)
-- Border: #333333 (dark gray)
-- Shadow: #1a000000 (semi-transparent black)

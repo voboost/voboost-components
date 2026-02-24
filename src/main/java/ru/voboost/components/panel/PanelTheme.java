@@ -13,8 +13,6 @@ import ru.voboost.components.theme.Theme;
  *   <li>Colors for each theme variant</li>
  *   <li>Animation parameters</li>
  * </ul>
- *
- * <p>All dimensions are in PIXELS, not dp. This is a critical automotive requirement.
  */
 public final class PanelTheme {
 
@@ -110,9 +108,9 @@ public final class PanelTheme {
                 return DREAMER_LIGHT_BACKGROUND;
             case DREAMER_DARK:
                 return DREAMER_DARK_BACKGROUND;
-            default:
-                return FREE_LIGHT_BACKGROUND;
         }
+        // All enum cases are covered above - this should never be reached
+        throw new IllegalArgumentException("Unknown theme: " + theme);
     }
 
     /**
@@ -131,9 +129,9 @@ public final class PanelTheme {
                 return DREAMER_LIGHT_BORDER;
             case DREAMER_DARK:
                 return DREAMER_DARK_BORDER;
-            default:
-                return FREE_LIGHT_BORDER;
         }
+        // All enum cases are covered above - this should never be reached
+        throw new IllegalArgumentException("Unknown theme: " + theme);
     }
 
     /**
@@ -152,8 +150,8 @@ public final class PanelTheme {
                 return DREAMER_LIGHT_SHADOW;
             case DREAMER_DARK:
                 return DREAMER_DARK_SHADOW;
-            default:
-                return FREE_LIGHT_SHADOW;
         }
+        // All enum cases are covered above - this should never be reached
+        throw new IllegalArgumentException("Unknown theme: " + theme);
     }
 }
