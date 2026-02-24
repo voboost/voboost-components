@@ -1,5 +1,7 @@
 package ru.voboost.components.section;
 
+import java.util.Map;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
@@ -7,16 +9,13 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
-
-import ru.voboost.components.font.Font;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
-import java.util.Map;
+import ru.voboost.components.font.Font;
 import ru.voboost.components.i18n.Language;
 import ru.voboost.components.theme.Theme;
 
@@ -92,7 +91,8 @@ public class Section extends ViewGroup {
         init(context);
     }
 
-    public Section(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public Section(
+            Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context);
     }
@@ -217,6 +217,44 @@ public class Section extends ViewGroup {
         return currentLanguage;
     }
 
+    /**
+     * Propagates the theme to all child components.
+     *
+     * @param theme the theme to propagate
+     */
+    public void propagateTheme(Theme theme) {
+        if (theme == null) {
+            return;
+        }
+
+        // Propagate theme to all child views
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child instanceof ru.voboost.components.radio.Radio) {
+                ((ru.voboost.components.radio.Radio) child).setTheme(theme);
+            }
+        }
+    }
+
+    /**
+     * Propagates the language to all child components.
+     *
+     * @param language the language to propagate
+     */
+    public void propagateLanguage(Language language) {
+        if (language == null) {
+            return;
+        }
+
+        // Propagate language to all child views
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child instanceof ru.voboost.components.radio.Radio) {
+                ((ru.voboost.components.radio.Radio) child).setLanguage(language);
+            }
+        }
+    }
+
     // ============================================================
     // MEASUREMENT
     // ============================================================
@@ -262,8 +300,7 @@ public class Section extends ViewGroup {
         // The measured width includes horizontal margins (so parent knows total space needed)
         setMeasuredDimension(
                 resolveSize(sectionWidth + 2 * SectionTheme.HORIZONTAL_MARGIN, widthMeasureSpec),
-                resolveSize(totalHeight, heightMeasureSpec)
-        );
+                resolveSize(totalHeight, heightMeasureSpec));
     }
 
     // ============================================================
@@ -347,23 +384,31 @@ public class Section extends ViewGroup {
         return -fm.ascent;
     }
 
-    private void drawTitleGradient(Canvas canvas, float sectionLeft, float sectionRight, float sectionTop, float radius) {
+    private void drawTitleGradient(
+            Canvas canvas, float sectionLeft, float sectionRight, float sectionTop, float radius) {
         // Horizontal gradient: darker on the left, fading to section background on the right
         int gradientStart = SectionTheme.getTitleGradientStart(currentTheme);
         int bgColor = SectionTheme.getBackground(currentTheme);
 
         float gradientBottom = sectionTop + titleBarHeight;
 
-        titleGradientPaint.setShader(new LinearGradient(
-                sectionLeft, 0,
-                sectionRight, 0,
-                gradientStart, bgColor,
-                Shader.TileMode.CLAMP));
+        titleGradientPaint.setShader(
+                new LinearGradient(
+                        sectionLeft,
+                        0,
+                        sectionRight,
+                        0,
+                        gradientStart,
+                        bgColor,
+                        Shader.TileMode.CLAMP));
 
         // Draw gradient only in the title area with top rounded corners
         Path titlePath = new Path();
-        float[] radii = new float[]{radius, radius, radius, radius, 0, 0, 0, 0};
-        titlePath.addRoundRect(new RectF(sectionLeft, sectionTop, sectionRight, gradientBottom), radii, Path.Direction.CW);
+        float[] radii = new float[] {radius, radius, radius, radius, 0, 0, 0, 0};
+        titlePath.addRoundRect(
+                new RectF(sectionLeft, sectionTop, sectionRight, gradientBottom),
+                radii,
+                Path.Direction.CW);
         canvas.drawPath(titlePath, titleGradientPaint);
     }
 
@@ -389,7 +434,8 @@ public class Section extends ViewGroup {
         android.os.Bundle bundle = new android.os.Bundle();
 
         bundle.putParcelable("superState", super.onSaveInstanceState());
-        bundle.putString("currentLanguage", currentLanguage != null ? currentLanguage.getCode() : null);
+        bundle.putString(
+                "currentLanguage", currentLanguage != null ? currentLanguage.getCode() : null);
         bundle.putString("currentTheme", currentTheme != null ? currentTheme.getValue() : null);
         bundle.putSerializable("title", (java.io.Serializable) title);
 
@@ -408,7 +454,8 @@ public class Section extends ViewGroup {
             currentTheme = themeValue != null ? Theme.fromValue(themeValue) : null;
 
             @SuppressWarnings("unchecked")
-            Map<String, String> titleFromBundle = (Map<String, String>) bundle.getSerializable("title");
+            Map<String, String> titleFromBundle =
+                    (Map<String, String>) bundle.getSerializable("title");
             title = titleFromBundle;
 
             super.onRestoreInstanceState(bundle.getParcelable("superState"));

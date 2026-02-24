@@ -12,29 +12,29 @@ import ru.voboost.components.theme.Theme
  * Now wraps a ViewGroup-based Section that supports addView().
  *
  * @param title Map of language code to localized title text
- * @param lang Language code for localization (e.g., "en", "ru")
- * @param theme Theme identifier (e.g., "free-light", "dreamer-dark")
+ * @param lang Language enum value for localization
+ * @param theme Theme enum value
  * @param content Lambda that receives the Section ViewGroup to add child views
  */
 @Composable
 fun Section(
     title: Map<String, String>,
-    lang: String,
-    theme: String,
+    lang: Language,
+    theme: Theme,
     content: ((ru.voboost.components.section.Section) -> Unit)? = null,
 ) {
     AndroidView(
         factory = { context ->
             ru.voboost.components.section.Section(context).apply {
-                setTheme(Theme.fromValue(theme))
-                setLanguage(Language.fromCode(lang))
+                setTheme(theme)
+                setLanguage(lang)
                 setTitle(title)
                 content?.invoke(this)
             }
         },
         update = { sectionView ->
-            sectionView.setTheme(Theme.fromValue(theme))
-            sectionView.setLanguage(Language.fromCode(lang))
+            sectionView.setTheme(theme)
+            sectionView.setLanguage(lang)
             sectionView.setTitle(title)
         },
     )

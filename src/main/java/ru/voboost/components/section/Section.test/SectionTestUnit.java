@@ -2,13 +2,13 @@ package ru.voboost.components.section;
 
 import static org.junit.Assert.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import ru.voboost.components.i18n.Language;
 import ru.voboost.components.theme.Theme;
@@ -132,8 +132,9 @@ public class SectionTestUnit {
     @Test
     public void testAddChildView() {
         // Create a simple View as child
-        android.view.View child = new android.view.View(
-                androidx.test.core.app.ApplicationProvider.getApplicationContext());
+        android.view.View child =
+                new android.view.View(
+                        androidx.test.core.app.ApplicationProvider.getApplicationContext());
         section.addView(child);
 
         assertEquals("Section should have 1 child", 1, section.getChildCount());
@@ -141,7 +142,8 @@ public class SectionTestUnit {
 
     @Test
     public void testAddMultipleChildViews() {
-        android.content.Context ctx = androidx.test.core.app.ApplicationProvider.getApplicationContext();
+        android.content.Context ctx =
+                androidx.test.core.app.ApplicationProvider.getApplicationContext();
         section.addView(new android.view.View(ctx));
         section.addView(new android.view.View(ctx));
 

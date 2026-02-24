@@ -2,6 +2,9 @@ package ru.voboost.components.section;
 
 import static com.github.takahirom.roborazzi.RoborazziKt.captureRoboImage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.app.Activity;
 import android.content.Context;
 import android.view.ViewGroup;
@@ -17,9 +20,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import ru.voboost.components.i18n.Language;
 import ru.voboost.components.theme.Theme;
@@ -177,7 +177,10 @@ public class SectionTestVisual {
     public void section_longTitleWrapping() {
         Map<String, String> title = new HashMap<>();
         title.put("en", "This is a very long section title that should wrap to multiple lines");
-        title.put("ru", "Это очень длинный заголовок раздела, который должен переноситься на несколько строк");
+        title.put(
+                "ru",
+                "Это очень длинный заголовок раздела, который должен переноситься на несколько"
+                        + " строк");
 
         Section section = createSection(Theme.FREE_LIGHT, Language.EN, title);
         captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
@@ -310,8 +313,12 @@ public class SectionTestVisual {
     /**
      * Creates a Section with a Radio child for visual testing.
      */
-    private Section createSectionWithRadio(Theme theme, Language language, Map<String, String> title,
-            java.util.List<ru.voboost.components.radio.RadioButton> radioButtons, String selectedValue) {
+    private Section createSectionWithRadio(
+            Theme theme,
+            Language language,
+            Map<String, String> title,
+            java.util.List<ru.voboost.components.radio.RadioButton> radioButtons,
+            String selectedValue) {
         Section section = new Section(context);
         section.setTheme(theme);
         section.setLanguage(language);
@@ -349,7 +356,9 @@ public class SectionTestVisual {
         if (measuredWidth <= 0 || measuredHeight <= 0) {
             throw new IllegalArgumentException(
                     "Section component has invalid measured dimensions: "
-                            + measuredWidth + "x" + measuredHeight);
+                            + measuredWidth
+                            + "x"
+                            + measuredHeight);
         }
 
         section.layout(0, 0, measuredWidth, measuredHeight);
@@ -364,7 +373,8 @@ public class SectionTestVisual {
      * Helper to create sample radio buttons for testing.
      */
     private java.util.List<ru.voboost.components.radio.RadioButton> createSampleRadioButtons() {
-        java.util.List<ru.voboost.components.radio.RadioButton> buttons = new java.util.ArrayList<>();
+        java.util.List<ru.voboost.components.radio.RadioButton> buttons =
+                new java.util.ArrayList<>();
 
         Map<String, String> label1 = new HashMap<>();
         label1.put("en", "English");
@@ -385,9 +395,9 @@ public class SectionTestVisual {
         title.put("en", "Language Selection");
         title.put("ru", "Выбор языка");
 
-        Section section = createSectionWithRadio(
-                Theme.FREE_LIGHT, Language.EN, title,
-                createSampleRadioButtons(), "en");
+        Section section =
+                createSectionWithRadio(
+                        Theme.FREE_LIGHT, Language.EN, title, createSampleRadioButtons(), "en");
         captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
     }
 
@@ -397,9 +407,9 @@ public class SectionTestVisual {
         title.put("en", "Language Selection");
         title.put("ru", "Выбор языка");
 
-        Section section = createSectionWithRadio(
-                Theme.FREE_DARK, Language.RU, title,
-                createSampleRadioButtons(), "ru");
+        Section section =
+                createSectionWithRadio(
+                        Theme.FREE_DARK, Language.RU, title, createSampleRadioButtons(), "ru");
         captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
     }
 
@@ -409,9 +419,9 @@ public class SectionTestVisual {
         title.put("en", "Theme");
         title.put("ru", "Тема");
 
-        Section section = createSectionWithRadio(
-                Theme.DREAMER_LIGHT, Language.EN, title,
-                createSampleRadioButtons(), "en");
+        Section section =
+                createSectionWithRadio(
+                        Theme.DREAMER_LIGHT, Language.EN, title, createSampleRadioButtons(), "en");
         captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
     }
 
@@ -421,9 +431,9 @@ public class SectionTestVisual {
         title.put("en", "Theme");
         title.put("ru", "Тема");
 
-        Section section = createSectionWithRadio(
-                Theme.DREAMER_DARK, Language.RU, title,
-                createSampleRadioButtons(), "ru");
+        Section section =
+                createSectionWithRadio(
+                        Theme.DREAMER_DARK, Language.RU, title, createSampleRadioButtons(), "ru");
         captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
     }
 }
