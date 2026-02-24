@@ -3,8 +3,11 @@ package ru.voboost.components.demo.java;
 import static com.github.takahirom.roborazzi.RoborazziKt.captureRoboImage;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.List;
+
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 
 import com.github.takahirom.roborazzi.RoborazziOptions;
 
@@ -15,12 +18,10 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.shadows.ShadowLooper;
 
 import ru.voboost.components.demo.shared.DemoContent;
-import ru.voboost.components.demo.shared.DemoState;
 import ru.voboost.components.tabs.TabItem;
-
-import java.util.List;
 
 /**
  * Visual regression tests for Java Demo Application using Roborazzi.
@@ -88,18 +89,21 @@ public class MainActivityTestVisual {
     // Helper methods to set state using demo state
     private void setLanguage(MainActivity activity, String language) {
         activity.getDemoState().setCurrentLanguage(language);
+        activity.getDemoState().setSelectedTab("language");
         activity.getTabs().setSelectedValue("language");
         activity.getCurrentRadio().setSelectedValue(language, true);
     }
 
     private void setTheme(MainActivity activity, String theme) {
         activity.getDemoState().setCurrentTheme(theme);
+        activity.getDemoState().setSelectedTab("theme");
         activity.getTabs().setSelectedValue("theme");
         activity.getCurrentRadio().setSelectedValue(theme, true);
     }
 
     private void setCarType(MainActivity activity, String carType) {
         activity.getDemoState().setCurrentCarType(carType);
+        activity.getDemoState().setSelectedTab("car_type");
         activity.getTabs().setSelectedValue("car_type");
         activity.getCurrentRadio().setSelectedValue(carType, true);
     }
@@ -139,20 +143,21 @@ public class MainActivityTestVisual {
     }
 
     /**
-     * Test 3: Dark theme - English, Dark, Free, Theme tab
+     * Test 3: Light theme - English, Light, Free, Theme tab
+     *
+     * Note: Default is dark, so this tests switching TO light.
      */
     @Test
-    public void demo_java_dark() {
+    public void demo_java_light() {
         ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class);
         MainActivity activity = controller.create().start().resume().get();
 
-        setTheme(activity, "dark");
-        setSelectedTab(activity, "theme");
-        captureScreenshot(activity, "demo_java_dark");
+        setTheme(activity, "light");
+        captureScreenshot(activity, "demo_java_light");
     }
 
     /**
-     * Test 4: Dreamer car type - English, Light, Dreamer, Car Type tab
+     * Test 4: Dreamer car type - English, Dark, Dreamer, Car Type tab
      */
     @Test
     public void demo_java_dreamer() {
@@ -160,12 +165,24 @@ public class MainActivityTestVisual {
         MainActivity activity = controller.create().start().resume().get();
 
         setCarType(activity, "dreamer");
-        setSelectedTab(activity, "car_type");
         captureScreenshot(activity, "demo_java_dreamer");
     }
 
     /**
-     * Test 5: Full combination - Russian, Dark, Dreamer, Language tab
+     * Test 5: Dreamer Light theme - English, Light, Dreamer, Theme tab
+     */
+    @Test
+    public void demo_java_dreamer_light() {
+        ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class);
+        MainActivity activity = controller.create().start().resume().get();
+
+        setCarType(activity, "dreamer");
+        setTheme(activity, "light");
+        captureScreenshot(activity, "demo_java_dreamer_light");
+    }
+
+    /**
+     * Test 6: Full combination - Russian, Dark, Dreamer, Language tab
      */
     @Test
     public void demo_java_full_combination() {
@@ -179,7 +196,7 @@ public class MainActivityTestVisual {
     }
 
     /**
-     * Test 6: Screen Lift Raised - English, Light, Free, Screen Raised
+     * Test 7: Screen Lift Raised - English, Dark, Free, Screen Raised
      */
     @Test
     public void demo_java_screen_lift_raised() {
@@ -191,7 +208,7 @@ public class MainActivityTestVisual {
     }
 
     /**
-     * Test 7: Screen Lift Lowered - English, Light, Free, Screen Lowered
+     * Test 8: Screen Lift Lowered - English, Dark, Free, Screen Lowered
      */
     @Test
     public void demo_java_screen_lift_lowered() {
@@ -265,6 +282,9 @@ public class MainActivityTestVisual {
 
     /**
      * Test 10: Climate tab with different values
+     *
+     * Note: The climate panel has a different structure (ScrollView → LinearLayout → multiple Sections)
+     * so we need to access the first Radio component directly from the climate panel's ScrollView.
      */
     @Test
     public void demo_java_climate_tab() {
@@ -273,18 +293,43 @@ public class MainActivityTestVisual {
 
         setSelectedTab(activity, "climate");
 
-        // Test different climate values
-        if (activity.getCurrentRadio() != null) {
-            activity.getCurrentRadio().setSelectedValue("manual", true);
-            captureScreenshot(activity, "demo_java_climate_manual");
+        // Get the climate panel's ScrollView
+        ScrollView climatePanelScrollView = activity.getClimatePanelScrollView();
+        assertNotNull("Climate panel ScrollView should exist", climatePanelScrollView);
 
-            activity.getCurrentRadio().setSelectedValue("eco", true);
-            captureScreenshot(activity, "demo_java_climate_eco");
+        // Get the LinearLayout inside the ScrollView
+        if (climatePanelScrollView.getChildCount() > 0) {
+            View scrollChild = climatePanelScrollView.getChildAt(0);
+            if (scrollChild instanceof android.widget.LinearLayout) {
+                android.widget.LinearLayout layout = (android.widget.LinearLayout) scrollChild;
+
+                // Get the first Section (which contains the first Radio)
+                if (layout.getChildCount() > 0) {
+                    View firstSection = layout.getChildAt(0);
+                    if (firstSection instanceof ru.voboost.components.section.Section) {
+                        ru.voboost.components.section.Section section =
+                                (ru.voboost.components.section.Section) firstSection;
+
+                        // Get the Radio component from the Section
+                        for (int i = 0; i < section.getChildCount(); i++) {
+                            View child = section.getChildAt(i);
+                            if (child instanceof ru.voboost.components.radio.Radio) {
+                                ru.voboost.components.radio.Radio radio =
+                                        (ru.voboost.components.radio.Radio) child;
+
+                                // Test different climate values
+                                radio.setSelectedValue("manual", true);
+                                captureScreenshot(activity, "demo_java_climate_manual");
+
+                                radio.setSelectedValue("eco", true);
+                                captureScreenshot(activity, "demo_java_climate_eco");
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
-
-        // Skip sport test for now as screenshot doesn't exist
-        // activity.getDemoState().setSelectedValueForTab("climate", "sport");
-        // captureScreenshot(activity, "demo_java_climate_sport");
     }
 
     /**
@@ -357,5 +402,112 @@ public class MainActivityTestVisual {
         // Skip custom test for now as screenshot doesn't exist
         // activity.getDemoState().setSelectedValueForTab("system", "custom");
         // captureScreenshot(activity, "demo_java_system_custom");
+    }
+
+    /**
+     * Test: Tabs scrolled to bottom - verifies tabs overflow and scroll correctly.
+     * With 7 tabs at 100px + 40px spacing + 30px padding = 970px total, the tabs overflow
+     * the ~670px available height. This test scrolls to the bottom to show
+     * the last tabs (Display, System) are visible.
+     *
+     * Note: Uses scrollTo() instead of fullScroll() because fullScroll() is async
+     * (posts to looper) and doesn't take effect before Roborazzi screenshot capture.
+     */
+    @Test
+    public void demo_java_tabs_scrolled_bottom() {
+        ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class);
+        MainActivity activity = controller.create().start().resume().get();
+
+        // Get the tabs ScrollView from Screen
+        ScrollView tabsScrollView = activity.getScreen().getTabsScrollView();
+        assertNotNull("Tabs ScrollView should exist", tabsScrollView);
+
+        // First measure and layout so scroll range is calculable
+        View rootView = ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+        rootView.measure(
+                View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY));
+        rootView.layout(0, 0, 1920, 720);
+
+        // Calculate scroll range and scroll synchronously
+        View scrollChild = tabsScrollView.getChildAt(0);
+        int scrollRange = scrollChild.getMeasuredHeight() - tabsScrollView.getMeasuredHeight();
+        if (scrollRange > 0) {
+            tabsScrollView.scrollTo(0, scrollRange);
+        }
+
+        // Flush the looper to process any pending layout/draw operations
+        ShadowLooper.idleMainLooper();
+
+        // Re-measure and re-layout after scroll
+        rootView.measure(
+                View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY));
+        rootView.layout(0, 0, 1920, 720);
+
+        captureScreenshot(activity, "demo_java_tabs_scrolled_bottom");
+    }
+
+    /**
+     * Test: Climate panel scrolled to bottom - verifies multiple Radio sections
+     * overflow and scroll correctly. With 5 sections at ~283px each = ~1415px total,
+     * the content overflows the ~670px panel. This test scrolls to the bottom
+     * to show the last sections (Air Distribution, Seat Heating) are visible.
+     *
+     * Note: Uses scrollTo() instead of fullScroll() because fullScroll() is async
+     * (posts to looper) and doesn't take effect before Roborazzi screenshot capture.
+     */
+    @Test
+    public void demo_java_climate_scrolled_bottom() {
+        ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class);
+        MainActivity activity = controller.create().start().resume().get();
+
+        // Switch to climate tab
+        setSelectedTab(activity, "climate");
+
+        // First measure and layout so scroll range is calculable
+        View rootView = ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+        rootView.measure(
+                View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY));
+        rootView.layout(0, 0, 1920, 720);
+
+        // Get the climate panel's ScrollView
+        ScrollView climatePanelScrollView = activity.getClimatePanelScrollView();
+        assertNotNull("Climate panel ScrollView should exist", climatePanelScrollView);
+
+        // Calculate scroll range and scroll synchronously
+        View scrollChild = climatePanelScrollView.getChildAt(0);
+        int scrollRange =
+                scrollChild.getMeasuredHeight() - climatePanelScrollView.getMeasuredHeight();
+        if (scrollRange > 0) {
+            climatePanelScrollView.scrollTo(0, scrollRange);
+        }
+
+        // Flush the looper to process any pending layout/draw operations
+        ShadowLooper.idleMainLooper();
+
+        // Re-measure and re-layout after scroll
+        rootView.measure(
+                View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY));
+        rootView.layout(0, 0, 1920, 720);
+
+        captureScreenshot(activity, "demo_java_climate_scrolled_bottom");
+    }
+
+    /**
+     * Test: Climate panel default view (top) - shows the first 2-3 sections
+     * before scrolling.
+     */
+    @Test
+    public void demo_java_climate_top() {
+        ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class);
+        MainActivity activity = controller.create().start().resume().get();
+
+        // Switch to climate tab
+        setSelectedTab(activity, "climate");
+
+        captureScreenshot(activity, "demo_java_climate_top");
     }
 }

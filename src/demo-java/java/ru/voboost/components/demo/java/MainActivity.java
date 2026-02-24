@@ -11,22 +11,22 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import androidx.annotation.Nullable;
 
-import ru.voboost.components.radio.Radio;
-import ru.voboost.components.radio.RadioButton;
-import ru.voboost.components.i18n.Language;
-import ru.voboost.components.theme.Theme;
-import ru.voboost.components.screen.Screen;
-import ru.voboost.components.panel.Panel;
-import ru.voboost.components.section.Section;
-import ru.voboost.components.tabs.Tabs;
-import ru.voboost.components.tabs.TabItem;
-
 import ru.voboost.components.demo.shared.DemoContent;
 import ru.voboost.components.demo.shared.DemoState;
-import ru.voboost.components.demo.shared.DemoHelpers;
+import ru.voboost.components.i18n.Language;
+import ru.voboost.components.panel.Panel;
+import ru.voboost.components.radio.Radio;
+import ru.voboost.components.radio.RadioButton;
+import ru.voboost.components.screen.Screen;
+import ru.voboost.components.section.Section;
+import ru.voboost.components.tabs.TabItem;
+import ru.voboost.components.tabs.Tabs;
+import ru.voboost.components.theme.Theme;
 
 /**
  * Demo Java Activity showcasing voboost-components proper component hierarchy in pure Java projects.
@@ -75,29 +75,43 @@ public class MainActivity extends Activity {
      * Sets up full-screen immersive mode to hide system navigation bar
      */
     private void setupFullScreenMode() {
-        // Hide system UI for automotive display
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Use modern WindowInsetsController for API 30+
-            WindowInsetsController controller = getWindow().getInsetsController();
-            if (controller != null) {
-                controller.hide(WindowInsets.Type.systemBars());
-                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-            }
-        } else {
-            // Use legacy method for older APIs
-            getWindow()
-                    .getDecorView()
-                    .setSystemUiVisibility(
+        try {
+            // Hide system UI for automotive display
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // Use modern WindowInsetsController for API 30+
+                // Note: In Robolectric test environment, getInsetsController() may throw NPE
+                // because DecorView is not fully initialized. We catch and ignore this.
+                WindowInsetsController controller = getWindow().getInsetsController();
+                if (controller != null) {
+                    controller.hide(WindowInsets.Type.systemBars());
+                    controller.setSystemBarsBehavior(
+                            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                }
+            } else {
+                // Use legacy method for older APIs
+                // Note: In Robolectric test environment, getDecorView() may return null
+                View decorView = getWindow().getDecorView();
+                if (decorView != null) {
+                    decorView.setSystemUiVisibility(
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                                     | View.SYSTEM_UI_FLAG_FULLSCREEN
                                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-        }
+                }
+            }
 
-        // Keep screen on for automotive use
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            // Keep screen on for automotive use
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } catch (NullPointerException e) {
+            // Ignore NPE in Robolectric test environment
+            // The DecorView is not fully initialized in unit tests
+            Log.d(
+                    TAG,
+                    "Ignoring NullPointerException in setupFullScreenMode (likely running in"
+                            + " Robolectric)");
+        }
     }
 
     /**
@@ -131,18 +145,20 @@ public class MainActivity extends Activity {
         tabs.setSelectedValue(demoState.getSelectedTab(), false);
 
         // Set screen lift listener for component interaction
-        screen.setOnScreenLiftListener(state -> {
-            Log.d(TAG, "Screen lift state changed to: " + state);
-            demoState.setScreenLiftState(state);
-            updateAllComponents();
-        });
+        screen.setOnScreenLiftListener(
+                state -> {
+                    Log.d(TAG, "Screen lift state changed to: " + state);
+                    demoState.setScreenLiftState(state);
+                    updateAllComponents();
+                });
 
         // Set tab selection listener
-        tabs.setOnValueChangeListener(selectedTab -> {
-            Log.d(TAG, "Tab changed to: " + selectedTab);
-            demoState.setSelectedTab(selectedTab);
-            updateAllComponents();
-        });
+        tabs.setOnValueChangeListener(
+                selectedTab -> {
+                    Log.d(TAG, "Tab changed to: " + selectedTab);
+                    demoState.setSelectedTab(selectedTab);
+                    updateAllComponents();
+                });
     }
 
     /**
@@ -164,6 +180,10 @@ public class MainActivity extends Activity {
      * Creates a panel for a specific tab
      */
     private Panel createPanelForTab(String tabValue) {
+        if ("climate".equals(tabValue)) {
+            return createClimatePanelWithMultipleRadios();
+        }
+
         // Create Panel
         Panel panel = new Panel(this);
 
@@ -176,21 +196,22 @@ public class MainActivity extends Activity {
         Radio radio = new Radio(this);
         radio.setButtons(radioButtons);
         radio.setSelectedValue(demoState.getSelectedValueForTab(tabValue));
-        radio.setOnValueChangeListener(newValue -> {
-            Log.d(TAG, "Tab " + tabValue + " value changed to: " + newValue);
-            demoState.setSelectedValueForTab(tabValue, newValue);
+        radio.setOnValueChangeListener(
+                newValue -> {
+                    Log.d(TAG, "Tab " + tabValue + " value changed to: " + newValue);
+                    demoState.setSelectedValueForTab(tabValue, newValue);
 
-            // Special handling for language, theme, and car type tabs
-            if ("language".equals(tabValue)) {
-                demoState.setCurrentLanguage(newValue);
-            } else if ("theme".equals(tabValue)) {
-                demoState.setCurrentTheme(newValue);
-            } else if ("car_type".equals(tabValue)) {
-                demoState.setCurrentCarType(newValue);
-            }
+                    // Special handling for language, theme, and car type tabs
+                    if ("language".equals(tabValue)) {
+                        demoState.setCurrentLanguage(newValue);
+                    } else if ("theme".equals(tabValue)) {
+                        demoState.setCurrentTheme(newValue);
+                    } else if ("car_type".equals(tabValue)) {
+                        demoState.setCurrentCarType(newValue);
+                    }
 
-            updateAllComponents();
-        });
+                    updateAllComponents();
+                });
 
         // Add Radio as child of Section (Section is now a ViewGroup)
         section.addView(radio);
@@ -202,14 +223,91 @@ public class MainActivity extends Activity {
     }
 
     /**
+     * Creates the climate panel with multiple sections and radio groups.
+     * Demonstrates multiple Radio components stacked vertically with scrolling.
+     * 5 sections × ~283px each = ~1415px total, overflowing the ~670px panel.
+     */
+    private Panel createClimatePanelWithMultipleRadios() {
+        Panel panel = new Panel(this);
+
+        // Create a ScrollView to hold multiple sections
+        ScrollView scrollView = new ScrollView(this);
+        scrollView.setVerticalScrollBarEnabled(false);
+        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+
+        // Create a LinearLayout inside ScrollView (ScrollView can only have one child)
+        LinearLayout contentLayout = new LinearLayout(this);
+        contentLayout.setOrientation(LinearLayout.VERTICAL);
+
+        int sectionCount = DemoContent.getClimateSectionCount();
+
+        for (int i = 0; i < sectionCount; i++) {
+            // Create Section with title
+            Section section = new Section(this);
+            section.setTitle(DemoContent.getClimateSectionTitle(i));
+
+            // Create Radio with options for this sub-section
+            List<RadioButton> radioButtons = DemoContent.getClimateSubRadioButtons(i);
+            Radio radio = new Radio(this);
+            radio.setButtons(radioButtons);
+            radio.setSelectedValue(DemoContent.getClimateSubDefaultValue(i));
+
+            final int sectionIndex = i;
+            radio.setOnValueChangeListener(
+                    newValue -> {
+                        Log.d(
+                                TAG,
+                                "Climate section "
+                                        + sectionIndex
+                                        + " value changed to: "
+                                        + newValue);
+                    });
+
+            // Add Radio as child of Section
+            section.addView(radio);
+
+            // Add Section to LinearLayout
+            contentLayout.addView(section);
+        }
+
+        scrollView.addView(contentLayout);
+        panel.addView(scrollView);
+
+        return panel;
+    }
+
+    /**
+     * Updates a single Section and its child Radio components.
+     */
+    private void updateSection(Section section, String combinedTheme) {
+        section.setLanguage(Language.fromCode(demoState.getCurrentLanguage()));
+        section.setTheme(Theme.fromValue(combinedTheme));
+
+        for (int j = 0; j < section.getChildCount(); j++) {
+            View sectionChild = section.getChildAt(j);
+            if (sectionChild instanceof Radio) {
+                Radio radio = (Radio) sectionChild;
+                radio.setLanguage(Language.fromCode(demoState.getCurrentLanguage()));
+                radio.setTheme(Theme.fromValue(combinedTheme));
+            }
+        }
+    }
+
+    /**
      * Updates all components with current state
      * Implements reactive behavior across all components in the hierarchy
      */
     private void updateAllComponents() {
         String combinedTheme = demoState.getCombinedTheme();
 
-        Log.d(TAG, "Updating all components - Language: " + demoState.getCurrentLanguage() +
-                ", Theme: " + combinedTheme + ", Selected Tab: " + demoState.getSelectedTab());
+        Log.d(
+                TAG,
+                "Updating all components - Language: "
+                        + demoState.getCurrentLanguage()
+                        + ", Theme: "
+                        + combinedTheme
+                        + ", Selected Tab: "
+                        + demoState.getSelectedTab());
 
         // Update background color based on theme
         updateBackgroundColor(combinedTheme);
@@ -232,21 +330,24 @@ public class MainActivity extends Activity {
                 if (panel != null) {
                     panel.setTheme(Theme.fromValue(combinedTheme));
 
-                    // Update child views in panel
+                    // Update child views in panel (handles both direct Section children
+                    // and ScrollView → LinearLayout → Section hierarchy)
                     for (int i = 0; i < panel.getChildCount(); i++) {
                         View child = panel.getChildAt(i);
                         if (child instanceof Section) {
-                            Section section = (Section) child;
-                            section.setLanguage(Language.fromCode(demoState.getCurrentLanguage()));
-                            section.setTheme(Theme.fromValue(combinedTheme));
-
-                            // Update Radio inside Section (Radio is now a child of Section)
-                            for (int j = 0; j < section.getChildCount(); j++) {
-                                View sectionChild = section.getChildAt(j);
-                                if (sectionChild instanceof Radio) {
-                                    Radio radio = (Radio) sectionChild;
-                                    radio.setLanguage(Language.fromCode(demoState.getCurrentLanguage()));
-                                    radio.setTheme(Theme.fromValue(combinedTheme));
+                            updateSection((Section) child, combinedTheme);
+                        } else if (child instanceof ScrollView) {
+                            ScrollView scrollView = (ScrollView) child;
+                            if (scrollView.getChildCount() > 0) {
+                                View scrollChild = scrollView.getChildAt(0);
+                                if (scrollChild instanceof LinearLayout) {
+                                    LinearLayout layout = (LinearLayout) scrollChild;
+                                    for (int j = 0; j < layout.getChildCount(); j++) {
+                                        View layoutChild = layout.getChildAt(j);
+                                        if (layoutChild instanceof Section) {
+                                            updateSection((Section) layoutChild, combinedTheme);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -260,9 +361,10 @@ public class MainActivity extends Activity {
      * Updates the background color of the activity based on current theme
      */
     private void updateBackgroundColor(String combinedTheme) {
-        int backgroundColor = combinedTheme.endsWith("-dark")
-                ? Color.parseColor("#000000") // Black background for dark themes
-                : Color.parseColor("#f1f5fb"); // Light background for light themes
+        int backgroundColor =
+                combinedTheme.endsWith("-dark")
+                        ? Color.parseColor("#000000") // Black background for dark themes
+                        : Color.parseColor("#f1f5fb"); // Light background for light themes
 
         // Apply background color to screen
         if (screen != null) {
@@ -278,9 +380,17 @@ public class MainActivity extends Activity {
     }
 
     // Getter methods for testing
-    public Tabs getTabs() { return tabs; }
-    public Screen getScreen() { return screen; }
-    public DemoState getDemoState() { return demoState; }
+    public Tabs getTabs() {
+        return tabs;
+    }
+
+    public Screen getScreen() {
+        return screen;
+    }
+
+    public DemoState getDemoState() {
+        return demoState;
+    }
 
     public Section getCurrentSection() {
         // Get the current panel based on selected tab
@@ -323,16 +433,43 @@ public class MainActivity extends Activity {
         return (panels != null && tabIndex < panels.length) ? panels[tabIndex] : null;
     }
 
+    /**
+     * Returns the ScrollView inside the climate panel (for testing scroll behavior).
+     *
+     * @return the ScrollView, or null if not found
+     */
+    public ScrollView getClimatePanelScrollView() {
+        Panel[] panels = getPanelsFromScreen();
+        if (panels == null || panels.length <= 3) return null;
+
+        Panel climatePanel = panels[3]; // climate is index 3
+        for (int i = 0; i < climatePanel.getChildCount(); i++) {
+            View child = climatePanel.getChildAt(i);
+            if (child instanceof ScrollView) {
+                return (ScrollView) child;
+            }
+        }
+        return null;
+    }
+
     private int getTabIndex(String tabValue) {
         switch (tabValue) {
-            case "language": return 0;
-            case "theme": return 1;
-            case "car_type": return 2;
-            case "climate": return 3;
-            case "audio": return 4;
-            case "display": return 5;
-            case "system": return 6;
-            default: return 0;
+            case "language":
+                return 0;
+            case "theme":
+                return 1;
+            case "car_type":
+                return 2;
+            case "climate":
+                return 3;
+            case "audio":
+                return 4;
+            case "display":
+                return 5;
+            case "system":
+                return 6;
+            default:
+                return 0;
         }
     }
 
@@ -354,4 +491,3 @@ public class MainActivity extends Activity {
         Log.d(TAG, "MainActivity destroyed");
     }
 }
-

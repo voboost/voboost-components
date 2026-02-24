@@ -1,7 +1,6 @@
 package ru.voboost.components.demo.shared;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +107,7 @@ public class DemoContent {
             case "language":
                 return "en";
             case "theme":
-                return "light";
+                return "dark";
             case "car_type":
                 return "free";
             case "climate":
@@ -391,6 +390,215 @@ public class DemoContent {
         defaultLabels.put("en", "Default");
         defaultLabels.put("ru", "По умолчанию");
         buttons.add(new RadioButton("default", defaultLabels));
+
+        return buttons;
+    }
+
+    // Climate sub-section methods for multi-section climate panel
+
+    /**
+     * Returns the number of climate sub-sections.
+     *
+     * @return the number of climate sub-sections
+     */
+    public static int getClimateSectionCount() {
+        return 5;
+    }
+
+    /**
+     * Returns the section title for a specific climate sub-section.
+     *
+     * @param sectionIndex the section index (0-4)
+     * @return Map of language code to title text
+     */
+    public static Map<String, String> getClimateSectionTitle(int sectionIndex) {
+        Map<String, String> title = new HashMap<>();
+        switch (sectionIndex) {
+            case 0:
+                title.put("en", "Temperature Mode");
+                title.put("ru", "Режим температуры");
+                break;
+            case 1:
+                title.put("en", "Energy Mode");
+                title.put("ru", "Режим энергии");
+                break;
+            case 2:
+                title.put("en", "Fan Speed");
+                title.put("ru", "Скорость вентилятора");
+                break;
+            case 3:
+                title.put("en", "Air Distribution");
+                title.put("ru", "Распределение воздуха");
+                break;
+            case 4:
+                title.put("en", "Seat Heating");
+                title.put("ru", "Подогрев сидений");
+                break;
+            default:
+                title.put("en", "Settings");
+                title.put("ru", "Настройки");
+                break;
+        }
+        return title;
+    }
+
+    /**
+     * Returns the radio buttons for a specific climate sub-section.
+     *
+     * @param sectionIndex the section index (0-4)
+     * @return List of RadioButton objects
+     */
+    public static List<RadioButton> getClimateSubRadioButtons(int sectionIndex) {
+        switch (sectionIndex) {
+            case 0:
+                return createClimateTemperatureRadioButtons();
+            case 1:
+                return createClimateEnergyRadioButtons();
+            case 2:
+                return createClimateFanSpeedRadioButtons();
+            case 3:
+                return createClimateAirDistributionRadioButtons();
+            case 4:
+                return createClimateSeatHeatingRadioButtons();
+            default:
+                return createDefaultRadioButtons();
+        }
+    }
+
+    /**
+     * Returns the default value for a specific climate sub-section.
+     *
+     * @param sectionIndex the section index (0-4)
+     * @return the default value
+     */
+    public static String getClimateSubDefaultValue(int sectionIndex) {
+        switch (sectionIndex) {
+            case 0:
+                return "auto";
+            case 1:
+                return "eco";
+            case 2:
+                return "auto_fan";
+            case 3:
+                return "face";
+            case 4:
+                return "off";
+            default:
+                return "";
+        }
+    }
+
+    private static List<RadioButton> createClimateTemperatureRadioButtons() {
+        List<RadioButton> buttons = new ArrayList<>();
+
+        Map<String, String> autoLabels = new HashMap<>();
+        autoLabels.put("en", "Automatic");
+        autoLabels.put("ru", "Автоматический");
+        buttons.add(new RadioButton("auto", autoLabels));
+
+        Map<String, String> manualLabels = new HashMap<>();
+        manualLabels.put("en", "Manual");
+        manualLabels.put("ru", "Ручной");
+        buttons.add(new RadioButton("manual", manualLabels));
+
+        return buttons;
+    }
+
+    private static List<RadioButton> createClimateEnergyRadioButtons() {
+        List<RadioButton> buttons = new ArrayList<>();
+
+        Map<String, String> ecoLabels = new HashMap<>();
+        ecoLabels.put("en", "Eco Mode");
+        ecoLabels.put("ru", "Эко режим");
+        buttons.add(new RadioButton("eco", ecoLabels));
+
+        Map<String, String> sportLabels = new HashMap<>();
+        sportLabels.put("en", "Sport Mode");
+        sportLabels.put("ru", "Спорт режим");
+        buttons.add(new RadioButton("sport", sportLabels));
+
+        Map<String, String> comfortLabels = new HashMap<>();
+        comfortLabels.put("en", "Comfort");
+        comfortLabels.put("ru", "Комфорт");
+        buttons.add(new RadioButton("comfort", comfortLabels));
+
+        return buttons;
+    }
+
+    private static List<RadioButton> createClimateFanSpeedRadioButtons() {
+        List<RadioButton> buttons = new ArrayList<>();
+
+        Map<String, String> lowLabels = new HashMap<>();
+        lowLabels.put("en", "Low");
+        lowLabels.put("ru", "Низкая");
+        buttons.add(new RadioButton("low", lowLabels));
+
+        Map<String, String> mediumLabels = new HashMap<>();
+        mediumLabels.put("en", "Medium");
+        mediumLabels.put("ru", "Средняя");
+        buttons.add(new RadioButton("medium", mediumLabels));
+
+        Map<String, String> highLabels = new HashMap<>();
+        highLabels.put("en", "High");
+        highLabels.put("ru", "Высокая");
+        buttons.add(new RadioButton("high", highLabels));
+
+        Map<String, String> autoFanLabels = new HashMap<>();
+        autoFanLabels.put("en", "Auto");
+        autoFanLabels.put("ru", "Авто");
+        buttons.add(new RadioButton("auto_fan", autoFanLabels));
+
+        return buttons;
+    }
+
+    private static List<RadioButton> createClimateAirDistributionRadioButtons() {
+        List<RadioButton> buttons = new ArrayList<>();
+
+        Map<String, String> faceLabels = new HashMap<>();
+        faceLabels.put("en", "Face");
+        faceLabels.put("ru", "Лицо");
+        buttons.add(new RadioButton("face", faceLabels));
+
+        Map<String, String> feetLabels = new HashMap<>();
+        feetLabels.put("en", "Feet");
+        feetLabels.put("ru", "Ноги");
+        buttons.add(new RadioButton("feet", feetLabels));
+
+        Map<String, String> windshieldLabels = new HashMap<>();
+        windshieldLabels.put("en", "Windshield");
+        windshieldLabels.put("ru", "Лобовое стекло");
+        buttons.add(new RadioButton("windshield", windshieldLabels));
+
+        Map<String, String> mixedLabels = new HashMap<>();
+        mixedLabels.put("en", "Mixed");
+        mixedLabels.put("ru", "Смешанный");
+        buttons.add(new RadioButton("mixed", mixedLabels));
+
+        return buttons;
+    }
+
+    private static List<RadioButton> createClimateSeatHeatingRadioButtons() {
+        List<RadioButton> buttons = new ArrayList<>();
+
+        Map<String, String> offLabels = new HashMap<>();
+        offLabels.put("en", "Off");
+        offLabels.put("ru", "Выключено");
+        buttons.add(new RadioButton("off", offLabels));
+
+        Map<String, String> lowLabels = new HashMap<>();
+        lowLabels.put("en", "Low");
+        lowLabels.put("ru", "Низкий");
+        buttons.add(new RadioButton("low_heat", lowLabels));
+
+        Map<String, String> mediumLabels = new HashMap<>();
+        mediumLabels.put("en", "Medium");
+        mediumLabels.put("ru", "Средний");
+        buttons.add(new RadioButton("medium_heat", mediumLabels));
+
+        Map<String, String> highLabels = new HashMap<>();
+        highLabels.put("en", "High");
+        highLabels.put("ru", "Высокий");
+        buttons.add(new RadioButton("high_heat", highLabels));
 
         return buttons;
     }

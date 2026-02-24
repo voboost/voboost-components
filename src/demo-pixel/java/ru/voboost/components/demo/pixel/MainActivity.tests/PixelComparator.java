@@ -1,11 +1,11 @@
 package ru.voboost.components.demo.pixel;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import android.graphics.Bitmap;
+import android.graphics.Color;
 
 /**
  * Pixel-by-pixel image comparison utility.
@@ -24,18 +24,25 @@ public class PixelComparator {
     public static class ComparisonResult {
         /** Total pixels compared */
         public final int totalPixels;
+
         /** Number of matching pixels */
         public final int matchingPixels;
+
         /** Number of different pixels */
         public final int differentPixels;
+
         /** Match percentage (0.0 to 100.0) */
         public final double matchPercentage;
+
         /** Diff bitmap */
         public final Bitmap diffBitmap;
 
-        public ComparisonResult(int totalPixels, int matchingPixels,
-                                int differentPixels, double matchPercentage,
-                                Bitmap diffBitmap) {
+        public ComparisonResult(
+                int totalPixels,
+                int matchingPixels,
+                int differentPixels,
+                double matchPercentage,
+                Bitmap diffBitmap) {
             this.totalPixels = totalPixels;
             this.matchingPixels = matchingPixels;
             this.differentPixels = differentPixels;
@@ -46,8 +53,8 @@ public class PixelComparator {
         @Override
         public String toString() {
             return String.format(
-                "PixelComparison: %.2f%% match (%d/%d pixels, %d different)",
-                matchPercentage, matchingPixels, totalPixels, differentPixels);
+                    "PixelComparison: %.2f%% match (%d/%d pixels, %d different)",
+                    matchPercentage, matchingPixels, totalPixels, differentPixels);
         }
     }
 
@@ -64,8 +71,12 @@ public class PixelComparator {
      * @return ComparisonResult with statistics and diff image
      */
     public static ComparisonResult compare(
-            Bitmap actual, Bitmap expected,
-            int startX, int startY, int endX, int endY,
+            Bitmap actual,
+            Bitmap expected,
+            int startX,
+            int startY,
+            int endX,
+            int endY,
             int tolerance) {
 
         int width = actual.getWidth();
@@ -107,12 +118,10 @@ public class PixelComparator {
             }
         }
 
-        double matchPercentage = totalPixels > 0
-            ? (matchingPixels * 100.0 / totalPixels) : 0.0;
+        double matchPercentage = totalPixels > 0 ? (matchingPixels * 100.0 / totalPixels) : 0.0;
 
         return new ComparisonResult(
-            totalPixels, matchingPixels, differentPixels,
-            matchPercentage, diff);
+                totalPixels, matchingPixels, differentPixels, matchPercentage, diff);
     }
 
     /**
@@ -143,8 +152,7 @@ public class PixelComparator {
         int db = Math.abs(Color.blue(pixel1) - Color.blue(pixel2));
         int da = Math.abs(Color.alpha(pixel1) - Color.alpha(pixel2));
 
-        return dr <= tolerance && dg <= tolerance
-            && db <= tolerance && da <= tolerance;
+        return dr <= tolerance && dg <= tolerance && db <= tolerance && da <= tolerance;
     }
 
     private static int dimPixel(int pixel, float factor) {

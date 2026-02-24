@@ -159,6 +159,10 @@ class MainActivity : Activity() {
      * Creates a panel for a specific tab
      */
     private fun createPanelForTab(tabValue: String): Panel {
+        if (tabValue == "climate") {
+            return createClimatePanelWithMultipleRadios()
+        }
+
         // Create Panel
         val panel = Panel(this)
 
@@ -197,6 +201,64 @@ class MainActivity : Activity() {
     }
 
     /**
+     * Creates the climate panel with multiple sections and radio groups.
+     * 5 sections × ~283px each = ~1415px total, overflowing the ~670px panel.
+     */
+    private fun createClimatePanelWithMultipleRadios(): Panel {
+        val panel = Panel(this)
+
+        val scrollView = android.widget.ScrollView(this).apply {
+            isVerticalScrollBarEnabled = false
+            overScrollMode = View.OVER_SCROLL_NEVER
+        }
+
+        val contentLayout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+        }
+
+        val sectionCount = DemoContent.getClimateSectionCount()
+
+        for (i in 0 until sectionCount) {
+            val section = Section(this).apply {
+                setTitle(DemoContent.getClimateSectionTitle(i))
+            }
+
+            val radioButtons = DemoContent.getClimateSubRadioButtons(i)
+            val radio = RadioView(this).apply {
+                setButtons(radioButtons)
+                setSelectedValue(DemoContent.getClimateSubDefaultValue(i))
+                setOnValueChangeListener { newValue ->
+                    Log.d(TAG, "Climate section $i value changed to: $newValue")
+                }
+            }
+
+            section.addView(radio)
+            contentLayout.addView(section)
+        }
+
+        scrollView.addView(contentLayout)
+        panel.addView(scrollView)
+
+        return panel
+    }
+
+    /**
+     * Updates a single Section and its child Radio components.
+     */
+    private fun updateSection(section: Section, combinedTheme: String) {
+        section.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
+        section.setTheme(Theme.fromValue(combinedTheme))
+
+        for (j in 0 until section.childCount) {
+            val sectionChild = section.getChildAt(j)
+            if (sectionChild is RadioView) {
+                sectionChild.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
+                sectionChild.setTheme(Theme.fromValue(combinedTheme))
+            }
+        }
+    }
+
+    /**
      * Updates all components with current state using Kotlin when expressions and safe calls
      * Implements reactive behavior across all components in the hierarchy
      */
@@ -224,20 +286,22 @@ class MainActivity : Activity() {
             panels?.forEach { panel ->
                 panel.setTheme(Theme.fromValue(combinedTheme))
 
-                // Update child views in panel
+                // Update child views in panel (handles both direct Section children
+                // and ScrollView → LinearLayout → Section hierarchy)
                 for (i in 0 until panel.childCount) {
                     val child = panel.getChildAt(i)
                     when (child) {
-                        is Section -> {
-                            child.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
-                            child.setTheme(Theme.fromValue(combinedTheme))
-
-                            // Update Radio inside Section (Radio is now a child of Section)
-                            for (j in 0 until child.childCount) {
-                                val sectionChild = child.getChildAt(j)
-                                if (sectionChild is RadioView) {
-                                    sectionChild.setLanguage(Language.fromCode(demoState.getCurrentLanguage()))
-                                    sectionChild.setTheme(Theme.fromValue(combinedTheme))
+                        is Section -> updateSection(child, combinedTheme)
+                        is android.widget.ScrollView -> {
+                            if (child.childCount > 0) {
+                                val scrollChild = child.getChildAt(0)
+                                if (scrollChild is android.widget.LinearLayout) {
+                                    for (j in 0 until scrollChild.childCount) {
+                                        val layoutChild = scrollChild.getChildAt(j)
+                                        if (layoutChild is Section) {
+                                            updateSection(layoutChild, combinedTheme)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -324,6 +388,25 @@ class MainActivity : Activity() {
         }
 
         return if (tabIndex < panels.size) panels[tabIndex] else null
+    }
+
+    /**
+     * Returns the ScrollView inside the climate panel (for testing scroll behavior).
+     *
+     * @return the ScrollView, or null if not found
+     */
+    internal fun getClimatePanelScrollView(): android.widget.ScrollView? {
+        val panels = screen.getPanels()
+        if (panels == null || panels.size <= 3) return null
+
+        val climatePanel = panels[3] // climate is index 3
+        for (i in 0 until climatePanel.childCount) {
+            val child = climatePanel.getChildAt(i)
+            if (child is android.widget.ScrollView) {
+                return child
+            }
+        }
+        return null
     }
 
     /**

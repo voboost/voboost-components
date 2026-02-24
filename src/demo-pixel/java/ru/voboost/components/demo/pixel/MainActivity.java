@@ -1,5 +1,7 @@
 package ru.voboost.components.demo.pixel;
 
+import java.util.List;
+
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -9,15 +11,13 @@ import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
 
-import java.util.List;
-
-import ru.voboost.components.radio.Radio;
 import ru.voboost.components.i18n.Language;
-import ru.voboost.components.theme.Theme;
-import ru.voboost.components.screen.Screen;
 import ru.voboost.components.panel.Panel;
+import ru.voboost.components.radio.Radio;
+import ru.voboost.components.screen.Screen;
 import ru.voboost.components.section.Section;
 import ru.voboost.components.tabs.Tabs;
+import ru.voboost.components.theme.Theme;
 
 /**
  * Pixel demo that replicates the reference screenshot (interface-2-display.png).
@@ -60,13 +60,15 @@ public class MainActivity extends Activity {
      * Sets up full-screen immersive mode for automotive display.
      */
     private void setupFullScreenMode() {
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        getWindow()
+                .getDecorView()
+                .setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -96,9 +98,10 @@ public class MainActivity extends Activity {
         tabs.setSelectedValue(PixelContent.getSelectedTab(), false);
 
         // 5. Tab change listener
-        tabs.setOnValueChangeListener(selectedTab -> {
-            Log.d(TAG, "Tab changed to: " + selectedTab);
-        });
+        tabs.setOnValueChangeListener(
+                selectedTab -> {
+                    Log.d(TAG, "Tab changed to: " + selectedTab);
+                });
     }
 
     /**
@@ -138,7 +141,8 @@ public class MainActivity extends Activity {
             section.setLanguage(LANGUAGE);
 
             Radio radio = new Radio(this);
-            List<ru.voboost.components.radio.RadioButton> buttons = PixelContent.getLanguageRadioButtons();
+            List<ru.voboost.components.radio.RadioButton> buttons =
+                    PixelContent.getLanguageRadioButtons();
 
             radio.setButtons(buttons);
             radio.setSelectedValue(PixelContent.getSelectedLanguage());
@@ -184,8 +188,12 @@ public class MainActivity extends Activity {
     // ================================================================
 
     /** Returns the Screen component (for test access). */
-    public Screen getScreen() { return screen; }
+    public Screen getScreen() {
+        return screen;
+    }
 
     /** Returns the Tabs component (for test access). */
-    public Tabs getTabs() { return tabs; }
+    public Tabs getTabs() {
+        return tabs;
+    }
 }

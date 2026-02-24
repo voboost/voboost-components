@@ -16,11 +16,20 @@ This demo showcases:
 
 - **7-Tab Structure**: Unified navigation across all demo applications
 - **Proper Component Hierarchy**: Screen → Panel → Tabs → Section → Radio
-- **Compose-First Design**: Uses Compose wrapper components with AndroidView integration
+- **Compose-First Design**: Uses `setContent {}` with Composable functions
 - **Automotive-Optimized**: Designed for 1920x720 automotive displays with Compose layouts
 - **Reactive State**: Leverages Compose state management (`remember`, `mutableStateOf`)
 - **Declarative Patterns**: Functional UI composition with automatic recomposition
 - **Shared Demo Module**: Uses demo-shared module for consistent functionality
+
+## Key Difference from Other Demos
+
+Unlike `demo-java` and `demo-kotlin` which use traditional Android Views with `setContentView()`, this demo uses:
+
+1. **`setContent {}`** - Compose way to set UI content
+2. **`@Composable` functions** - Declarative UI components
+3. **Compose State** - `remember` and `mutableStateOf` for reactive updates
+4. **AndroidView** - Integration layer for Java Custom Views
 
 ## Building and Running
 
@@ -133,7 +142,6 @@ import ru.voboost.components.radio.Radio
 import ru.voboost.components.radio.RadioButton
 import ru.voboost.components.i18n.Language
 import ru.voboost.components.theme.Theme
-import java.util.HashMap
 
 @Composable
 fun RadioExample() {
@@ -175,47 +183,87 @@ class MainActivity : ComponentActivity() {
 }
 ```
 
-### Essential Methods
+### Full Application Pattern
 
-The Radio component provides these essential methods for configuration:
+The demo shows a complete Compose application structure:
 
 ```kotlin
-// Set language using Language enum
-radioView.setLanguage(Language.RU)
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-// Set theme using Theme enum
-radioView.setTheme(Theme.DREAMER_DARK)
+        // Use Compose setContent instead of setContentView
+        setContent {
+            VoboostDemoApp()
+        }
+    }
+}
 
-// Set radio buttons with localization
-val buttons = listOf(
-    RadioButton("yes", mapOf("en" to "Yes", "ru" to "Да")),
-    RadioButton("no", mapOf("en" to "No", "ru" to "Нет"))
-)
-radioView.setButtons(buttons)
+@Composable
+fun VoboostDemoApp() {
+    // Compose state management
+    var selectedTab by remember { mutableStateOf("language") }
+    var currentLanguage by remember { mutableStateOf("en") }
+    var currentTheme by remember { mutableStateOf("light") }
+    var currentCarType by remember { mutableStateOf("free") }
 
-// Set selected value
-radioView.setSelectedValue("yes")
+    // Derived state
+    val combinedTheme = remember(currentCarType, currentTheme) {
+        "$currentCarType-$currentTheme"
+    }
 
-// Listen for value changes
-radioView.setOnValueChangeListener { newValue ->
-    // Handle selection change
+    // UI with AndroidView integration
+    Box(modifier = Modifier.fillMaxSize()) {
+        ScreenWrapper(
+            selectedTab = selectedTab,
+            combinedTheme = combinedTheme,
+            currentLanguage = currentLanguage,
+            onTabSelected = { selectedTab = it },
+            onValueChange = { tab, value ->
+                when (tab) {
+                    "language" -> currentLanguage = value
+                    "theme" -> currentTheme = value
+                    "car_type" -> currentCarType = value
+                }
+            }
+        )
+    }
 }
 ```
 
-### Initialization Sequence
+### AndroidView Integration Pattern
 
-For proper initialization, follow this sequence:
-
-1. **Set Language First**: Always call `setLanguage()` before setting buttons
-2. **Set Theme Second**: Call `setTheme()` to apply visual styling
-3. **Set Buttons Last**: Call `setButtons()` with properly configured RadioButton objects
+For integrating Java Custom Views in Compose:
 
 ```kotlin
-// Correct initialization sequence
-val radioView = Radio(context)
-radioView.setLanguage(Language.fromCode("ru"))  // Step 1
-radioView.setTheme(Theme.fromValue("free-dark")) // Step 2
-radioView.setButtons(buttons)                    // Step 3
+@Composable
+fun ScreenWrapper(
+    selectedTab: String,
+    combinedTheme: String,
+    currentLanguage: String,
+    onTabSelected: (String) -> Unit,
+    onValueChange: (String, String) -> Unit
+) {
+    AndroidView(
+        factory = { context ->
+            // Create Java Custom View
+            val screen = Screen(context)
+            val tabs = Tabs(context).apply {
+                setOnValueChangeListener { onTabSelected(it) }
+            }
+            screen.setTabs(tabs)
+            screen
+        },
+        update = { screenView ->
+            // Update when parameters change
+            screenView.setTheme(Theme.fromValue(combinedTheme))
+            screenView.getTabs()?.apply {
+                setLanguage(Language.fromCode(currentLanguage))
+                setSelectedValue(selectedTab, false)
+            }
+        }
+    )
+}
 ```
 
 ## Performance Characteristics

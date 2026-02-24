@@ -11,6 +11,7 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import org.robolectric.shadows.ShadowLooper
 import ru.voboost.components.demo.shared.DemoContent
 import ru.voboost.components.demo.shared.DemoState
 import ru.voboost.components.tabs.TabItem
@@ -96,18 +97,21 @@ class MainActivityTestVisual {
      */
     private fun setLanguage(activity: MainActivity, language: String) {
         activity.getDemoState().setCurrentLanguage(language)
+        activity.getDemoState().setSelectedTab("language")
         activity.getTabs().setSelectedValue("language")
         activity.getCurrentRadio()?.setSelectedValue(language, true)
     }
 
     private fun setTheme(activity: MainActivity, theme: String) {
         activity.getDemoState().setCurrentTheme(theme)
+        activity.getDemoState().setSelectedTab("theme")
         activity.getTabs().setSelectedValue("theme")
         activity.getCurrentRadio()?.setSelectedValue(theme, true)
     }
 
     private fun setCarType(activity: MainActivity, carType: String) {
         activity.getDemoState().setCurrentCarType(carType)
+        activity.getDemoState().setSelectedTab("car_type")
         activity.getTabs().setSelectedValue("car_type")
         activity.getCurrentRadio()?.setSelectedValue(carType, true)
     }
@@ -152,22 +156,21 @@ class MainActivityTestVisual {
     }
 
     /**
-     * Test 3: Dark theme - English, Dark, Free, Theme tab
+     * Test 3: Light theme - English, Light, Free, Theme tab
      *
-     * Change theme to Dark using the theme radio.
+     * Note: Default is dark, so this tests switching TO light.
      */
     @Test
-    fun demo_kotlin_dark() {
+    fun demo_kotlin_light() {
         val controller = Robolectric.buildActivity(MainActivity::class.java)
         val activity = controller.create().start().resume().get()
 
-        setTheme(activity, "dark")
-        setSelectedTab(activity, "theme")
-        captureScreenshot(activity, "demo_kotlin_dark")
+        setTheme(activity, "light")
+        captureScreenshot(activity, "demo_kotlin_light")
     }
 
     /**
-     * Test 4: Dreamer car type - English, Light, Dreamer, Car Type tab
+     * Test 4: Dreamer car type - English, Dark, Dreamer, Car Type tab
      *
      * Change car type to Dreamer using the car type radio.
      */
@@ -177,12 +180,24 @@ class MainActivityTestVisual {
         val activity = controller.create().start().resume().get()
 
         setCarType(activity, "dreamer")
-        setSelectedTab(activity, "car_type")
         captureScreenshot(activity, "demo_kotlin_dreamer")
     }
 
     /**
-     * Test 5: Full combination - Russian, Dark, Dreamer, Language tab
+     * Test 5: Dreamer Light theme - English, Light, Dreamer, Theme tab
+     */
+    @Test
+    fun demo_kotlin_dreamer_light() {
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+        val activity = controller.create().start().resume().get()
+
+        setCarType(activity, "dreamer")
+        setTheme(activity, "light")
+        captureScreenshot(activity, "demo_kotlin_dreamer_light")
+    }
+
+    /**
+     * Test 6: Full combination - Russian, Dark, Dreamer, Language tab
      *
      * Apply all three changes: Russian language, Dark theme, Dreamer car type.
      */
@@ -370,6 +385,109 @@ class MainActivityTestVisual {
         // Skip custom test for now as screenshot doesn't exist
         // activity.getCurrentRadio()?.setSelectedValue("custom", true)
         // captureScreenshot(activity, "demo_kotlin_system_custom")
+    }
+
+    /**
+     * Test: Tabs scrolled to bottom - verifies tabs overflow and scroll correctly.
+     *
+     * Note: Uses scrollTo() instead of fullScroll() because fullScroll() is async
+     * (posts to looper) and doesn't take effect before Roborazzi screenshot capture.
+     */
+    @Test
+    fun demo_kotlin_tabs_scrolled_bottom() {
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+        val activity = controller.create().start().resume().get()
+
+        // Get the tabs ScrollView from Screen
+        val tabsScrollView = activity.getScreen().getTabsScrollView()
+        assertNotNull("Tabs ScrollView should exist", tabsScrollView)
+
+        // First measure and layout so scroll range is calculable
+        val contentView = activity.findViewById<ViewGroup>(android.R.id.content)
+        val rootView = contentView.getChildAt(0)
+        rootView.measure(
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY)
+        )
+        rootView.layout(0, 0, 1920, 720)
+
+        // Calculate scroll range and scroll synchronously
+        val scrollChild = tabsScrollView!!.getChildAt(0)
+        val scrollRange = scrollChild.measuredHeight - tabsScrollView.measuredHeight
+        if (scrollRange > 0) {
+            tabsScrollView.scrollTo(0, scrollRange)
+        }
+
+        // Flush the looper to process any pending layout/draw operations
+        ShadowLooper.idleMainLooper()
+
+        // Re-measure and re-layout after scroll
+        rootView.measure(
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY)
+        )
+        rootView.layout(0, 0, 1920, 720)
+
+        captureScreenshot(activity, "demo_kotlin_tabs_scrolled_bottom")
+    }
+
+    /**
+     * Test: Climate panel scrolled to bottom - verifies multiple Radio sections
+     * overflow and scroll correctly.
+     *
+     * Note: Uses scrollTo() instead of fullScroll() because fullScroll() is async
+     * (posts to looper) and doesn't take effect before Roborazzi screenshot capture.
+     */
+    @Test
+    fun demo_kotlin_climate_scrolled_bottom() {
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+        val activity = controller.create().start().resume().get()
+
+        setSelectedTab(activity, "climate")
+
+        // First measure and layout so scroll range is calculable
+        val contentView = activity.findViewById<ViewGroup>(android.R.id.content)
+        val rootView = contentView.getChildAt(0)
+        rootView.measure(
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY)
+        )
+        rootView.layout(0, 0, 1920, 720)
+
+        val climatePanelScrollView = activity.getClimatePanelScrollView()
+        assertNotNull("Climate panel ScrollView should exist", climatePanelScrollView)
+
+        // Calculate scroll range and scroll synchronously
+        val scrollChild = climatePanelScrollView!!.getChildAt(0)
+        val scrollRange = scrollChild.measuredHeight - climatePanelScrollView.measuredHeight
+        if (scrollRange > 0) {
+            climatePanelScrollView.scrollTo(0, scrollRange)
+        }
+
+        // Flush the looper to process any pending layout/draw operations
+        ShadowLooper.idleMainLooper()
+
+        // Re-measure and re-layout after scroll
+        rootView.measure(
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY)
+        )
+        rootView.layout(0, 0, 1920, 720)
+
+        captureScreenshot(activity, "demo_kotlin_climate_scrolled_bottom")
+    }
+
+    /**
+     * Test: Climate panel default view (top)
+     */
+    @Test
+    fun demo_kotlin_climate_top() {
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+        val activity = controller.create().start().resume().get()
+
+        setSelectedTab(activity, "climate")
+
+        captureScreenshot(activity, "demo_kotlin_climate_top")
     }
 }
 

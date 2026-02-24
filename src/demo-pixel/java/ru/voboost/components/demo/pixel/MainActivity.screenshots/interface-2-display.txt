@@ -1,0 +1,17 @@
+Pixel Comparison Report
+=======================
+
+PixelComparison: 99.08% match (1178359/1189250 pixels, 10891 different)
+
+Compare area: x=[145..1920], y=[50..720]
+Tolerance: 5 per channel
+
+Files:
+  interface-2-display_1original.png  - original reference
+  interface-2-display_2actual.png    - our rendering
+  interface-2-display_3diff.png      - diff (magenta = different)
+
+How to read the diff:
+  Magenta pixels = our rendering differs from reference
+  Dimmed pixels  = our rendering matches the reference
+  Dark area      = system UI zone, excluded from comparison

@@ -18,7 +18,7 @@ public class DemoState {
 
     // Default values
     private static final String DEFAULT_LANGUAGE = "en";
-    private static final String DEFAULT_THEME = "light";
+    private static final String DEFAULT_THEME = "dark";
     private static final String DEFAULT_CAR_TYPE = "free";
     private static final String DEFAULT_SELECTED_TAB = "language";
     private static final int DEFAULT_SCREEN_LIFT_STATE = 2; // SCREEN_RAISED
@@ -178,7 +178,10 @@ public class DemoState {
      * @param value the value to set
      */
     public void setSelectedValueForTab(String tabValue, String value) {
-        if (tabValue != null && value != null && !tabValue.trim().isEmpty() && !value.trim().isEmpty()) {
+        if (tabValue != null
+                && value != null
+                && !tabValue.trim().isEmpty()
+                && !value.trim().isEmpty()) {
             tabValues.put(tabValue, value);
         }
     }
@@ -211,14 +214,26 @@ public class DemoState {
      */
     @Override
     public String toString() {
-        return "DemoState{" +
-                "selectedTab='" + selectedTab + '\'' +
-                ", currentLanguage='" + currentLanguage + '\'' +
-                ", currentTheme='" + currentTheme + '\'' +
-                ", currentCarType='" + currentCarType + '\'' +
-                ", screenLiftState=" + screenLiftState +
-                ", tabValues=" + tabValues +
-                ", combinedTheme='" + getCombinedTheme() + '\'' +
-                '}';
+        return "DemoState{"
+                + "selectedTab='"
+                + selectedTab
+                + '\''
+                + ", currentLanguage='"
+                + currentLanguage
+                + '\''
+                + ", currentTheme='"
+                + currentTheme
+                + '\''
+                + ", currentCarType='"
+                + currentCarType
+                + '\''
+                + ", screenLiftState="
+                + screenLiftState
+                + ", tabValues="
+                + tabValues
+                + ", combinedTheme='"
+                + getCombinedTheme()
+                + '\''
+                + '}';
     }
 }

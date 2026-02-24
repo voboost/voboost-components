@@ -37,6 +37,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -51,6 +52,11 @@ android {
 
     buildFeatures {
         buildConfig = true
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     packaging {
@@ -98,14 +104,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
     }
 }
 
-// Exclude Compose debug dependencies from root project
-configurations {
-    debugImplementation {
-        exclude(group = "androidx.compose.ui", module = "ui-tooling")
-        exclude(group = "androidx.compose.ui", module = "ui-test-manifest")
-    }
-}
-
 dependencies {
     // Main voboost-components library
     implementation(project(":"))
@@ -116,21 +114,25 @@ dependencies {
     // Android Core
     implementation("androidx.core:core-ktx:1.12.0")
 
-    // These are required for Kotlin Compose wrappers
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
-    implementation("androidx.activity:activity-ktx:1.8.2")
-    implementation("androidx.fragment:fragment-ktx:1.6.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    // Jetpack Compose BOM
+    implementation(platform("androidx.compose:compose-bom:2024.10.01"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
     // Testing dependencies
     testImplementation("junit:junit:4.13.2")
     testImplementation("io.github.takahirom.roborazzi:roborazzi:1.48.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.48.0")
     testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:1.48.0")
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation(platform("androidx.compose:compose-bom:2024.10.01"))
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("androidx.compose.ui:ui-test-manifest")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

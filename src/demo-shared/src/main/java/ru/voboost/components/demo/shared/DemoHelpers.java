@@ -133,19 +133,29 @@ public class DemoHelpers {
 
         if ("ru".equals(currentLanguage)) {
             switch (climateValue) {
-                case "auto": return "Автоматический";
-                case "manual": return "Ручной";
-                case "eco": return "Эко режим";
-                case "sport": return "Спорт режим";
-                default: return climateValue;
+                case "auto":
+                    return "Автоматический";
+                case "manual":
+                    return "Ручной";
+                case "eco":
+                    return "Эко режим";
+                case "sport":
+                    return "Спорт режим";
+                default:
+                    return climateValue;
             }
         } else {
             switch (climateValue) {
-                case "auto": return "Automatic";
-                case "manual": return "Manual";
-                case "eco": return "Eco Mode";
-                case "sport": return "Sport Mode";
-                default: return climateValue;
+                case "auto":
+                    return "Automatic";
+                case "manual":
+                    return "Manual";
+                case "eco":
+                    return "Eco Mode";
+                case "sport":
+                    return "Sport Mode";
+                default:
+                    return climateValue;
             }
         }
     }
@@ -164,19 +174,29 @@ public class DemoHelpers {
 
         if ("ru".equals(currentLanguage)) {
             switch (audioValue) {
-                case "standard": return "Стандартный";
-                case "premium": return "Премиум";
-                case "surround": return "Объёмный звук";
-                case "off": return "Выключено";
-                default: return audioValue;
+                case "standard":
+                    return "Стандартный";
+                case "premium":
+                    return "Премиум";
+                case "surround":
+                    return "Объёмный звук";
+                case "off":
+                    return "Выключено";
+                default:
+                    return audioValue;
             }
         } else {
             switch (audioValue) {
-                case "standard": return "Standard";
-                case "premium": return "Premium";
-                case "surround": return "Surround";
-                case "off": return "Off";
-                default: return audioValue;
+                case "standard":
+                    return "Standard";
+                case "premium":
+                    return "Premium";
+                case "surround":
+                    return "Surround";
+                case "off":
+                    return "Off";
+                default:
+                    return audioValue;
             }
         }
     }
@@ -195,19 +215,29 @@ public class DemoHelpers {
 
         if ("ru".equals(currentLanguage)) {
             switch (displayValue) {
-                case "auto": return "Автоматический";
-                case "day": return "Дневной режим";
-                case "night": return "Ночной режим";
-                case "adaptive": return "Адаптивный";
-                default: return displayValue;
+                case "auto":
+                    return "Автоматический";
+                case "day":
+                    return "Дневной режим";
+                case "night":
+                    return "Ночной режим";
+                case "adaptive":
+                    return "Адаптивный";
+                default:
+                    return displayValue;
             }
         } else {
             switch (displayValue) {
-                case "auto": return "Automatic";
-                case "day": return "Day Mode";
-                case "night": return "Night Mode";
-                case "adaptive": return "Adaptive";
-                default: return displayValue;
+                case "auto":
+                    return "Automatic";
+                case "day":
+                    return "Day Mode";
+                case "night":
+                    return "Night Mode";
+                case "adaptive":
+                    return "Adaptive";
+                default:
+                    return displayValue;
             }
         }
     }
@@ -226,19 +256,29 @@ public class DemoHelpers {
 
         if ("ru".equals(currentLanguage)) {
             switch (systemValue) {
-                case "normal": return "Обычный";
-                case "performance": return "Производительность";
-                case "eco": return "Эко режим";
-                case "custom": return "Пользовательский";
-                default: return systemValue;
+                case "normal":
+                    return "Обычный";
+                case "performance":
+                    return "Производительность";
+                case "eco":
+                    return "Эко режим";
+                case "custom":
+                    return "Пользовательский";
+                default:
+                    return systemValue;
             }
         } else {
             switch (systemValue) {
-                case "normal": return "Normal";
-                case "performance": return "Performance";
-                case "eco": return "Eco Mode";
-                case "custom": return "Custom";
-                default: return systemValue;
+                case "normal":
+                    return "Normal";
+                case "performance":
+                    return "Performance";
+                case "eco":
+                    return "Eco Mode";
+                case "custom":
+                    return "Custom";
+                default:
+                    return systemValue;
             }
         }
     }
@@ -269,10 +309,13 @@ public class DemoHelpers {
             return false;
         }
 
-        return tabValue.equals("language") || tabValue.equals("theme") ||
-               tabValue.equals("car_type") || tabValue.equals("climate") ||
-               tabValue.equals("audio") || tabValue.equals("display") ||
-               tabValue.equals("system");
+        return tabValue.equals("language")
+                || tabValue.equals("theme")
+                || tabValue.equals("car_type")
+                || tabValue.equals("climate")
+                || tabValue.equals("audio")
+                || tabValue.equals("display")
+                || tabValue.equals("system");
     }
 
     /**
@@ -302,6 +345,7 @@ public class DemoHelpers {
      * @return true if the car type value is valid, false otherwise
      */
     public static boolean isValidCarTypeValue(String carTypeValue) {
-        return carTypeValue != null && (carTypeValue.equals("free") || carTypeValue.equals("dreamer"));
+        return carTypeValue != null
+                && (carTypeValue.equals("free") || carTypeValue.equals("dreamer"));
     }
 }

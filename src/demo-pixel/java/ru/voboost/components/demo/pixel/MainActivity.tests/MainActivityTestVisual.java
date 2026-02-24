@@ -2,6 +2,9 @@ package ru.voboost.components.demo.pixel;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
+import java.io.FileWriter;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -15,10 +18,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
 
 /**
  * Pixel comparison test for the pixel demo.
@@ -43,9 +42,8 @@ import java.io.InputStream;
 @RunWith(RobolectricTestRunner.class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(
-    sdk = {33},
-    qualifiers = "w1920dp-h720dp-land-mdpi"
-)
+        sdk = {33},
+        qualifiers = "w1920dp-h720dp-land-mdpi")
 public class MainActivityTestVisual {
 
     // Automotive display dimensions
@@ -66,7 +64,7 @@ public class MainActivityTestVisual {
     // Output directory (BEM co-located screenshots)
     // Path is relative to module root (src/demo-pixel/) since Gradle runs tests from there
     private static final String OUTPUT_DIR =
-        "java/ru/voboost/components/demo/pixel/MainActivity.screenshots";
+            "java/ru/voboost/components/demo/pixel/MainActivity.screenshots";
 
     private ActivityController<MainActivity> controller;
     private MainActivity activity;
@@ -102,8 +100,9 @@ public class MainActivityTestVisual {
             System.out.println("Looked for: /interface-2-display_1original.png");
             System.out.println("");
             System.out.println("Place your reference image at:");
-            System.out.println("  src/demo-pixel/java/ru/voboost/components/demo/pixel/"
-                + "MainActivity.resources/interface-2-display_1original.png");
+            System.out.println(
+                    "  src/demo-pixel/java/ru/voboost/components/demo/pixel/"
+                            + "MainActivity.resources/interface-2-display_1original.png");
             System.out.println("");
             System.out.println("Skipping comparison. Actual rendering saved for inspection.");
             return;
@@ -112,12 +111,15 @@ public class MainActivityTestVisual {
         System.out.println("Reference size: " + reference.getWidth() + "x" + reference.getHeight());
 
         // ---- Step 3: Compare pixels ----
-        PixelComparator.ComparisonResult result = PixelComparator.compare(
-            actual, reference,
-            COMPARE_START_X, COMPARE_START_Y,
-            SCREEN_WIDTH, SCREEN_HEIGHT,
-            PIXEL_TOLERANCE
-        );
+        PixelComparator.ComparisonResult result =
+                PixelComparator.compare(
+                        actual,
+                        reference,
+                        COMPARE_START_X,
+                        COMPARE_START_Y,
+                        SCREEN_WIDTH,
+                        SCREEN_HEIGHT,
+                        PIXEL_TOLERANCE);
 
         // ---- Step 4: Save diff image ----
         File diffFile = new File(OUTPUT_DIR, "interface-2-display_3diff" + suffix + ".png");
@@ -128,8 +130,16 @@ public class MainActivityTestVisual {
         System.out.println("=== PIXEL COMPARISON REPORT ===");
         System.out.println(result.toString());
         System.out.println("Diff image: " + diffFile.getAbsolutePath());
-        System.out.println("Compare area: x=[" + COMPARE_START_X + ".." + SCREEN_WIDTH +
-                           "], y=[" + COMPARE_START_Y + ".." + SCREEN_HEIGHT + "]");
+        System.out.println(
+                "Compare area: x=["
+                        + COMPARE_START_X
+                        + ".."
+                        + SCREEN_WIDTH
+                        + "], y=["
+                        + COMPARE_START_Y
+                        + ".."
+                        + SCREEN_HEIGHT
+                        + "]");
         System.out.println("Tolerance: " + PIXEL_TOLERANCE + " per channel");
         System.out.println("");
 
@@ -139,8 +149,16 @@ public class MainActivityTestVisual {
             writer.write("Pixel Comparison Report\n");
             writer.write("=======================\n\n");
             writer.write(result.toString() + "\n\n");
-            writer.write("Compare area: x=[" + COMPARE_START_X + ".." + SCREEN_WIDTH +
-                         "], y=[" + COMPARE_START_Y + ".." + SCREEN_HEIGHT + "]\n");
+            writer.write(
+                    "Compare area: x=["
+                            + COMPARE_START_X
+                            + ".."
+                            + SCREEN_WIDTH
+                            + "], y=["
+                            + COMPARE_START_Y
+                            + ".."
+                            + SCREEN_HEIGHT
+                            + "]\n");
             writer.write("Tolerance: " + PIXEL_TOLERANCE + " per channel\n\n");
             writer.write("Files:\n");
             writer.write("  interface-2-display_1original.png  - original reference\n");

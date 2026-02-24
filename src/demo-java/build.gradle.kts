@@ -126,13 +126,17 @@ dependencies {
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("androidx.test.ext:junit:1.1.5")
-    // Compose dependencies for Roborazzi tests only
-    testImplementation(platform("androidx.compose:compose-bom:2024.02.00"))
-    testImplementation("androidx.compose.ui:ui-test-junit4")
-    testImplementation("androidx.compose.ui:ui-test-manifest")
 
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    // Kotlin stdlib for Roborazzi (required for Kotlin-based testing library)
+    testImplementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
+
+    // Compose UI test dependencies (required for Roborazzi even in pure Java projects)
+    // NOTE: Roborazzi's captureRoboImage() internally uses Compose UI test classes
+    // (androidx.compose.ui.test.SemanticsNodeInteraction) even when capturing
+    // regular Android Views. This is a known limitation of the Roborazzi library.
+    // These dependencies are test-only and do NOT affect release APK size.
+    testImplementation("androidx.compose.ui:ui-test:1.6.8")
+    testImplementation("androidx.compose.ui:ui-test-junit4:1.6.8")
 }
 
 // Configure Roborazzi for automotive resolution screenshots
@@ -171,3 +175,4 @@ tasks.register("verifyDemoScreenshots") {
     description = "Verify screenshots for Java demo application"
     dependsOn("verifyRoborazziDebug")
 }
+
