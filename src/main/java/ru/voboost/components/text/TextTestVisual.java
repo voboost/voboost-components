@@ -1,5 +1,11 @@
 package ru.voboost.components.text;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -14,13 +20,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import ru.voboost.components.i18n.Language;
+import ru.voboost.components.theme.Theme;
 
 /**
  * Visual regression tests for Text component Java implementation.
@@ -33,13 +34,15 @@ public class TextTestVisual {
     private Context context;
     private static final int SCREENSHOT_WIDTH = 400;
     private static final int SCREENSHOT_HEIGHT = 100;
-    private static final String SCREENSHOT_DIR = "src/main/java/ru/voboost/components/text/Text.screenshots/";
+    private static final String SCREENSHOT_DIR =
+            "src/main/java/ru/voboost/components/text/Text.screenshots/";
 
     // Test data
     private Map<Language, String> localizedText;
     private String shortText = "Short";
     private String mediumText = "Medium Length Text";
-    private String longText = "This is a very long text that should test text rendering and wrapping capabilities";
+    private String longText =
+            "This is a very long text that should test text rendering and wrapping capabilities";
 
     @Before
     public void setUp() {
@@ -56,7 +59,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Control Text");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_control_free_light_en.png");
@@ -67,7 +70,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Текст Управления");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.RU);
 
         captureScreenshot(textView, "text_control_free_light_ru.png");
@@ -78,7 +81,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Control Text");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_DARK);
+        textView.setTheme(Theme.FREE_DARK);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_control_free_dark_en.png");
@@ -89,7 +92,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Текст Управления");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_DARK);
+        textView.setTheme(Theme.FREE_DARK);
         textView.setLanguage(Language.RU);
 
         captureScreenshot(textView, "text_control_free_dark_ru.png");
@@ -100,7 +103,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Control Text");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.DREAMER_LIGHT);
+        textView.setTheme(Theme.DREAMER_LIGHT);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_control_dreamer_light_en.png");
@@ -111,7 +114,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Текст Управления");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.DREAMER_LIGHT);
+        textView.setTheme(Theme.DREAMER_LIGHT);
         textView.setLanguage(Language.RU);
 
         captureScreenshot(textView, "text_control_dreamer_light_ru.png");
@@ -122,7 +125,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Control Text");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.DREAMER_DARK);
+        textView.setTheme(Theme.DREAMER_DARK);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_control_dreamer_dark_en.png");
@@ -133,7 +136,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Текст Управления");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.DREAMER_DARK);
+        textView.setTheme(Theme.DREAMER_DARK);
         textView.setLanguage(Language.RU);
 
         captureScreenshot(textView, "text_control_dreamer_dark_ru.png");
@@ -144,7 +147,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Title Text");
         textView.setRole(TextRole.TITLE);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_title_free_light_en.png");
@@ -155,7 +158,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Заголовок");
         textView.setRole(TextRole.TITLE);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.RU);
 
         captureScreenshot(textView, "text_title_free_light_ru.png");
@@ -166,7 +169,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Title Text");
         textView.setRole(TextRole.TITLE);
-        textView.setTheme(TextTheme.FREE_DARK);
+        textView.setTheme(Theme.FREE_DARK);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_title_free_dark_en.png");
@@ -177,7 +180,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Заголовок");
         textView.setRole(TextRole.TITLE);
-        textView.setTheme(TextTheme.FREE_DARK);
+        textView.setTheme(Theme.FREE_DARK);
         textView.setLanguage(Language.RU);
 
         captureScreenshot(textView, "text_title_free_dark_ru.png");
@@ -188,7 +191,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Title Text");
         textView.setRole(TextRole.TITLE);
-        textView.setTheme(TextTheme.DREAMER_LIGHT);
+        textView.setTheme(Theme.DREAMER_LIGHT);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_title_dreamer_light_en.png");
@@ -199,7 +202,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Заголовок");
         textView.setRole(TextRole.TITLE);
-        textView.setTheme(TextTheme.DREAMER_LIGHT);
+        textView.setTheme(Theme.DREAMER_LIGHT);
         textView.setLanguage(Language.RU);
 
         captureScreenshot(textView, "text_title_dreamer_light_ru.png");
@@ -210,7 +213,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Title Text");
         textView.setRole(TextRole.TITLE);
-        textView.setTheme(TextTheme.DREAMER_DARK);
+        textView.setTheme(Theme.DREAMER_DARK);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_title_dreamer_dark_en.png");
@@ -221,7 +224,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Заголовок");
         textView.setRole(TextRole.TITLE);
-        textView.setTheme(TextTheme.DREAMER_DARK);
+        textView.setTheme(Theme.DREAMER_DARK);
         textView.setLanguage(Language.RU);
 
         captureScreenshot(textView, "text_title_dreamer_dark_ru.png");
@@ -232,7 +235,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText(localizedText);
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_localized_en.png");
@@ -243,7 +246,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText(localizedText);
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.RU);
 
         captureScreenshot(textView, "text_localized_ru.png");
@@ -254,7 +257,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText(shortText);
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_short_content.png");
@@ -265,7 +268,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText(mediumText);
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_medium_content.png");
@@ -276,7 +279,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText(longText);
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
 
         // Use larger canvas for long text
@@ -288,7 +291,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Position Test");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
         textView.setTextAlign(Paint.Align.LEFT);
 
@@ -300,7 +303,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Position Test");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
         textView.setTextAlign(Paint.Align.CENTER);
 
@@ -312,7 +315,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Position Test");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
         textView.setTextAlign(Paint.Align.RIGHT);
 
@@ -324,7 +327,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Custom Position");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
         textView.setPosition(50, 50);
 
@@ -336,7 +339,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Custom Color");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
         textView.setColor(Color.RED);
 
@@ -348,7 +351,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_empty.png");
@@ -359,7 +362,7 @@ public class TextTestVisual {
         Text textView = new Text(context);
         textView.setText("Special: !@#$%^&*()");
         textView.setRole(TextRole.CONTROL);
-        textView.setTheme(TextTheme.FREE_LIGHT);
+        textView.setTheme(Theme.FREE_LIGHT);
         textView.setLanguage(Language.EN);
 
         captureScreenshot(textView, "text_special_chars.png");
@@ -375,12 +378,12 @@ public class TextTestVisual {
     /**
      * Capture a screenshot of the Text component with custom dimensions and save it.
      */
-    private void captureScreenshot(Text textView, String filename, int width, int height) throws IOException {
+    private void captureScreenshot(Text textView, String filename, int width, int height)
+            throws IOException {
         // Measure the view
         textView.measure(
-            View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-            View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY)
-        );
+                View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY));
         textView.layout(0, 0, width, height);
 
         // Create a bitmap and canvas

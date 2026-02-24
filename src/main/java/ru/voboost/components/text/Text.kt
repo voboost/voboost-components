@@ -3,6 +3,7 @@ package ru.voboost.components.text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
 import ru.voboost.components.i18n.Language
+import ru.voboost.components.theme.Theme
 
 /**
  * Text data model with localization support.
@@ -44,7 +45,7 @@ data class TextData(
  *
  * @param text Text data model with localized labels
  * @param lang Language enum value
- * @param theme Theme identifier string
+ * @param theme Theme enum value
  * @param role Text role (CONTROL or TITLE)
  * @param onViewCreated Optional callback when the AndroidView is created (useful for testing)
  */
@@ -52,7 +53,7 @@ data class TextData(
 fun Text(
     text: TextData,
     lang: Language,
-    theme: String,
+    theme: Theme,
     role: TextRole = TextRole.CONTROL,
     onViewCreated: ((ru.voboost.components.text.Text) -> Unit)? = null,
 ) {
@@ -85,14 +86,14 @@ fun Text(
  * Convenience overload for non-localized text.
  *
  * @param text Simple string text
- * @param theme Theme identifier string
+ * @param theme Theme enum value
  * @param role Text role (CONTROL or TITLE)
  * @param onViewCreated Optional callback when the AndroidView is created (useful for testing)
  */
 @Composable
 fun Text(
     text: String,
-    theme: String,
+    theme: Theme,
     role: TextRole = TextRole.CONTROL,
     onViewCreated: ((ru.voboost.components.text.Text) -> Unit)? = null,
 ) {

@@ -1,21 +1,20 @@
 package ru.voboost.components.text;
 
+import java.util.Map;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.os.Parcelable;
-
-import ru.voboost.components.font.Font;
 import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import java.util.Map;
-
+import ru.voboost.components.font.Font;
 import ru.voboost.components.i18n.Language;
+import ru.voboost.components.theme.Theme;
 
 /**
  * Text component provides unified text rendering for the Voboost component library.
@@ -29,12 +28,11 @@ import ru.voboost.components.i18n.Language;
  * - Canvas-based rendering for optimal performance
  */
 public class Text extends View {
-
     // Text properties
     private String text;
     private Map<Language, String> localizedText;
     private TextRole role = TextRole.CONTROL;
-    private String theme = TextTheme.FREE_LIGHT;
+    private Theme theme = Theme.FREE_LIGHT;
     private Language language = Language.EN;
     private Paint.Align textAlign = Paint.Align.LEFT;
 
@@ -222,22 +220,23 @@ public class Text extends View {
     /**
      * Set the theme.
      *
-     * @param theme The theme identifier
+     * @param theme The theme enum value
      */
-    public void setTheme(String theme) {
-        if (TextTheme.isValidTheme(theme)) {
-            this.theme = theme;
-            applyTheme();
-            invalidate();
+    public void setTheme(Theme theme) {
+        if (theme == null) {
+            throw new IllegalArgumentException("Theme cannot be null");
         }
+        this.theme = theme;
+        applyTheme();
+        invalidate();
     }
 
     /**
      * Get the current theme.
      *
-     * @return The current theme identifier
+     * @return The current theme enum value
      */
-    public String getTheme() {
+    public Theme getTheme() {
         return theme;
     }
 
@@ -362,61 +361,5 @@ public class Text extends View {
         height = resolveSize(height, heightMeasureSpec);
 
         setMeasuredDimension(width, height);
-    }
-
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        Parcelable superState = super.onSaveInstanceState();
-
-        // Create a custom state to save our properties
-        SavedState savedState = new SavedState(superState);
-        savedState.text = this.text;
-        savedState.role = this.role;
-        savedState.theme = this.theme;
-        savedState.language = this.language;
-        savedState.positionX = this.positionX;
-        savedState.positionY = this.positionY;
-
-        return savedState;
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        if (!(state instanceof SavedState)) {
-            super.onRestoreInstanceState(state);
-            return;
-        }
-
-        SavedState savedState = (SavedState) state;
-        super.onRestoreInstanceState(savedState.getSuperState());
-
-        // Restore our properties
-        this.text = savedState.text;
-        this.role = savedState.role;
-        this.theme = savedState.theme;
-        this.language = savedState.language;
-        this.positionX = savedState.positionX;
-        this.positionY = savedState.positionY;
-
-        // Apply restored properties
-        applyRole();
-        applyTheme();
-        invalidate();
-    }
-
-    /**
-     * Custom saved state class for preserving Text component state.
-     */
-    public static class SavedState extends BaseSavedState {
-        String text;
-        TextRole role;
-        String theme;
-        Language language;
-        float positionX;
-        float positionY;
-
-        SavedState(Parcelable superState) {
-            super(superState);
-        }
     }
 }

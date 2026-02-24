@@ -2,17 +2,13 @@ package ru.voboost.components.text;
 
 import android.graphics.Color;
 
+import ru.voboost.components.theme.Theme;
+
 /**
  * Theme constants and color management for the Text component.
  * Supports all four theme variants: free-light, free-dark, dreamer-light, dreamer-dark.
  */
 public class TextTheme {
-
-    // Theme identifiers
-    public static final String FREE_LIGHT = "free-light";
-    public static final String FREE_DARK = "free-dark";
-    public static final String DREAMER_LIGHT = "dreamer-light";
-    public static final String DREAMER_DARK = "dreamer-dark";
 
     // Free Light Theme Colors
     private static final int FREE_LIGHT_CONTROL = Color.parseColor("#1a1a1a");
@@ -34,10 +30,10 @@ public class TextTheme {
      * Get the color for a specific text role and theme.
      *
      * @param role The text role (CONTROL or TITLE)
-     * @param theme The theme identifier
+     * @param theme The theme enum value
      * @return The color as an Android Color integer
      */
-    public static int getColor(TextRole role, String theme) {
+    public static int getColor(TextRole role, Theme theme) {
         if (role == null || theme == null) {
             return FREE_LIGHT_CONTROL; // Default fallback
         }
@@ -110,20 +106,5 @@ public class TextTheme {
             default:
                 return DREAMER_DARK_CONTROL;
         }
-    }
-
-    /**
-     * Check if a theme identifier is valid.
-     *
-     * @param theme The theme identifier to check
-     * @return true if the theme is valid, false otherwise
-     */
-    public static boolean isValidTheme(String theme) {
-        return theme != null && (
-            theme.equals(FREE_LIGHT) ||
-            theme.equals(FREE_DARK) ||
-            theme.equals(DREAMER_LIGHT) ||
-            theme.equals(DREAMER_DARK)
-        );
     }
 }

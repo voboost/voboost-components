@@ -21,7 +21,7 @@ The Text component provides a unified text rendering system for the Voboost comp
 // Create text with static string
 Text text = new Text(context);
 text.setText("Hello World");
-text.setTheme("free-light");
+text.setTheme(Theme.FREE_LIGHT);
 text.setRole(TextRole.CONTROL);
 
 // Create text with localization
@@ -32,7 +32,7 @@ Map<Language, String> localizedText = Map.of(
 Text localizedTextComponent = new Text(context);
 localizedTextComponent.setText(localizedText);
 localizedTextComponent.setLanguage(Language.EN);
-localizedTextComponent.setTheme("free-light");
+localizedTextComponent.setTheme(Theme.FREE_LIGHT);
 localizedTextComponent.setRole(TextRole.TITLE);
 
 // Add to parent layout
@@ -45,7 +45,7 @@ parentLayout.addView(text);
 // Create text with static string
 val text = Text(context).apply {
     setText("Hello World")
-    setTheme("free-light")
+    setTheme(Theme.FREE_LIGHT)
     setRole(TextRole.CONTROL)
 }
 
@@ -57,7 +57,7 @@ val localizedText = mapOf(
 val localizedTextComponent = Text(context).apply {
     setText(localizedText)
     setLanguage(Language.EN)
-    setTheme("free-light")
+    setTheme(Theme.FREE_LIGHT)
     setRole(TextRole.TITLE)
 }
 
@@ -72,13 +72,14 @@ import ru.voboost.components.text.Text
 import ru.voboost.components.text.TextData
 import ru.voboost.components.text.TextRole
 import ru.voboost.components.i18n.Language
+import ru.voboost.components.theme.Theme
 
 @Composable
 fun MyScreen() {
     // Simple text without localization
     Text(
         text = "Hello World",
-        theme = "free-light",
+        theme = Theme.FREE_LIGHT,
         role = TextRole.CONTROL
     )
 
@@ -94,7 +95,7 @@ fun MyScreen() {
     Text(
         text = localizedText,
         lang = Language.EN,
-        theme = "free-light",
+        theme = Theme.FREE_LIGHT,
         role = TextRole.TITLE
     )
 }
@@ -120,8 +121,8 @@ public void setText(Map<Language, String> text)     // Set localized text
 public String getText()                             // Get current text
 
 // Theme and styling
-public void setTheme(String theme)                  // Set theme ("free-light", etc.)
-public String getTheme()                            // Get current theme
+public void setTheme(Theme theme)                  // Set theme (Theme.FREE_LIGHT, etc.)
+public Theme getTheme()                            // Get current theme
 public void setRole(TextRole role)                  // Set text role (CONTROL, TITLE)
 public TextRole getRole()                           // Get current text role
 public void setColor(int color)                     // Set custom color (for animation)
@@ -220,10 +221,10 @@ public enum TextRole {
 ## Themes
 
 Available themes:
-- `"free-light"` - Light theme with dark text
-- `"free-dark"` - Dark theme with light text
-- `"dreamer-light"` - Light theme with dark text
-- `"dreamer-dark"` - Dark theme with light text
+- `Theme.FREE_LIGHT` - Light theme with dark text
+- `Theme.FREE_DARK` - Dark theme with light text
+- `Theme.DREAMER_LIGHT` - Light theme with dark text
+- `Theme.DREAMER_DARK` - Dark theme with light text
 
 ### Theme Colors
 
@@ -422,7 +423,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun switchTheme() {
-        currentTheme = if (currentTheme == "free-light") "free-dark" else "free-light"
+        currentTheme = if (currentTheme == Theme.FREE_LIGHT) Theme.FREE_DARK else Theme.FREE_LIGHT
         titleText.setTheme(currentTheme)
         controlText.setTheme(currentTheme)
     }
@@ -436,6 +437,7 @@ import ru.voboost.components.text.Text
 import ru.voboost.components.text.TextData
 import ru.voboost.components.text.TextRole
 import ru.voboost.components.i18n.Language
+import ru.voboost.components.theme.Theme
 
 @Composable
 fun TextDemo() {
@@ -445,10 +447,10 @@ fun TextDemo() {
 
     // Compute theme based on selections
     val currentTheme = when {
-        isDreamer && isDarkTheme -> "dreamer-dark"
-        isDreamer && !isDarkTheme -> "dreamer-light"
-        !isDreamer && isDarkTheme -> "free-dark"
-        else -> "free-light"
+        isDreamer && isDarkTheme -> Theme.DREAMER_DARK
+        isDreamer && !isDarkTheme -> Theme.DREAMER_LIGHT
+        !isDreamer && isDarkTheme -> Theme.FREE_DARK
+        else -> Theme.FREE_LIGHT
     }
 
     Column(

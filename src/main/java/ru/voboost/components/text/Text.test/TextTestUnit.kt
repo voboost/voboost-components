@@ -10,6 +10,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import ru.voboost.components.i18n.Language
+import ru.voboost.components.theme.Theme
 
 /**
  * Unit tests for Text component Kotlin Compose wrapper.
@@ -84,7 +85,7 @@ class TextTestUnit {
             Text(
                 text = textData,
                 lang = Language.EN,
-                theme = TextTheme.FREE_LIGHT,
+                theme = Theme.FREE_LIGHT,
                 role = TextRole.CONTROL,
                 onViewCreated = { textView ->
                     capturedTextView = textView
@@ -102,7 +103,7 @@ class TextTestUnit {
         assertEquals(Language.EN, capturedTextView?.getLanguage())
 
         // Verify the theme was set
-        assertEquals(TextTheme.FREE_LIGHT, capturedTextView?.getTheme())
+        assertEquals(Theme.FREE_LIGHT, capturedTextView?.getTheme())
 
         // Verify the role was set
         assertEquals(TextRole.CONTROL, capturedTextView?.getRole())
@@ -115,7 +116,7 @@ class TextTestUnit {
         composeTestRule.setContent {
             Text(
                 text = "Simple Text",
-                theme = TextTheme.DREAMER_DARK,
+                theme = Theme.DREAMER_DARK,
                 role = TextRole.TITLE,
                 onViewCreated = { textView ->
                     capturedTextView = textView
@@ -130,7 +131,7 @@ class TextTestUnit {
         assertEquals("Simple Text", capturedTextView?.getText())
 
         // Verify the theme was set
-        assertEquals(TextTheme.DREAMER_DARK, capturedTextView?.getTheme())
+        assertEquals(Theme.DREAMER_DARK, capturedTextView?.getTheme())
 
         // Verify the role was set
         assertEquals(TextRole.TITLE, capturedTextView?.getRole())
@@ -145,7 +146,7 @@ class TextTestUnit {
             )
         var textData = TextData("initial", label)
         var language = Language.EN
-        var theme = TextTheme.FREE_LIGHT
+        var theme = Theme.FREE_LIGHT
         var role = TextRole.CONTROL
 
         var capturedTextView: ru.voboost.components.text.Text? = null
@@ -165,7 +166,7 @@ class TextTestUnit {
         // Verify initial state
         assertEquals("Initial Text", capturedTextView?.getText())
         assertEquals(Language.EN, capturedTextView?.getLanguage())
-        assertEquals(TextTheme.FREE_LIGHT, capturedTextView?.getTheme())
+        assertEquals(Theme.FREE_LIGHT, capturedTextView?.getTheme())
         assertEquals(TextRole.CONTROL, capturedTextView?.getRole())
 
         // Note: We can't test parameter updates in a single test with Compose
@@ -178,7 +179,7 @@ class TextTestUnit {
         // Test just one theme per test to avoid setContent multiple calls
         val label = mapOf(Language.EN to "Theme Test")
         val textData = TextData("theme-test", label)
-        val theme = TextTheme.FREE_LIGHT
+        val theme = Theme.FREE_LIGHT
 
         var capturedTextView: ru.voboost.components.text.Text? = null
 
@@ -215,7 +216,7 @@ class TextTestUnit {
             Text(
                 text = textData,
                 lang = Language.EN,
-                theme = TextTheme.FREE_LIGHT,
+                theme = Theme.FREE_LIGHT,
                 role = role,
                 onViewCreated = { textView ->
                     capturedTextView = textView
@@ -248,7 +249,7 @@ class TextTestUnit {
             Text(
                 text = textData,
                 lang = language,
-                theme = TextTheme.FREE_LIGHT,
+                theme = Theme.FREE_LIGHT,
                 role = TextRole.CONTROL,
                 onViewCreated = { textView ->
                     capturedTextView = textView
@@ -267,7 +268,7 @@ class TextTestUnit {
     fun testTextComponentWithStringParameterUpdates() {
         // Test just one set of parameters per test to avoid setContent multiple calls
         val text = "Initial Text"
-        val theme = TextTheme.FREE_LIGHT
+        val theme = Theme.FREE_LIGHT
         val role = TextRole.CONTROL
 
         var capturedTextView: ru.voboost.components.text.Text? = null
@@ -285,7 +286,7 @@ class TextTestUnit {
 
         // Verify initial state
         assertEquals("Initial Text", capturedTextView?.getText())
-        assertEquals(TextTheme.FREE_LIGHT, capturedTextView?.getTheme())
+        assertEquals(Theme.FREE_LIGHT, capturedTextView?.getTheme())
         assertEquals(TextRole.CONTROL, capturedTextView?.getRole())
 
         // Note: We can't test parameter updates in a single test with Compose
@@ -301,7 +302,7 @@ class TextTestUnit {
         composeTestRule.setContent {
             Text(
                 text = complexText,
-                theme = TextTheme.FREE_LIGHT,
+                theme = Theme.FREE_LIGHT,
                 role = TextRole.CONTROL,
                 onViewCreated = { textView ->
                     capturedTextView = textView
@@ -325,7 +326,7 @@ class TextTestUnit {
         composeTestRule.setContent {
             Text(
                 text = longText,
-                theme = TextTheme.FREE_LIGHT,
+                theme = Theme.FREE_LIGHT,
                 role = TextRole.CONTROL,
                 onViewCreated = { textView ->
                     capturedTextView = textView
@@ -348,7 +349,7 @@ class TextTestUnit {
         composeTestRule.setContent {
             Text(
                 text = "",
-                theme = TextTheme.FREE_LIGHT,
+                theme = Theme.FREE_LIGHT,
                 role = TextRole.CONTROL,
                 onViewCreated = { textView ->
                     capturedTextView = textView
@@ -366,7 +367,7 @@ class TextTestUnit {
         composeTestRule.setContent {
             Text(
                 text = "Test Text",
-                theme = TextTheme.FREE_LIGHT,
+                theme = Theme.FREE_LIGHT,
                 role = TextRole.CONTROL,
             )
         }
@@ -382,7 +383,7 @@ class TextTestUnit {
         composeTestRule.setContent {
             Text(
                 text = "Test Text",
-                theme = TextTheme.FREE_LIGHT,
+                theme = Theme.FREE_LIGHT,
                 role = TextRole.CONTROL,
                 onViewCreated = null,
             )
@@ -406,7 +407,7 @@ class TextTestUnit {
             Text(
                 text = textData,
                 lang = Language.EN,
-                theme = TextTheme.FREE_LIGHT,
+                theme = Theme.FREE_LIGHT,
                 role = TextRole.CONTROL,
                 onViewCreated = { textView ->
                     capturedTextView = textView
