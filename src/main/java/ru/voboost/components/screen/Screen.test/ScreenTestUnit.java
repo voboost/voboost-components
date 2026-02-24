@@ -121,7 +121,7 @@ public class ScreenTestUnit {
 
         screen.setTheme(Theme.FREE_LIGHT);
         screen.setTabs(tabs);
-        screen.setPanels(new Panel[]{panel1, panel2});
+        screen.setPanels(new Panel[] {panel1, panel2});
 
         // Select first tab
         tabs.setSelectedValue("tab1", true);
@@ -146,7 +146,7 @@ public class ScreenTestUnit {
 
         screen.setTheme(Theme.FREE_LIGHT);
         screen.setTabs(tabs);
-        screen.setPanels(new Panel[]{panel1, panel2});
+        screen.setPanels(new Panel[] {panel1, panel2});
 
         tabs.setSelectedValue("tab1", false);
         assertEquals("Panel1 parent should be screen", screen, panel1.getParent());
@@ -169,7 +169,7 @@ public class ScreenTestUnit {
         Panel panel1 = new Panel(screen.getContext());
         panel1.setTheme(Theme.FREE_LIGHT);
         screen.setTheme(Theme.FREE_LIGHT);
-        screen.setPanels(new Panel[]{panel1});
+        screen.setPanels(new Panel[] {panel1});
 
         screen.setActivePanel(5);
         assertNull("Active panel should be null for out-of-bounds index", screen.getActivePanel());

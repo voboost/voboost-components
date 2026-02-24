@@ -1,12 +1,11 @@
 package ru.voboost.components.screen;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import ru.voboost.components.panel.Panel;
@@ -53,6 +52,7 @@ public class Screen extends ViewGroup {
     private Tabs tabs;
     private Panel[] panels;
     private int activePanelIndex = -1;
+    private android.widget.ScrollView tabsScrollView;
 
     // ============================================================
     // INTERFACES
@@ -89,7 +89,8 @@ public class Screen extends ViewGroup {
         init(context);
     }
 
-    public Screen(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public Screen(
+            Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context);
     }
@@ -209,21 +210,37 @@ public class Screen extends ViewGroup {
      * @param tabs the Tabs component to add
      */
     public void setTabs(Tabs tabs) {
-        // Remove old tabs if they exist
+        // Remove old tabs and scroll view if they exist
         if (this.tabs != null) {
-            removeView(this.tabs);
+            if (tabsScrollView != null) {
+                tabsScrollView.removeView(this.tabs);
+                removeView(tabsScrollView);
+                tabsScrollView = null;
+            } else {
+                removeView(this.tabs);
+            }
         }
 
         this.tabs = tabs;
 
-        // Add new tabs to the ViewGroup
+        // Add new tabs to the ViewGroup with ScrollView
         if (tabs != null) {
-            addView(tabs);
+            // Create ScrollView for tabs
+            tabsScrollView = new ScrollView(getContext());
+            tabsScrollView.setVerticalScrollBarEnabled(false);
+            tabsScrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+
+            // Add tabs to ScrollView
+            tabsScrollView.addView(tabs);
+
+            // Add ScrollView to Screen
+            addView(tabsScrollView);
 
             // Set listener for tab changes
-            tabs.setOnTabChangeListener(newIndex -> {
-                setActivePanel(newIndex);
-            });
+            tabs.setOnTabChangeListener(
+                    newIndex -> {
+                        setActivePanel(newIndex);
+                    });
         }
 
         requestLayout();
@@ -236,6 +253,15 @@ public class Screen extends ViewGroup {
      */
     public Tabs getTabs() {
         return tabs;
+    }
+
+    /**
+     * Returns the ScrollView containing the Tabs component.
+     *
+     * @return the ScrollView containing tabs, or null if not set
+     */
+    public android.widget.ScrollView getTabsScrollView() {
+        return tabsScrollView;
     }
 
     /**
@@ -345,6 +371,55 @@ public class Screen extends ViewGroup {
         this.onScreenLiftListener = listener;
     }
 
+    /**
+     * Propagates the theme to all child components recursively.
+     * This method updates the theme for tabs, panels, and all nested components.
+     *
+     * @param theme the theme to propagate
+     */
+    public void propagateTheme(Theme theme) {
+        if (theme == null) {
+            return;
+        }
+
+        // Update tabs theme
+        if (tabs != null) {
+            tabs.setTheme(theme);
+        }
+
+        // Update all panels theme
+        if (panels != null) {
+            for (Panel panel : panels) {
+                panel.setTheme(theme);
+                panel.propagateTheme(theme);
+            }
+        }
+    }
+
+    /**
+     * Propagates the language to all child components recursively.
+     * This method updates the language for tabs, panels, and all nested components.
+     *
+     * @param language the language to propagate
+     */
+    public void propagateLanguage(ru.voboost.components.i18n.Language language) {
+        if (language == null) {
+            return;
+        }
+
+        // Update tabs language
+        if (tabs != null) {
+            tabs.setLanguage(language);
+        }
+
+        // Update all panels language
+        if (panels != null) {
+            for (Panel panel : panels) {
+                panel.propagateLanguage(language);
+            }
+        }
+    }
+
     // ============================================================
     // MEASUREMENT
     // ============================================================
@@ -354,11 +429,19 @@ public class Screen extends ViewGroup {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        // Measure Tabs with height minus offsetY (tabs start below status bar)
+        // Measure Tabs with AT_MOST to allow natural height
         if (tabs != null) {
             int tabsWidthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST);
-            int tabsHeightSpec = MeasureSpec.makeMeasureSpec(height - offsetY, MeasureSpec.EXACTLY);
+            int tabsHeightSpec = MeasureSpec.makeMeasureSpec(height - offsetY, MeasureSpec.AT_MOST);
             tabs.measure(tabsWidthSpec, tabsHeightSpec);
+        }
+
+        // Measure ScrollView for tabs
+        if (tabsScrollView != null) {
+            int scrollViewWidthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST);
+            int scrollViewHeightSpec =
+                    MeasureSpec.makeMeasureSpec(height - offsetY, MeasureSpec.EXACTLY);
+            tabsScrollView.measure(scrollViewWidthSpec, scrollViewHeightSpec);
         }
 
         int tabsWidth = (tabs != null) ? tabs.getMeasuredWidth() : 0;
@@ -380,7 +463,6 @@ public class Screen extends ViewGroup {
         setMeasuredDimension(width, height);
     }
 
-
     // ============================================================
     // LAYOUT
     // ============================================================
@@ -391,15 +473,15 @@ public class Screen extends ViewGroup {
         int height = bottom - top;
         int tabsWidth = 0;
 
-        // Layout Tabs at offsetX with full height
-        if (tabs != null) {
-            int tabsLeft = offsetX;
-            int tabsTop = offsetY;
-            int tabsRight = tabsLeft + tabs.getMeasuredWidth();
-            int tabsBottom = height;
-            tabs.layout(tabsLeft, tabsTop, tabsRight, tabsBottom);
+        // Layout ScrollView for tabs at offsetX with full height
+        if (tabsScrollView != null) {
+            int scrollViewLeft = offsetX;
+            int scrollViewTop = offsetY;
+            int scrollViewRight = scrollViewLeft + tabsScrollView.getMeasuredWidth();
+            int scrollViewBottom = height;
+            tabsScrollView.layout(scrollViewLeft, scrollViewTop, scrollViewRight, scrollViewBottom);
 
-            tabsWidth = tabs.getMeasuredWidth();
+            tabsWidth = tabsScrollView.getMeasuredWidth();
         }
 
         // Layout active Panel after Tabs with offsetY from top
@@ -410,47 +492,6 @@ public class Screen extends ViewGroup {
             int panelRight = panelLeft + activePanel.getMeasuredWidth();
             int panelBottom = panelTop + activePanel.getMeasuredHeight();
             activePanel.layout(panelLeft, panelTop, panelRight, panelBottom);
-        }
-    }
-
-    // ============================================================
-    // STATE PERSISTENCE
-    // ============================================================
-
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        Bundle bundle = new Bundle();
-
-        bundle.putParcelable("superState", super.onSaveInstanceState());
-        bundle.putString("currentTheme", currentTheme != null ? currentTheme.getValue() : null);
-        bundle.putInt("offsetX", offsetX);
-        bundle.putInt("offsetY", offsetY);
-        bundle.putInt("gapX", gapX);
-        bundle.putInt("screenLiftState", screenLiftState);
-        bundle.putInt("activePanelIndex", activePanelIndex);
-
-        return bundle;
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        if (state instanceof Bundle) {
-            Bundle bundle = (Bundle) state;
-
-            String themeValue = bundle.getString("currentTheme");
-            currentTheme = themeValue != null ? Theme.fromValue(themeValue) : null;
-
-            offsetX = bundle.getInt("offsetX", DEFAULT_OFFSET_X);
-            offsetY = bundle.getInt("offsetY", DEFAULT_OFFSET_Y);
-            gapX = bundle.getInt("gapX", DEFAULT_GAP_X);
-            screenLiftState = bundle.getInt("screenLiftState", SCREEN_RAISED);
-            activePanelIndex = bundle.getInt("activePanelIndex", -1);
-
-            super.onRestoreInstanceState(bundle.getParcelable("superState"));
-
-            invalidate();
-        } else {
-            super.onRestoreInstanceState(state);
         }
     }
 }

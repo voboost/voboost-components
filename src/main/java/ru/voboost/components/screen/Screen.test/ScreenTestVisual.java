@@ -2,17 +2,17 @@ package ru.voboost.components.screen;
 
 import static com.github.takahirom.roborazzi.RoborazziKt.captureRoboImage;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import android.app.Activity;
 import android.content.Context;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.github.takahirom.roborazzi.RoborazziOptions;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -183,8 +183,12 @@ public class ScreenTestVisual {
 
         tabs.setSelectedValue(selectedTab, false);
 
-        int widthSpec = android.view.View.MeasureSpec.makeMeasureSpec(1920, android.view.View.MeasureSpec.EXACTLY);
-        int heightSpec = android.view.View.MeasureSpec.makeMeasureSpec(720, android.view.View.MeasureSpec.EXACTLY);
+        int widthSpec =
+                android.view.View.MeasureSpec.makeMeasureSpec(
+                        1920, android.view.View.MeasureSpec.EXACTLY);
+        int heightSpec =
+                android.view.View.MeasureSpec.makeMeasureSpec(
+                        720, android.view.View.MeasureSpec.EXACTLY);
         screen.measure(widthSpec, heightSpec);
         screen.layout(0, 0, 1920, 720);
 
@@ -197,18 +201,21 @@ public class ScreenTestVisual {
     @Test
     public void screen_withTabsFirstSelected() {
         Screen screen = createScreenWithTabs(Theme.FREE_LIGHT, "network");
-        captureRoboImage(screen, SCREENSHOT_BASE_PATH + "/" + getScreenshotName(), new RoborazziOptions());
+        captureRoboImage(
+                screen, SCREENSHOT_BASE_PATH + "/" + getScreenshotName(), new RoborazziOptions());
     }
 
     @Test
     public void screen_withTabsSecondSelected() {
         Screen screen = createScreenWithTabs(Theme.FREE_LIGHT, "display");
-        captureRoboImage(screen, SCREENSHOT_BASE_PATH + "/" + getScreenshotName(), new RoborazziOptions());
+        captureRoboImage(
+                screen, SCREENSHOT_BASE_PATH + "/" + getScreenshotName(), new RoborazziOptions());
     }
 
     @Test
     public void screen_withTabsFreeDark() {
         Screen screen = createScreenWithTabs(Theme.FREE_DARK, "display");
-        captureRoboImage(screen, SCREENSHOT_BASE_PATH + "/" + getScreenshotName(), new RoborazziOptions());
+        captureRoboImage(
+                screen, SCREENSHOT_BASE_PATH + "/" + getScreenshotName(), new RoborazziOptions());
     }
 }

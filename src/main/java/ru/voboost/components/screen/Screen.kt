@@ -13,14 +13,13 @@ import ru.voboost.components.theme.Theme
  * A full-screen container that can contain tabs and a panel.
  *
  * @param tabs List of TabItem objects for the sidebar navigation (optional)
- * @param panel Panel component to display in the main content area (optional)
+ * @param panels Array of Panel components to display in the main content area (optional)
  * @param offsetX Horizontal offset for content positioning in pixels (default: 175)
  * @param offsetY Vertical offset for content positioning in pixels (default: 50)
  * @param gapX Horizontal gap between Tabs and Panel in pixels (default: 42)
  * @param screenLiftState Screen lift state (1 for lowered, 2 for raised, default: 2)
- * @param theme Theme identifier (e.g., "free-light", "dreamer-dark")
+ * @param theme Theme enum value
  * @param onScreenLift Callback when screen lift state changes (optional)
- * @param content Composable content to display inside the screen (optional)
  */
 @Composable
 fun Screen(
@@ -30,14 +29,13 @@ fun Screen(
     offsetY: Int = 50,
     gapX: Int = 42,
     screenLiftState: Int = 2,
-    theme: String,
+    theme: Theme,
     onScreenLift: ((Int) -> Unit)? = null,
-    content: @Composable () -> Unit = {},
 ) {
     AndroidView(
         factory = { context ->
             ru.voboost.components.screen.Screen(context).apply {
-                setTheme(Theme.fromValue(theme))
+                setTheme(theme)
                 setOffsetX(offsetX)
                 setOffsetY(offsetY)
                 setGapX(gapX)
@@ -45,11 +43,10 @@ fun Screen(
                 // Set tabs if provided
                 if (tabs != null) {
                     val tabsView =
-                        Tabs(context)
-                            .apply {
-                                setTheme(Theme.fromValue(theme))
-                                setItems(tabs)
-                            }
+                        Tabs(context).apply {
+                            setTheme(theme)
+                            setItems(tabs)
+                        }
                     setTabs(tabsView)
                 }
 
@@ -68,26 +65,16 @@ fun Screen(
             }
         },
         update = { screenView ->
-            screenView.setTheme(Theme.fromValue(theme))
+            screenView.setTheme(theme)
             screenView.setOffsetX(offsetX)
             screenView.setOffsetY(offsetY)
             screenView.setGapX(gapX)
 
             // Update tabs if provided
             if (tabs != null) {
-                val tabsView = screenView.getTabs()
-                if (tabsView != null) {
-                    tabsView.setTheme(Theme.fromValue(theme))
-                    tabsView.setItems(tabs)
-                } else {
-                    // Create new tabs if not already set
-                    val newTabsView =
-                        Tabs(screenView.context)
-                            .apply {
-                                setTheme(Theme.fromValue(theme))
-                                setItems(tabs)
-                            }
-                    screenView.setTabs(newTabsView)
+                screenView.getTabs()?.apply {
+                    setTheme(theme)
+                    setItems(tabs)
                 }
             } else {
                 // Remove tabs if no longer provided
@@ -108,8 +95,4 @@ fun Screen(
             }
         },
     )
-
-    // Note: content parameter is not used in this implementation
-    // as the Java Screen component handles its own content
 }
-
