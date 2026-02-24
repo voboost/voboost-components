@@ -10,17 +10,13 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.graphics.Typeface;
-import android.os.Bundle;
-
-import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 
-import ru.voboost.components.i18n.Language;
 import ru.voboost.components.font.Font;
+import ru.voboost.components.i18n.Language;
 import ru.voboost.components.theme.Theme;
 
 /**
@@ -58,7 +54,7 @@ public class Radio extends View {
     private Paint selectedBorderPaint;
     private Paint textPaint;
 
-    // Dimensions in pixels (as required by .roorules)
+    // Dimensions in pixels
     private float heightPx;
     private float cornerRadiusPx;
     private float borderWidthPx;
@@ -218,9 +214,13 @@ public class Radio extends View {
             requestLayout(); // Force layout recalculation for dynamic width
 
             // Immediately snap to correct position for selected item - no animation
-            if (selectedIndex >= 0 && itemPositions != null && itemWidths != null && buttons != null &&
-                selectedIndex < itemPositions.size() && selectedIndex < itemWidths.size() &&
-                selectedIndex < buttons.size()) {
+            if (selectedIndex >= 0
+                    && itemPositions != null
+                    && itemWidths != null
+                    && buttons != null
+                    && selectedIndex < itemPositions.size()
+                    && selectedIndex < itemWidths.size()
+                    && selectedIndex < buttons.size()) {
                 animatedX = itemPositions.get(selectedIndex);
                 animatedWidth = itemWidths.get(selectedIndex);
             }
@@ -257,9 +257,13 @@ public class Radio extends View {
             this.selectedValue = value;
 
             int selectedIndex = findSelectedIndex();
-            if (selectedIndex >= 0 && itemPositions != null && itemWidths != null && buttons != null &&
-                selectedIndex < itemPositions.size() && selectedIndex < itemWidths.size() &&
-                selectedIndex < buttons.size()) {
+            if (selectedIndex >= 0
+                    && itemPositions != null
+                    && itemWidths != null
+                    && buttons != null
+                    && selectedIndex < itemPositions.size()
+                    && selectedIndex < itemWidths.size()
+                    && selectedIndex < buttons.size()) {
                 float targetX = itemPositions.get(selectedIndex);
                 float targetWidth = itemWidths.get(selectedIndex);
 
@@ -326,7 +330,9 @@ public class Radio extends View {
 
         for (int i = 0; i < buttons.size(); i++) {
             RadioButton button = buttons.get(i);
-            if (button != null && selectedValue != null && selectedValue.equals(button.getValue())) {
+            if (button != null
+                    && selectedValue != null
+                    && selectedValue.equals(button.getValue())) {
                 return i;
             }
         }
@@ -372,7 +378,8 @@ public class Radio extends View {
         for (RadioButton button : buttons) {
             if (button == null) continue;
 
-            String text = button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
+            String text =
+                    button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
 
             // Measure with bold typeface to ensure enough space for selected state
             textPaint.setTypeface(Font.getBold(getContext(), text));
@@ -415,9 +422,13 @@ public class Radio extends View {
     private void updateAnimationPosition() {
         int selectedIndex = findSelectedIndex();
 
-        if (selectedIndex >= 0 && itemPositions != null && itemWidths != null && buttons != null &&
-            selectedIndex < itemPositions.size() && selectedIndex < itemWidths.size() &&
-            selectedIndex < buttons.size()) {
+        if (selectedIndex >= 0
+                && itemPositions != null
+                && itemWidths != null
+                && buttons != null
+                && selectedIndex < itemPositions.size()
+                && selectedIndex < itemWidths.size()
+                && selectedIndex < buttons.size()) {
             animatedX = itemPositions.get(selectedIndex);
             animatedWidth = itemWidths.get(selectedIndex);
         }
@@ -545,9 +556,13 @@ public class Radio extends View {
 
             int selectedIndex = findSelectedIndex();
 
-            if (selectedIndex >= 0 && itemPositions != null && itemWidths != null && buttons != null &&
-                selectedIndex < itemPositions.size() && selectedIndex < itemWidths.size() &&
-                selectedIndex < buttons.size()) {
+            if (selectedIndex >= 0
+                    && itemPositions != null
+                    && itemWidths != null
+                    && buttons != null
+                    && selectedIndex < itemPositions.size()
+                    && selectedIndex < itemWidths.size()
+                    && selectedIndex < buttons.size()) {
                 float targetX = itemPositions.get(selectedIndex);
                 float targetWidth = itemWidths.get(selectedIndex);
 
@@ -566,50 +581,6 @@ public class Radio extends View {
         widthAnimator = null;
     }
 
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        Bundle bundle = new Bundle();
-
-        bundle.putParcelable("superState", super.onSaveInstanceState());
-        bundle.putString("selectedValue", selectedValue);
-        bundle.putString("currentLanguage", currentLanguage != null ? currentLanguage.getCode() : null);
-        bundle.putString("currentTheme", currentTheme != null ? currentTheme.getValue() : null);
-        // Save animation state
-        bundle.putFloat("animatedX", animatedX);
-        bundle.putFloat("animatedWidth", animatedWidth);
-
-        return bundle;
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        if (state instanceof Bundle) {
-            Bundle bundle = (Bundle) state;
-
-            selectedValue = bundle.getString("selectedValue", "");
-
-            String langCode = bundle.getString("currentLanguage");
-            currentLanguage = langCode != null ? Language.fromCode(langCode) : null;
-
-            String themeValue = bundle.getString("currentTheme");
-            currentTheme = themeValue != null ? Theme.fromValue(themeValue) : null;
-
-            animatedX = bundle.getFloat("animatedX", 0f);
-            animatedWidth = bundle.getFloat("animatedWidth", 0f);
-
-            super.onRestoreInstanceState(bundle.getParcelable("superState"));
-
-            if (isInitialized()) {
-                updateTheme();
-                initPaints();
-            }
-
-            invalidate();
-        } else {
-            super.onRestoreInstanceState(state);
-        }
-    }
-
     private void drawBackgroundLayer(Canvas canvas) {
         // LAYER 1: Control background - size exactly by content
         if (backgroundPaint == null) return;
@@ -623,11 +594,12 @@ public class Radio extends View {
         if (selectedBackgroundPaint == null) return;
 
         // Selection rectangle with 1px inset from top and bottom
-        RectF selectedRect = new RectF(
-                animatedX + 1f,  // 1px inset from left
-                1f,              // 1px inset from top
-                animatedX + animatedWidth,
-                totalHeight - 1f);  // 1px inset from bottom (symmetric with top)
+        RectF selectedRect =
+                new RectF(
+                        animatedX + 1f, // 1px inset from left
+                        1f, // 1px inset from top
+                        animatedX + animatedWidth,
+                        totalHeight - 1f); // 1px inset from bottom (symmetric with top)
 
         // Create gradient depending on theme
         LinearGradient gradient = createSelectionGradient(selectedRect);
@@ -642,8 +614,13 @@ public class Radio extends View {
         if (colors == null) {
             // Return a simple gray gradient if colors are not available
             return new LinearGradient(
-                    rect.left, rect.top, rect.right, rect.bottom,
-                    0xFF373F4A, 0xFF373F4A, Shader.TileMode.CLAMP);
+                    rect.left,
+                    rect.top,
+                    rect.right,
+                    rect.bottom,
+                    0xFF373F4A,
+                    0xFF373F4A,
+                    Shader.TileMode.CLAMP);
         }
 
         if (currentTheme != null && currentTheme.isDreamer()) {
@@ -683,18 +660,19 @@ public class Radio extends View {
 
         LinearGradient borderGradient = null;
         if (colors != null) {
-            borderGradient = new LinearGradient(
-                    0,
-                    borderRect.top,
-                    0,
-                    borderRect.bottom,
-                    new int[] {
-                        colors.selectedBorderTop,
-                        colors.selectedBorderSide,
-                        colors.selectedBorderBottom
-                    },
-                    new float[] {0f, 0.5f, 1f},
-                    Shader.TileMode.CLAMP);
+            borderGradient =
+                    new LinearGradient(
+                            0,
+                            borderRect.top,
+                            0,
+                            borderRect.bottom,
+                            new int[] {
+                                colors.selectedBorderTop,
+                                colors.selectedBorderSide,
+                                colors.selectedBorderBottom
+                            },
+                            new float[] {0f, 0.5f, 1f},
+                            Shader.TileMode.CLAMP);
         }
 
         if (borderGradient != null) {
@@ -721,7 +699,8 @@ public class Radio extends View {
                 if (button == null) continue;
 
                 // Get text FIRST — needed for font selection
-                String text = button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
+                String text =
+                        button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
 
                 // Calculate text position - positions already include centering
                 float itemWidth = itemWidths.get(i);

@@ -23,8 +23,8 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 
-import ru.voboost.components.theme.Theme;
 import ru.voboost.components.i18n.Language;
+import ru.voboost.components.theme.Theme;
 
 /**
  * Visual regression tests for Radio component Java implementation using Roborazzi.
@@ -264,13 +264,15 @@ public class RadioTestVisual {
 
     @Test
     public void radio_climate_en_1_dreamer_light() {
-        Radio radio = createRadio(getClimateButtons(), Language.EN, Theme.DREAMER_LIGHT, "automatic");
+        Radio radio =
+                createRadio(getClimateButtons(), Language.EN, Theme.DREAMER_LIGHT, "automatic");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
     @Test
     public void radio_climate_en_1_dreamer_dark() {
-        Radio radio = createRadio(getClimateButtons(), Language.EN, Theme.DREAMER_DARK, "automatic");
+        Radio radio =
+                createRadio(getClimateButtons(), Language.EN, Theme.DREAMER_DARK, "automatic");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
@@ -339,13 +341,15 @@ public class RadioTestVisual {
 
     @Test
     public void radio_climate_ru_1_dreamer_light() {
-        Radio radio = createRadio(getClimateButtons(), Language.RU, Theme.DREAMER_LIGHT, "automatic");
+        Radio radio =
+                createRadio(getClimateButtons(), Language.RU, Theme.DREAMER_LIGHT, "automatic");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
     @Test
     public void radio_climate_ru_1_dreamer_dark() {
-        Radio radio = createRadio(getClimateButtons(), Language.RU, Theme.DREAMER_DARK, "automatic");
+        Radio radio =
+                createRadio(getClimateButtons(), Language.RU, Theme.DREAMER_DARK, "automatic");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
@@ -474,7 +478,8 @@ public class RadioTestVisual {
     // Test animation bounds - short to long transition (maximum overshoot)
     @Test
     public void radio_animation_bounds_short_to_long_free_light() {
-        Radio radio = createRadio(getAnimationTestButtons(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getAnimationTestButtons(), Language.EN, Theme.FREE_LIGHT, "short");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
@@ -487,26 +492,30 @@ public class RadioTestVisual {
     // Test animation bounds in dreamer theme (horizontal gradient)
     @Test
     public void radio_animation_bounds_short_to_long_dreamer_dark() {
-        Radio radio = createRadio(getAnimationTestButtons(), Language.EN, Theme.DREAMER_DARK, "short");
+        Radio radio =
+                createRadio(getAnimationTestButtons(), Language.EN, Theme.DREAMER_DARK, "short");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
     @Test
     public void radio_animation_bounds_long_to_short_dreamer_dark() {
-        Radio radio = createRadio(getAnimationTestButtons(), Language.EN, Theme.DREAMER_DARK, "long");
+        Radio radio =
+                createRadio(getAnimationTestButtons(), Language.EN, Theme.DREAMER_DARK, "long");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
     // Test language switching with different text widths (potential jitter scenarios)
     @Test
     public void radio_language_switch_width_change_en_to_ru() {
-        Radio radio = createRadio(getAnimationTestButtons(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getAnimationTestButtons(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
     @Test
     public void radio_language_switch_width_change_ru_to_en() {
-        Radio radio = createRadio(getAnimationTestButtons(), Language.RU, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getAnimationTestButtons(), Language.RU, Theme.FREE_LIGHT, "medium");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
@@ -548,7 +557,8 @@ public class RadioTestVisual {
 
     @Test
     public void radio_animation_transition_1_to_2_dreamer_light() {
-        Radio radio = createRadio(getAnimationButtons(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getAnimationButtons(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureRoboImage(radio, getScreenshotPath(), new RoborazziOptions());
     }
 
@@ -765,53 +775,41 @@ public class RadioTestVisual {
     @Test
     public void radio_animation_frame_25_percent_free_light() {
         Radio radio = createRadio(getAnimationButtons(), Language.EN, Theme.FREE_LIGHT, "first");
-        captureAnimationFrame(
-                radio, "first", "third", 0.25f);
+        captureAnimationFrame(radio, "first", "third", 0.25f);
     }
 
     // Animation frame tests - 50% progress
     @Test
     public void radio_animation_frame_50_percent_free_light() {
         Radio radio = createRadio(getAnimationButtons(), Language.EN, Theme.FREE_LIGHT, "first");
-        captureAnimationFrame(
-                radio, "first", "third", 0.50f);
+        captureAnimationFrame(radio, "first", "third", 0.50f);
     }
 
     // Animation frame tests - 75% progress (before overshoot peak)
     @Test
     public void radio_animation_frame_75_percent_free_light() {
         Radio radio = createRadio(getAnimationButtons(), Language.EN, Theme.FREE_LIGHT, "first");
-        captureAnimationFrame(
-                radio, "first", "third", 0.75f);
+        captureAnimationFrame(radio, "first", "third", 0.75f);
     }
 
     // Animation frame tests - 100% progress (at overshoot peak)
     @Test
     public void radio_animation_frame_100_percent_overshoot_free_light() {
         Radio radio = createRadio(getAnimationButtons(), Language.EN, Theme.FREE_LIGHT, "first");
-        captureAnimationFrame(
-                radio,
-                "first",
-                "third",
-                1.0f);
+        captureAnimationFrame(radio, "first", "third", 1.0f);
     }
 
     // Animation frame tests for dreamer theme
     @Test
     public void radio_animation_frame_50_percent_dreamer_dark() {
         Radio radio = createRadio(getAnimationButtons(), Language.EN, Theme.DREAMER_DARK, "first");
-        captureAnimationFrame(
-                radio, "first", "third", 0.50f);
+        captureAnimationFrame(radio, "first", "third", 0.50f);
     }
 
     @Test
     public void radio_animation_frame_100_percent_overshoot_dreamer_dark() {
         Radio radio = createRadio(getAnimationButtons(), Language.EN, Theme.DREAMER_DARK, "first");
-        captureAnimationFrame(
-                radio,
-                "first",
-                "third",
-                1.0f);
+        captureAnimationFrame(radio, "first", "third", 1.0f);
     }
 
     // ============================================================
@@ -830,8 +828,7 @@ public class RadioTestVisual {
         secondLabels.put("ru", "Второй");
 
         return Arrays.asList(
-                new RadioButton("first", firstLabels),
-                new RadioButton("second", secondLabels));
+                new RadioButton("first", firstLabels), new RadioButton("second", secondLabels));
     }
 
     private List<RadioButton> getThreeButtonTestSet() {
@@ -895,8 +892,6 @@ public class RadioTestVisual {
                 new RadioButton("medium", mediumLabels),
                 new RadioButton("long", longLabels));
     }
-
-
 
     // Comprehensive animation tests with 5% progress steps
     // Creating individual test methods for each screenshot to ensure proper capture
@@ -1028,7 +1023,6 @@ public class RadioTestVisual {
         captureAnimationFrame(radio, "first", "second", 1.0f);
     }
 
-
     // ============================================================
     // COMPREHENSIVE 5% STEP ANIMATION TESTS
     // Testing all combinations with 5% progress steps (0%, 5%, 10%, ..., 100%)
@@ -1046,11 +1040,9 @@ public class RadioTestVisual {
     // ADDITIONAL THEME AND LANGUAGE COMBINATIONS FOR ALL BUTTON SETS
     // ============================================================
 
-
     // Three button set - all transitions with all themes and languages
 
-
-        // Three button set - first to second transition - free_light - en
+    // Three button set - first to second transition - free_light - en
     @Test
     public void radio_animation_three_button_first_to_second_0_percent_free_light_en() {
         Radio radio = createRadio(getThreeButtonTestSet(), Language.EN, Theme.FREE_LIGHT, "first");
@@ -2200,508 +2192,592 @@ public class RadioTestVisual {
     // Variable width button set - short to medium transition - free_light - en
     @Test
     public void radio_animation_variable_width_short_to_medium_0_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.0f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_5_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.05f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_10_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.10f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_15_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.15f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_20_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.20f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_25_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.25f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_30_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.30f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_35_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.35f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_40_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.40f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_45_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.45f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_50_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.50f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_55_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.55f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_60_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.60f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_65_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.65f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_70_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.70f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_75_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.75f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_80_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.80f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_85_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.85f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_90_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.90f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_95_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 0.95f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_medium_100_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "medium", 1.0f);
     }
 
     // Variable width button set - short to long transition - free_light - en
     @Test
     public void radio_animation_variable_width_short_to_long_0_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.0f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_5_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.05f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_10_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.10f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_15_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.15f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_20_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.20f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_25_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.25f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_30_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.30f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_35_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.35f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_40_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.40f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_45_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.45f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_50_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.50f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_55_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.55f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_60_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.60f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_65_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.65f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_70_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.70f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_75_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.75f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_80_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.80f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_85_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.85f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_90_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.90f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_95_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 0.95f);
     }
 
     @Test
     public void radio_animation_variable_width_short_to_long_100_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "short");
         captureAnimationFrame(radio, "short", "long", 1.0f);
     }
 
     // Variable width button set - medium to short transition - free_light - en
     @Test
     public void radio_animation_variable_width_medium_to_short_0_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.0f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_5_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.05f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_10_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.10f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_15_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.15f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_20_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.20f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_25_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.25f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_30_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.30f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_35_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.35f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_40_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.40f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_45_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.45f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_50_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.50f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_55_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.55f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_60_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.60f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_65_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.65f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_70_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.70f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_75_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.75f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_80_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.80f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_85_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.85f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_90_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.90f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_95_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 0.95f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_short_100_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "short", 1.0f);
     }
 
     // Variable width button set - medium to long transition - free_light - en
     @Test
     public void radio_animation_variable_width_medium_to_long_0_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.0f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_5_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.05f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_10_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.10f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_15_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.15f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_20_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.20f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_25_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.25f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_30_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.30f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_35_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.35f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_40_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.40f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_45_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.45f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_50_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.50f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_55_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.55f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_60_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.60f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_65_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.65f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_70_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.70f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_75_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.75f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_80_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.80f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_85_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.85f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_90_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.90f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_95_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 0.95f);
     }
 
     @Test
     public void radio_animation_variable_width_medium_to_long_100_percent_free_light_en() {
-        Radio radio = createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
+        Radio radio =
+                createRadio(getVariableWidthTestSet(), Language.EN, Theme.FREE_LIGHT, "medium");
         captureAnimationFrame(radio, "medium", "long", 1.0f);
     }
 
@@ -4359,254 +4435,296 @@ public class RadioTestVisual {
     // Two button set - second to first transition - dreamer_light - en
     @Test
     public void radio_animation_two_button_second_to_first_0_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.0f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_5_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.05f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_10_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.10f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_15_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.15f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_20_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.20f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_25_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.25f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_30_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.30f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_35_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.35f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_40_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.40f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_45_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.45f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_50_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.50f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_55_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.55f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_60_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.60f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_65_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.65f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_70_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.70f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_75_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.75f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_80_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.80f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_85_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.85f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_90_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.90f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_95_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.95f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_100_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 1.0f);
     }
 
     // Two button set - second to first transition - dreamer_light - ru
     @Test
     public void radio_animation_two_button_second_to_first_0_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.0f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_5_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.05f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_10_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.10f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_15_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.15f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_20_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.20f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_25_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.25f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_30_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.30f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_35_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.35f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_40_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.40f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_45_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.45f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_50_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.50f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_55_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.55f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_60_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.60f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_65_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.65f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_70_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.70f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_75_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.75f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_80_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.80f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_85_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.85f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_90_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.90f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_95_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 0.95f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_100_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 1.0f);
     }
 
@@ -4994,13 +5112,15 @@ public class RadioTestVisual {
 
     @Test
     public void radio_animation_two_button_second_to_first_105_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 1.05f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_105_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 1.05f);
     }
 
@@ -5043,13 +5163,15 @@ public class RadioTestVisual {
 
     @Test
     public void radio_animation_two_button_second_to_first_110_percent_dreamer_light_en() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.EN, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 1.10f);
     }
 
     @Test
     public void radio_animation_two_button_second_to_first_110_percent_dreamer_light_ru() {
-        Radio radio = createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
+        Radio radio =
+                createRadio(getTwoButtonTestSet(), Language.RU, Theme.DREAMER_LIGHT, "second");
         captureAnimationFrame(radio, "second", "first", 1.10f);
     }
 

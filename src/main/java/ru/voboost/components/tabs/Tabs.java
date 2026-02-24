@@ -1,26 +1,22 @@
 package ru.voboost.components.tabs;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.Typeface;
-import android.text.Layout;
-import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-
-import ru.voboost.components.font.Font;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
+
+import ru.voboost.components.font.Font;
 import ru.voboost.components.i18n.Language;
 import ru.voboost.components.theme.Theme;
 
@@ -315,10 +311,8 @@ public class Tabs extends View {
         int width = TabsTheme.SIDEBAR_WIDTH;
         int height = calculateTotalHeight();
 
-        setMeasuredDimension(
-                resolveSize(width, widthMeasureSpec),
-                resolveSize(height, heightMeasureSpec)
-        );
+        // Report natural height without constraint resolution
+        setMeasuredDimension(width, height);
     }
 
     private int calculateTotalHeight() {
@@ -326,9 +320,9 @@ public class Tabs extends View {
             return 0;
         }
 
-        return items.size() * TabsTheme.TAB_ITEM_HEIGHT +
-               (items.size() - 1) * TabsTheme.TAB_ITEM_SPACING +
-               TabsTheme.SIDEBAR_PADDING_BOTTOM;
+        return items.size() * TabsTheme.TAB_ITEM_HEIGHT
+                + (items.size() - 1) * TabsTheme.TAB_ITEM_SPACING
+                + TabsTheme.SIDEBAR_PADDING_BOTTOM;
     }
 
     // ============================================================
@@ -364,7 +358,8 @@ public class Tabs extends View {
         float bottom = top + TabsTheme.TAB_ITEM_HEIGHT;
 
         RectF rect = new RectF(left, top, right, bottom);
-        canvas.drawRoundRect(rect, TabsTheme.CORNER_RADIUS, TabsTheme.CORNER_RADIUS, selectedBackgroundPaint);
+        canvas.drawRoundRect(
+                rect, TabsTheme.CORNER_RADIUS, TabsTheme.CORNER_RADIUS, selectedBackgroundPaint);
     }
 
     private void drawTabItems(Canvas canvas) {
@@ -413,10 +408,11 @@ public class Tabs extends View {
         selectionAnimator = ValueAnimator.ofFloat(animatedY, targetY);
         selectionAnimator.setDuration(TabsTheme.ANIMATION_DURATION);
         selectionAnimator.setInterpolator(new OvershootInterpolator(1.0f));
-        selectionAnimator.addUpdateListener(animation -> {
-            animatedY = (float) animation.getAnimatedValue();
-            invalidate();
-        });
+        selectionAnimator.addUpdateListener(
+                animation -> {
+                    animatedY = (float) animation.getAnimatedValue();
+                    invalidate();
+                });
         selectionAnimator.start();
     }
 
@@ -496,7 +492,6 @@ public class Tabs extends View {
         unselectedTextPaint.setColor(TabsTheme.getUnselectedTextColor(currentTheme));
     }
 
-
     // ============================================================
     // LIFECYCLE
     // ============================================================
@@ -521,7 +516,8 @@ public class Tabs extends View {
 
         bundle.putParcelable("superState", super.onSaveInstanceState());
         bundle.putString("selectedValue", selectedValue);
-        bundle.putString("currentLanguage", currentLanguage != null ? currentLanguage.getCode() : null);
+        bundle.putString(
+                "currentLanguage", currentLanguage != null ? currentLanguage.getCode() : null);
         bundle.putString("currentTheme", currentTheme != null ? currentTheme.getValue() : null);
         bundle.putFloat("animatedY", animatedY);
         bundle.putBoolean("animatedYInitialized", animatedYInitialized);
@@ -557,4 +553,3 @@ public class Tabs extends View {
         }
     }
 }
-

@@ -2,6 +2,13 @@ package ru.voboost.components.tabs;
 
 import static com.github.takahirom.roborazzi.RoborazziKt.captureRoboImage;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import android.app.Activity;
 import android.content.Context;
 import android.view.ViewGroup;
@@ -17,13 +24,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import ru.voboost.components.i18n.Language;
 import ru.voboost.components.theme.Theme;
@@ -120,8 +120,7 @@ public class TabsTestVisual {
         secondLabels.put("ru", "Второй");
 
         return Arrays.asList(
-                new TabItem("first", firstLabels),
-                new TabItem("second", secondLabels));
+                new TabItem("first", firstLabels), new TabItem("second", secondLabels));
     }
 
     // Three-tab test set for animation testing
@@ -328,7 +327,8 @@ public class TabsTestVisual {
                 float startY = itemPositions.get(fromIndex);
                 float endY = itemPositions.get(toIndex);
 
-                // Apply overshoot interpolation manually (matches OvershootInterpolator with tension=1.0f)
+                // Apply overshoot interpolation manually (matches OvershootInterpolator with
+                // tension=1.0f)
                 float overshootProgress = calculateOvershoot(progress);
 
                 float currentY = startY + (endY - startY) * overshootProgress;
@@ -387,31 +387,38 @@ public class TabsTestVisual {
 
     @Test
     public void tabs_dreamerLightEnglish() {
-        Tabs tabs = createTabs(createStandardTestItems(), Language.EN, Theme.DREAMER_LIGHT, "interface");
+        Tabs tabs =
+                createTabs(
+                        createStandardTestItems(), Language.EN, Theme.DREAMER_LIGHT, "interface");
         captureRoboImage(tabs, getScreenshotPath(), new RoborazziOptions());
     }
 
     @Test
     public void tabs_dreamerLightRussian() {
-        Tabs tabs = createTabs(createStandardTestItems(), Language.RU, Theme.DREAMER_LIGHT, "interface");
+        Tabs tabs =
+                createTabs(
+                        createStandardTestItems(), Language.RU, Theme.DREAMER_LIGHT, "interface");
         captureRoboImage(tabs, getScreenshotPath(), new RoborazziOptions());
     }
 
     @Test
     public void tabs_dreamerDarkEnglish() {
-        Tabs tabs = createTabs(createStandardTestItems(), Language.EN, Theme.DREAMER_DARK, "vehicle");
+        Tabs tabs =
+                createTabs(createStandardTestItems(), Language.EN, Theme.DREAMER_DARK, "vehicle");
         captureRoboImage(tabs, getScreenshotPath(), new RoborazziOptions());
     }
 
     @Test
     public void tabs_dreamerDarkRussian() {
-        Tabs tabs = createTabs(createStandardTestItems(), Language.RU, Theme.DREAMER_DARK, "vehicle");
+        Tabs tabs =
+                createTabs(createStandardTestItems(), Language.RU, Theme.DREAMER_DARK, "vehicle");
         captureRoboImage(tabs, getScreenshotPath(), new RoborazziOptions());
     }
 
     @Test
     public void tabs_lastItemSelected() {
-        Tabs tabs = createTabs(createStandardTestItems(), Language.EN, Theme.FREE_LIGHT, "settings");
+        Tabs tabs =
+                createTabs(createStandardTestItems(), Language.EN, Theme.FREE_LIGHT, "settings");
         captureRoboImage(tabs, getScreenshotPath(), new RoborazziOptions());
     }
 
@@ -628,7 +635,8 @@ public class TabsTestVisual {
 
     @Test
     public void tabs_animation_edge_last_to_first_free_light_en() {
-        Tabs tabs = createTabs(createStandardTestItems(), Language.EN, Theme.FREE_LIGHT, "settings");
+        Tabs tabs =
+                createTabs(createStandardTestItems(), Language.EN, Theme.FREE_LIGHT, "settings");
         captureAnimationFrame(tabs, "settings", "store", 0.50f);
     }
 

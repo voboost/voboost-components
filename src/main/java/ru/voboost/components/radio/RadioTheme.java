@@ -1,6 +1,7 @@
 package ru.voboost.components.radio;
 
 import android.graphics.Color;
+
 import ru.voboost.components.theme.Theme;
 
 /**
@@ -72,49 +73,58 @@ class RadioDimensions {
  * Java equivalent of the Kotlin RadioColorSchemes object
  */
 class RadioColorSchemes {
-    private static final java.util.Map<Theme, RadioColors> SCHEMES = new java.util.EnumMap<>(Theme.class);
+    private static final java.util.Map<Theme, RadioColors> SCHEMES =
+            new java.util.EnumMap<>(Theme.class);
 
     static {
-        SCHEMES.put(Theme.FREE_LIGHT, new RadioColors(
-            Color.parseColor("#ffffff"), // background
-            Color.parseColor("#ffffff"), // selectedText
-            Color.parseColor("#2d3442"), // unselectedText
-            Color.parseColor("#79bbfd"), // selectedGradientStart
-            Color.parseColor("#2781dd"), // selectedGradientEnd
-            Color.parseColor("#8dc6ff"), // selectedBorderTop
-            Color.parseColor("#519ae5"), // selectedBorderSide
-            Color.parseColor("#1875d2") // selectedBorderBottom
-        ));
-        SCHEMES.put(Theme.FREE_DARK, new RadioColors(
-            Color.parseColor("#373f4a"), // background
-            Color.parseColor("#ffffff"), // selectedText
-            Color.parseColor("#CACACA"), // unselectedText
-            Color.parseColor("#79bbfd"), // selectedGradientStart
-            Color.parseColor("#2781dd"), // selectedGradientEnd
-            Color.parseColor("#8dc6ff"), // selectedBorderTop
-            Color.parseColor("#519ae5"), // selectedBorderSide
-            Color.parseColor("#1875d2") // selectedBorderBottom
-        ));
-        SCHEMES.put(Theme.DREAMER_LIGHT, new RadioColors(
-            Color.parseColor("#ffffff"), // background
-            Color.parseColor("#2f2e36"), // selectedText
-            Color.parseColor("#2d3442"), // unselectedText
-            Color.parseColor("#eadac8"), // selectedGradientStart
-            Color.parseColor("#9c8069"), // selectedGradientEnd
-            Color.parseColor("#eadac8"), // selectedBorderTop
-            Color.parseColor("#9c8069"), // selectedBorderSide
-            Color.parseColor("#9c8069") // selectedBorderBottom
-        ));
-        SCHEMES.put(Theme.DREAMER_DARK, new RadioColors(
-            Color.parseColor("#40444a"), // background
-            Color.parseColor("#2f2e36"), // selectedText
-            Color.parseColor("#80ffffff"), // unselectedText - 50% white opacity
-            Color.parseColor("#eadac8"), // selectedGradientStart
-            Color.parseColor("#9c8069"), // selectedGradientEnd
-            Color.parseColor("#eadac8"), // selectedBorderTop
-            Color.parseColor("#9c8069"), // selectedBorderSide
-            Color.parseColor("#9c8069") // selectedBorderBottom
-        ));
+        SCHEMES.put(
+                Theme.FREE_LIGHT,
+                new RadioColors(
+                        Color.parseColor("#ffffff"), // background
+                        Color.parseColor("#ffffff"), // selectedText
+                        Color.parseColor("#2d3442"), // unselectedText
+                        Color.parseColor("#79bbfd"), // selectedGradientStart
+                        Color.parseColor("#2781dd"), // selectedGradientEnd
+                        Color.parseColor("#8dc6ff"), // selectedBorderTop
+                        Color.parseColor("#519ae5"), // selectedBorderSide
+                        Color.parseColor("#1875d2") // selectedBorderBottom
+                        ));
+        SCHEMES.put(
+                Theme.FREE_DARK,
+                new RadioColors(
+                        Color.parseColor("#373f4a"), // background
+                        Color.parseColor("#ffffff"), // selectedText
+                        Color.parseColor("#CACACA"), // unselectedText
+                        Color.parseColor("#79bbfd"), // selectedGradientStart
+                        Color.parseColor("#2781dd"), // selectedGradientEnd
+                        Color.parseColor("#8dc6ff"), // selectedBorderTop
+                        Color.parseColor("#519ae5"), // selectedBorderSide
+                        Color.parseColor("#1875d2") // selectedBorderBottom
+                        ));
+        SCHEMES.put(
+                Theme.DREAMER_LIGHT,
+                new RadioColors(
+                        Color.parseColor("#ffffff"), // background
+                        Color.parseColor("#2f2e36"), // selectedText
+                        Color.parseColor("#2d3442"), // unselectedText
+                        Color.parseColor("#eadac8"), // selectedGradientStart
+                        Color.parseColor("#9c8069"), // selectedGradientEnd
+                        Color.parseColor("#eadac8"), // selectedBorderTop
+                        Color.parseColor("#9c8069"), // selectedBorderSide
+                        Color.parseColor("#9c8069") // selectedBorderBottom
+                        ));
+        SCHEMES.put(
+                Theme.DREAMER_DARK,
+                new RadioColors(
+                        Color.parseColor("#40444a"), // background
+                        Color.parseColor("#2f2e36"), // selectedText
+                        Color.parseColor("#80ffffff"), // unselectedText - 50% white opacity
+                        Color.parseColor("#eadac8"), // selectedGradientStart
+                        Color.parseColor("#9c8069"), // selectedGradientEnd
+                        Color.parseColor("#eadac8"), // selectedBorderTop
+                        Color.parseColor("#9c8069"), // selectedBorderSide
+                        Color.parseColor("#9c8069") // selectedBorderBottom
+                        ));
     }
 
     public static RadioColors get(Theme theme) {

@@ -34,7 +34,6 @@ import android.graphics.Typeface;
  * There is NO fallback to system default fonts.
  */
 public final class Font {
-
     private static Typeface regular;
     private static Typeface boldAscii;
     private static Typeface boldUnicode;
@@ -126,12 +125,17 @@ public final class Font {
     private static Typeface loadFont(Context context, String fontName) {
         try {
             // Load font from assets (BEM structure: src/main/java is added to assets.srcDirs)
-            return Typeface.createFromAsset(context.getAssets(), "ru/voboost/components/font/" + fontName);
+            return Typeface.createFromAsset(
+                    context.getAssets(), "ru/voboost/components/font/" + fontName);
         } catch (Exception e) {
             throw new RuntimeException(
-                    "Failed to load " + fontName + " from assets. "
-                            + "Ensure the font file is available at src/main/java/ru/voboost/components/font/" + fontName
-                            + " and that build.gradle.kts has assets.srcDirs = [\"src/main/java\"]", e);
+                    "Failed to load "
+                            + fontName
+                            + " from assets. Ensure the font file is available at"
+                            + " src/main/java/ru/voboost/components/font/"
+                            + fontName
+                            + " and that build.gradle.kts has assets.srcDirs = [\"src/main/java\"]",
+                    e);
         }
     }
 }
