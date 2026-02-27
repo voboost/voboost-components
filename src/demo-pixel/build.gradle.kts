@@ -143,23 +143,13 @@ tasks.register("testDemoPixel") {
 }
 
 tasks.register("testPixelVisualSave") {
-    group = "verification"
+    group = null // internal — use recordDemos from root
     description = "Record and save pixel demo visual test screenshots"
-
     dependsOn("recordRoborazziDebug")
-
-    doLast {
-        println("Pixel demo screenshots saved to MainActivity.screenshots/")
-    }
 }
 
 tasks.register("testPixelVisualCompare") {
-    group = "verification"
-    description = "Compare pixel demo visual test screenshots against reference images and generate diff"
-
+    group = null // internal — use verifyDemos from root
+    description = "Compare pixel demo visual test screenshots"
     dependsOn("compareRoborazziDebug")
-
-    doLast {
-        println("Pixel demo visual comparison completed. Check MainActivity.screenshots/ for diff images.")
-    }
 }

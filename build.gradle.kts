@@ -40,6 +40,11 @@ android {
         }
     }
 
+    // Exclude non-font files from assets (Font.java is co-located with .ttf files)
+    androidResources {
+        ignoreAssetsPattern = "!*.java:!*.kt:!*.md"
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -102,7 +107,8 @@ android {
                 srcDir("src/main/java")
             }
             // BEM structure: fonts co-located with Font class are loaded as assets
-            assets.srcDir("src/main/java")
+            // ONLY include the font directory — not the entire source tree
+            assets.srcDir("src/main/java/ru/voboost/components/font")
         }
         getByName("test") {
             java {
@@ -152,7 +158,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 dependencies {
     // Android Core — minimal runtime dependencies for Java Custom Views
-    implementation("androidx.core:core:1.12.0")           // core WITHOUT ktx
+    implementation("androidx.core:core:1.12.0") // core WITHOUT ktx
     implementation("androidx.annotation:annotation:1.7.1") // annotations only
 
     // These are only needed by Kotlin Compose wrappers — consumers must provide
@@ -168,11 +174,14 @@ dependencies {
     compileOnly(platform("androidx.compose:compose-bom:2024.02.00"))
     compileOnly("androidx.compose.ui:ui")
     compileOnly("androidx.compose.ui:ui-graphics")
+    compileOnly("androidx.compose.ui:ui-tooling")
     compileOnly("androidx.compose.ui:ui-tooling-preview")
+    compileOnly("androidx.compose.ui:ui-test-manifest")
     compileOnly("androidx.compose.material3:material3")
     compileOnly("androidx.activity:activity-compose:1.8.2")
 
     // Testing dependencies (only for test source set)
+    testImplementation(platform("androidx.compose:compose-bom:2024.02.00"))
     testImplementation("junit:junit:4.13.2") {
         exclude(group = "org.hamcrest", module = "hamcrest-core")
     }
@@ -200,8 +209,8 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     // Debug dependencies
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    compileOnly("androidx.compose.ui:ui-tooling")
+    compileOnly("androidx.compose.ui:ui-test-manifest")
 }
 
 // Note: Code style tasks (formatKotlinCode, checkKotlinStyle, formatJavaCode, etc.)
@@ -211,9 +220,9 @@ dependencies {
 // These tasks integrate demo applications into the development workflow
 // while ensuring they are excluded from library distribution
 
-tasks.register("buildAllDemos") {
+tasks.register("buildDemos") {
     group = "demo"
-    description = "Build all demo applications (Java, Kotlin, Compose, Pixel)"
+    description = "Build all demo applications"
     dependsOn(
         ":demo-java:assembleDebug",
         ":demo-kotlin:assembleDebug",
@@ -222,9 +231,9 @@ tasks.register("buildAllDemos") {
     )
 }
 
-tasks.register("installAllDemos") {
+tasks.register("installDemos") {
     group = "demo"
-    description = "Install all demo applications to connected device"
+    description = "Install all demo applications"
     dependsOn(
         ":demo-java:installDebug",
         ":demo-kotlin:installDebug",
@@ -233,7 +242,7 @@ tasks.register("installAllDemos") {
     )
 }
 
-tasks.register("testAllDemos") {
+tasks.register("testDemos") {
     group = "demo"
     description = "Run tests for all demo applications"
     dependsOn(
@@ -244,7 +253,7 @@ tasks.register("testAllDemos") {
     )
 }
 
-tasks.register("cleanAllDemos") {
+tasks.register("cleanDemos") {
     group = "demo"
     description = "Clean all demo applications"
     dependsOn(":demo-java:clean", ":demo-kotlin:clean", ":demo-compose:clean", ":demo-pixel:clean")
@@ -297,18 +306,6 @@ tasks.register("installDemoPixel") {
     group = "demo"
     description = "Install Pixel demo application to connected device"
     dependsOn(":demo-pixel:installDebug")
-}
-
-tasks.register("testPixelVisualSave") {
-    group = "verification"
-    description = "Record and save pixel demo visual test screenshots"
-    dependsOn(":demo-pixel:testPixelVisualSave")
-}
-
-tasks.register("testPixelVisualCompare") {
-    group = "verification"
-    description = "Compare pixel demo visual test screenshots against reference images and generate diff"
-    dependsOn(":demo-pixel:testPixelVisualCompare")
 }
 
 // Demo start tasks
@@ -364,40 +361,28 @@ tasks.register<Exec>("startDemoPixel") {
 // Demo validation tasks
 tasks.register("validateDemos") {
     group = "demo"
-    description = "Validate all demo applications (build + test)"
-    dependsOn("buildAllDemos", "testAllDemos")
+    description = "Full demo validation (build + test + screenshots)"
+    dependsOn("buildDemos", "testDemos", "verifyDemos")
 }
 
-// Demo screenshot testing tasks (only Compose demo supports screenshots)
-tasks.register("recordAllDemoScreenshots") {
+tasks.register("recordDemos") {
     group = "demo"
-    description = "Record screenshots for Compose demo application " +
-        "(Java and Kotlin demos use basic functionality tests)"
+    description = "Record demo screenshots"
     dependsOn(":demo-compose:recordRoborazziDebug")
 }
 
-tasks.register("verifyAllDemoScreenshots") {
+tasks.register("verifyDemos") {
     group = "demo"
-    description = "Verify screenshots for Compose demo application " +
-        "(Java and Kotlin demos use basic functionality tests)"
+    description = "Verify demo screenshots"
     dependsOn(":demo-compose:verifyRoborazziDebug")
-}
-
-// Complete demo validation including screenshots
-tasks.register("validateDemosComplete") {
-    group = "demo"
-    description = "Complete validation of all demo applications (build + test + screenshots)"
-    dependsOn("validateDemos", "verifyAllDemoScreenshots")
 }
 
 // Ensure demos are excluded from library build and distribution
 tasks.named("assemble") {
-    // Explicitly exclude demo modules from main library assembly
-    mustRunAfter("cleanAllDemos")
+    mustRunAfter("cleanDemos")
 }
 
 tasks.named("build") {
-    // Ensure library build doesn't include demo modules
     finalizedBy("validateDemos")
 }
 
@@ -555,21 +540,27 @@ afterEvaluate {
         dependsOn("testUnitKotlin", "testVisualKotlin")
     }
 
-    tasks.register("validateJava") {
-        description = "Complete Java validation (style + tests)"
-        group = "verification"
-        dependsOn("testJava") // Removed checkJavaStyle and checkJavaFormat as they don't exist
+    tasks.register("fix") {
+        description = "Auto-fix style violations"
+        group = "formatting"
+        dependsOn("ktlintFormat", "spotlessApply")
     }
 
-    tasks.register("validateKotlin") {
-        description = "Complete Kotlin validation (style + tests)"
+    tasks.register("validate") {
+        description = "Run all checks (tests + style)"
         group = "verification"
-        dependsOn("testKotlin") // Removed checkKotlinStyle as it doesn't exist
+        dependsOn("testJava", "testKotlin", "ktlintCheck", "spotlessCheck")
+    }
+
+    tasks.register("record") {
+        description = "Record and save visual test screenshots"
+        group = "verification"
+        dependsOn("copyRoborazziScreenshots")
     }
 
     tasks.register<Copy>("copyRoborazziScreenshots") {
         description = "Copy Roborazzi screenshots to BEM structure"
-        group = "verification"
+        group = null // internal task
 
         from("build/intermediates/roborazzi")
         into("src/main/java/ru/voboost/components")
@@ -578,17 +569,6 @@ afterEvaluate {
 
         dependsOn("recordRoborazziDebug")
         doNotTrackState("Screenshots are managed externally")
-    }
-
-    tasks.register("testVisualSave") {
-        description = "Record and save visual test screenshots using Roborazzi"
-        group = "verification"
-
-        dependsOn("copyRoborazziScreenshots")
-
-        doLast {
-            println("Screenshots recorded and copied to BEM structure")
-        }
     }
 }
 

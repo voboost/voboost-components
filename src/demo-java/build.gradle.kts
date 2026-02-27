@@ -163,16 +163,3 @@ tasks.register("testDemoJavaVisualSave") {
     dependsOn("recordRoborazziDebug")
 }
 
-// Legacy screenshot tasks (for backward compatibility)
-tasks.register("recordDemoScreenshots") {
-    group = "demo"
-    description = "Record screenshots for Java demo application"
-    dependsOn("recordRoborazziDebug")
-}
-
-tasks.register("verifyDemoScreenshots") {
-    group = "demo"
-    description = "Verify screenshots for Java demo application"
-    dependsOn("verifyRoborazziDebug")
-}
-

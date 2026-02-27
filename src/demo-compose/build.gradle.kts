@@ -141,16 +141,3 @@ dependencies {
 roborazzi {
     outputDir = file("screenshots")
 }
-
-// Demo screenshot tasks
-tasks.register("recordDemoScreenshots") {
-    group = "demo"
-    description = "Record screenshots for Compose demo application"
-    dependsOn("recordRoborazziDebug")
-}
-
-tasks.register("verifyDemoScreenshots") {
-    group = "demo"
-    description = "Verify screenshots for Compose demo application"
-    dependsOn("verifyRoborazziDebug")
-}
