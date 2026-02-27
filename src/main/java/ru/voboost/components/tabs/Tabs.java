@@ -17,25 +17,32 @@ import android.view.animation.OvershootInterpolator;
 import androidx.annotation.Nullable;
 
 import ru.voboost.components.font.Font;
+import ru.voboost.components.i18n.ILocalizable;
 import ru.voboost.components.i18n.Language;
+import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
 
 /**
- * Tabs component - A vertical navigation sidebar with animated selection indicator.
+ * Tabs component - A vertical navigation sidebar with animated selection
+ * indicator.
  *
- * <p>This component displays a list of tab items vertically with a sliding
+ * <p>
+ * This component displays a list of tab items vertically with a sliding
  * selection indicator that animates between tabs.
  *
- * <p>Features:
+ * <p>
+ * Features:
  * <ul>
- *   <li>Vertical tab layout</li>
- *   <li>Animated selection indicator</li>
- *   <li>Multi-theme support (Free/Dreamer, Light/Dark)</li>
- *   <li>Multi-language support (EN/RU)</li>
- *   <li>Touch event handling</li>
+ * <li>Vertical tab layout</li>
+ * <li>Animated selection indicator</li>
+ * <li>Multi-theme support (Free/Dreamer, Light/Dark)</li>
+ * <li>Multi-language support (EN/RU)</li>
+ * <li>Touch event handling</li>
  * </ul>
  *
- * <p>Usage:
+ * <p>
+ * Usage:
+ * 
  * <pre>
  * Tabs tabs = new Tabs(context);
  * tabs.setTheme(Theme.FREE_LIGHT);
@@ -47,9 +54,7 @@ import ru.voboost.components.theme.Theme;
  * });
  * </pre>
  */
-public class Tabs extends View {
-
-    private static final String TAG = "Tabs";
+public class Tabs extends View implements IThemable, ILocalizable {
 
     // Data
     private List<TabItem> items = new ArrayList<>();
@@ -177,7 +182,7 @@ public class Tabs extends View {
     /**
      * Sets the currently selected tab value with optional callback trigger.
      *
-     * @param value the value of the tab to select
+     * @param value           the value of the tab to select
      * @param triggerCallback whether to trigger the onValueChangeListener
      */
     public void setSelectedValue(String value, boolean triggerCallback) {
@@ -231,6 +236,7 @@ public class Tabs extends View {
      * @param theme the theme to apply
      * @throws IllegalArgumentException if theme is null
      */
+    @Override
     public void setTheme(Theme theme) {
         if (theme == null) {
             throw new IllegalArgumentException("Theme cannot be null");
@@ -239,6 +245,16 @@ public class Tabs extends View {
         this.currentTheme = theme;
         updateColors();
         invalidate();
+    }
+
+    @Override
+    public void propagateTheme(Theme theme) {
+        // Leaf component, no children to propagate to
+    }
+
+    @Override
+    public void propagateLanguage(Language language) {
+        // Leaf component, no children to propagate to
     }
 
     /**
@@ -506,50 +522,4 @@ public class Tabs extends View {
         }
     }
 
-    // ============================================================
-    // STATE PERSISTENCE
-    // ============================================================
-
-    @Override
-    protected android.os.Parcelable onSaveInstanceState() {
-        android.os.Bundle bundle = new android.os.Bundle();
-
-        bundle.putParcelable("superState", super.onSaveInstanceState());
-        bundle.putString("selectedValue", selectedValue);
-        bundle.putString(
-                "currentLanguage", currentLanguage != null ? currentLanguage.getCode() : null);
-        bundle.putString("currentTheme", currentTheme != null ? currentTheme.getValue() : null);
-        bundle.putFloat("animatedY", animatedY);
-        bundle.putBoolean("animatedYInitialized", animatedYInitialized);
-
-        return bundle;
-    }
-
-    @Override
-    protected void onRestoreInstanceState(android.os.Parcelable state) {
-        if (state instanceof android.os.Bundle) {
-            android.os.Bundle bundle = (android.os.Bundle) state;
-
-            selectedValue = bundle.getString("selectedValue", "");
-
-            String langCode = bundle.getString("currentLanguage");
-            currentLanguage = langCode != null ? Language.fromCode(langCode) : null;
-
-            String themeValue = bundle.getString("currentTheme");
-            currentTheme = themeValue != null ? Theme.fromValue(themeValue) : null;
-
-            animatedY = bundle.getFloat("animatedY", 0f);
-            animatedYInitialized = bundle.getBoolean("animatedYInitialized", false);
-
-            super.onRestoreInstanceState(bundle.getParcelable("superState"));
-
-            if (currentTheme != null) {
-                updateColors();
-            }
-
-            invalidate();
-        } else {
-            super.onRestoreInstanceState(state);
-        }
-    }
 }

@@ -1,125 +1,132 @@
 # Tabs Component
 
-A vertical navigation sidebar component with animated selection indicator for automotive applications.
+## Architecture
 
-## Overview
+- **[Tabs.java](Tabs.java)** — Java Custom View: vertical sidebar, animated selection, canvas rendering
+- **[Tabs.kt](Tabs.kt)** — Kotlin Compose wrapper
 
-The Tabs component displays a list of navigation items vertically with a sliding selection indicator that animates between tabs. It supports multiple themes and languages.
-
-## Features
-
-- Vertical tab layout
-- Animated selection indicator with smooth transitions
-- Multi-theme support (Free/Dreamer, Light/Dark)
-- Multi-language support (EN/RU)
-- Touch event handling
-- State persistence across configuration changes
-- Hardware-accelerated rendering
+Vertical navigation sidebar with sliding selection indicator.
 
 ## Usage
 
 ### Java
 
 ```java
-// Create tabs
 Tabs tabs = new Tabs(context);
-
-// Configure theme and language
 tabs.setTheme(Theme.FREE_LIGHT);
 tabs.setLanguage(Language.EN);
 
-// Create tab items
-List<TabItem> items = new ArrayList<>();
-
-Map<String, String> storeLabels = new HashMap<>();
-storeLabels.put("en", "Store");
-storeLabels.put("ru", "Магазин");
-items.add(new TabItem("store", storeLabels));
-
-Map<String, String> settingsLabels = new HashMap<>();
-settingsLabels.put("en", "Settings");
-settingsLabels.put("ru", "Настройки");
-items.add(new TabItem("settings", settingsLabels));
-
-// Set items and selection
-tabs.setItems(items);
+tabs.setItems(Arrays.asList(
+    new TabItem("store", Map.of("en", "Store", "ru", "Магазин")),
+    new TabItem("settings", Map.of("en", "Settings", "ru", "Настройки"))
+));
 tabs.setSelectedValue("store");
 
-// Handle selection changes
 tabs.setOnValueChangeListener(value -> {
-    Log.d("Tabs", "Selected: " + value);
+    // Handle tab selection
 });
 ```
 
-### Kotlin (Compose)
+### Kotlin
 
 ```kotlin
-@Composable
-fun MyScreen() {
-    var selectedTab by remember { mutableStateOf("store") }
-
-    val items = listOf(
+val tabs = Tabs(context).apply {
+    setTheme(Theme.FREE_LIGHT)
+    setLanguage(Language.EN)
+    setItems(listOf(
         TabItem("store", mapOf("en" to "Store", "ru" to "Магазин")),
         TabItem("settings", mapOf("en" to "Settings", "ru" to "Настройки"))
-    )
-
-    Tabs(
-        items = items,
-        lang = "en",
-        theme = "free-light",
-        value = selectedTab,
-        onValueChange = { selectedTab = it }
-    )
+    ))
+    setSelectedValue("store")
+    setOnValueChangeListener { value -> /* handle */ }
 }
 ```
 
-## API Reference
+### Compose
+
+```kotlin
+var selectedTab by remember { mutableStateOf("store") }
+
+Tabs(
+    items = listOf(
+        TabItem("store", mapOf("en" to "Store", "ru" to "Магазин")),
+        TabItem("settings", mapOf("en" to "Settings", "ru" to "Настройки"))
+    ),
+    lang = Language.EN,
+    theme = Theme.FREE_LIGHT,
+    value = selectedTab,
+    onValueChange = { selectedTab = it }
+)
+```
+
+## API
+
+### Java
+
+```java
+// Configuration
+void setItems(List<TabItem> items)
+void setTheme(Theme theme)
+void setLanguage(Language language)
+
+// Value
+void setSelectedValue(String value)
+void setSelectedValue(String value, boolean triggerCallback)
+String getSelectedValue()
+
+// State
+Theme getCurrentTheme()
+Language getCurrentLanguage()
+int getSidebarWidth()
+
+// Events
+void setOnValueChangeListener(OnValueChangeListener listener)
+void setOnTabChangeListener(OnTabChangeListener listener)
+
+interface OnValueChangeListener {
+    void onValueChange(String value);
+}
+
+interface OnTabChangeListener {
+    void onTabChanged(int newIndex);
+}
+```
 
 ### TabItem
 
-| Property | Type | Description |
-|----------|------|-------------|
-| value | String | Unique identifier for the tab |
-| label | Map<String, String> | Localized labels (language code → text) |
+```java
+TabItem(String value, Map<String, String> label)
 
-### Tabs (Java)
+String getValue()
+Map<String, String> getLabel()
+String getText(String langCode)
+```
 
-| Method | Description |
-|--------|-------------|
-| setItems(List<TabItem>) | Sets the list of tab items |
-| setSelectedValue(String) | Sets the selected tab |
-| setTheme(Theme) | Sets the visual theme |
-| setLanguage(Language) | Sets the display language |
-| setOnValueChangeListener(OnValueChangeListener) | Sets selection callback |
+### Compose Wrapper
 
-### Tabs (Compose)
+```kotlin
+@Composable
+fun Tabs(
+    items: List<TabItem>,
+    lang: Language,
+    theme: Theme,
+    value: String,
+    onValueChange: (String) -> Unit
+)
+```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| items | List<TabItem> | Tab items to display |
-| lang | String | Language code ("en", "ru") |
-| theme | String | Theme identifier |
-| value | String | Selected tab value |
-| onValueChange | (String) -> Unit | Selection callback |
+## Implementation Details
 
-## Themes
+Animated selection indicator using `ValueAnimator`. State persistence via `onSaveInstanceState`/`onRestoreInstanceState`. Sizes in pixels (automotive requirement), defined in `TabsDimensions`.
 
-| Theme | Description |
-|-------|-------------|
-| free-light | Free car model, light theme |
-| free-dark | Free car model, dark theme |
-| dreamer-light | Dreamer car model, light theme |
-| dreamer-dark | Dreamer car model, dark theme |
+## File Structure
 
-## Dimensions
-
-All dimensions are in pixels (automotive requirement):
-
-| Dimension | Value | Description |
-|-----------|-------|-------------|
-| SIDEBAR_WIDTH | 280px | Total sidebar width |
-| TAB_ITEM_HEIGHT | 72px | Height of each tab |
-| TAB_ITEM_WIDTH | 248px | Width of each tab |
-| TAB_ITEM_SPACING | 8px | Vertical spacing between tabs |
-| CORNER_RADIUS | 36px | Selection indicator corner radius |
-| TEXT_SIZE | 28px | Tab label text size |
+```
+tabs/
+├── Tabs.java            # Core implementation
+├── Tabs.kt              # Compose wrapper
+├── TabItem.java         # Data model
+├── TabsTheme.java       # Theme colors and dimensions
+├── Tabs.md              # This doc
+└── Tabs.test/           # Tests
+```
