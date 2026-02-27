@@ -1,87 +1,133 @@
 # Screen Component
 
-A full-screen container component for automotive applications.
+## Architecture
 
-## Overview
+- **[Screen.java](Screen.java)** — Java ViewGroup: full-screen container, layout management
+- **[Screen.kt](Screen.kt)** — Kotlin Compose wrapper
 
-The Screen component provides a full-screen container for automotive interfaces. It's designed as the root container that manages layout for Tabs and Panel components, providing a consistent structure for all content.
-
-## Features
-
-- Full-screen container with layout management
-- Multi-theme support (Free/Dreamer, Light/Dark)
-- Tabs and Panel component integration
-- Screen lift functionality for automotive use
+Root container that manages Tabs (sidebar) and Panel (content area) layout.
 
 ## Usage
 
 ### Java
 
 ```java
-// Create screen
 Screen screen = new Screen(context);
-
-// Configure theme
 screen.setTheme(Theme.FREE_LIGHT);
+screen.setOffsetX(175);
+screen.setOffsetY(50);
+screen.setGapX(42);
 
-// Add Tabs and Panel components
+// Add tabs
 Tabs tabs = new Tabs(context);
-Panel panel = new Panel(context);
 screen.setTabs(tabs);
-screen.setPanel(panel);
+
+// Add panels
+Panel[] panels = new Panel[] { panel1, panel2 };
+screen.setPanels(panels);
+screen.setActivePanel(0);
+
+// Screen lift
+screen.setOnScreenLiftListener(state -> {
+    // SCREEN_LOWERED (1) or SCREEN_RAISED (2)
+});
 ```
 
-### Kotlin (Compose)
+### Kotlin
 
 ```kotlin
-@Composable
-fun MyScreen() {
-    AndroidView(
-        factory = { context ->
-            Screen(context).apply {
-                setTheme(Theme.FREE_LIGHT)
-                setTabs(Tabs(context))
-                setPanel(Panel(context))
-            }
-        }
-    )
+val screen = Screen(context).apply {
+    setTheme(Theme.FREE_LIGHT)
+    setTabs(tabs)
+    setPanels(arrayOf(panel1, panel2))
+    setActivePanel(0)
 }
 ```
 
-## API Reference
+### Compose
 
-### Screen (Java)
+```kotlin
+Screen(
+    theme = Theme.FREE_LIGHT,
+    tabs = listOf(
+        TabItem("store", mapOf("en" to "Store", "ru" to "Магазин")),
+        TabItem("settings", mapOf("en" to "Settings", "ru" to "Настройки"))
+    ),
+    panels = arrayOf(storePanel, settingsPanel),
+    offsetX = 175,
+    offsetY = 50,
+    gapX = 42,
+    screenLiftState = 2,
+    onScreenLift = { state -> /* handle */ }
+)
+```
 
-| Method | Description |
-|--------|-------------|
-| setTheme(Theme) | Sets the visual theme |
-| getCurrentTheme() | Returns the current theme |
-| setTabs(Tabs) | Sets the Tabs component |
-| getTabs() | Returns the Tabs component |
-| setPanel(Panel) | Sets the Panel component |
-| getPanel() | Returns the Panel component |
-| onScreenLift(int) | Sets screen lift state |
-| setOnScreenLiftListener(OnScreenLiftListener) | Sets screen lift listener |
+## API
 
-## Themes
+### Java
 
-| Theme | Description |
-|-------|-------------|
-| free-light | Free car model, light theme |
-| free-dark | Free car model, dark theme |
-| dreamer-light | Dreamer car model, light theme |
-| dreamer-dark | Dreamer car model, dark theme |
+```java
+// Theme
+void setTheme(Theme theme)
+Theme getCurrentTheme()
+
+// Layout
+void setOffsetX(int offsetX)         // content X offset (px)
+void setOffsetY(int offsetY)         // content Y offset (px)
+void setGapX(int gapX)              // gap between Tabs and Panel (px)
+int getOffsetX()
+int getOffsetY()
+int getGapX()
+
+// Components
+void setTabs(Tabs tabs)
+Tabs getTabs()
+void setPanels(Panel[] panels)
+Panel[] getPanels()
+void setActivePanel(int index)
+Panel getActivePanel()
+
+// Screen lift
+void onScreenLift(int state)         // SCREEN_LOWERED=1, SCREEN_RAISED=2
+int getScreenLiftState()
+void setOnScreenLiftListener(OnScreenLiftListener listener)
+
+// Propagation
+void propagateTheme(Theme theme)
+void propagateLanguage(Language language)
+```
+
+### Compose Wrapper
+
+```kotlin
+@Composable
+fun Screen(
+    theme: Theme,
+    tabs: List<TabItem>? = null,
+    panels: Array<Panel>? = null,
+    offsetX: Int = 175,
+    offsetY: Int = 50,
+    gapX: Int = 42,
+    screenLiftState: Int = 2,
+    onScreenLift: ((Int) -> Unit)? = null
+)
+```
 
 ## Layout Structure
 
-The Screen component manages the following layout:
-- Tabs component positioned at offsetX with full height
-- Panel component positioned after Tabs with offsetY from top
-- Automatic measurement and layout of child components
+Screen positions children:
+1. **Tabs** — at `offsetX`, full height, inside ScrollView
+2. **Panel** — after Tabs + `gapX`, at `offsetY` from top
 
-## Screen Lift Functionality
+Theme and language propagate to all children automatically.
 
-The Screen component supports automotive screen lift functionality:
-- SCREEN_RAISED: Normal position
-- SCREEN_LOWERED: Lowered position for better visibility
-- OnScreenLiftListener: Callback for state changes
+## File Structure
+
+```
+screen/
+├── Screen.java          # Core implementation
+├── Screen.kt            # Compose wrapper
+├── ScreenTheme.java     # Theme colors
+├── Screen.md            # This doc
+└── Screen.test/         # Tests
+```

@@ -8,27 +8,33 @@ import android.widget.ScrollView;
 
 import androidx.annotation.Nullable;
 
+import ru.voboost.components.i18n.ILocalizable;
+import ru.voboost.components.i18n.Language;
 import ru.voboost.components.panel.Panel;
 import ru.voboost.components.tabs.Tabs;
+import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
 
 /**
  * Screen component - A full-screen container for automotive applications.
  *
- * <p>This component provides a full-screen container with:
+ * <p>
+ * This component provides a full-screen container with:
  * <ul>
- *   <li>Multi-theme support (Free/Dreamer, Light/Dark)</li>
- *   <li>Container layout management for Tabs and Panel components</li>
- *   <li>Screen lift functionality for automotive use</li>
+ * <li>Multi-theme support (Free/Dreamer, Light/Dark)</li>
+ * <li>Container layout management for Tabs and Panel components</li>
+ * <li>Screen lift functionality for automotive use</li>
  * </ul>
  *
- * <p>Usage:
+ * <p>
+ * Usage:
+ * 
  * <pre>
  * Screen screen = new Screen(context);
  * screen.setTheme(Theme.FREE_LIGHT);
  * </pre>
  */
-public class Screen extends ViewGroup {
+public class Screen extends ViewGroup implements IThemable, ILocalizable {
     // Constants
     private static final int DEFAULT_OFFSET_X = 145;
     private static final int DEFAULT_OFFSET_Y = 50;
@@ -36,8 +42,9 @@ public class Screen extends ViewGroup {
     public static final int SCREEN_LOWERED = 1;
     public static final int SCREEN_RAISED = 2;
 
-    // Theme
+    // Theme & Language
     private Theme currentTheme;
+    private Language currentLanguage;
 
     // Offset fields
     private int offsetX = DEFAULT_OFFSET_X;
@@ -100,7 +107,8 @@ public class Screen extends ViewGroup {
     // ============================================================
 
     private void init(Context context) {
-        // Initialization logic - hardware acceleration not needed as this is a container ViewGroup
+        // Initialization logic - hardware acceleration not needed as this is a
+        // container ViewGroup
         // without custom drawing operations
     }
 
@@ -114,6 +122,7 @@ public class Screen extends ViewGroup {
      * @param theme the theme to apply
      * @throws IllegalArgumentException if theme is null
      */
+    @Override
     public void setTheme(Theme theme) {
         if (theme == null) {
             throw new IllegalArgumentException("Theme cannot be null");
@@ -130,6 +139,31 @@ public class Screen extends ViewGroup {
      */
     public Theme getCurrentTheme() {
         return currentTheme;
+    }
+
+    /**
+     * Sets the language for the component.
+     *
+     * @param language the language to apply
+     * @throws IllegalArgumentException if language is null
+     */
+    @Override
+    public void setLanguage(Language language) {
+        if (language == null) {
+            throw new IllegalArgumentException("Language cannot be null");
+        }
+
+        this.currentLanguage = language;
+        invalidate();
+    }
+
+    /**
+     * Returns the current language.
+     *
+     * @return the current language
+     */
+    public Language getCurrentLanguage() {
+        return currentLanguage;
     }
 
     /**
@@ -377,6 +411,7 @@ public class Screen extends ViewGroup {
      *
      * @param theme the theme to propagate
      */
+    @Override
     public void propagateTheme(Theme theme) {
         if (theme == null) {
             return;
@@ -385,13 +420,16 @@ public class Screen extends ViewGroup {
         // Update tabs theme
         if (tabs != null) {
             tabs.setTheme(theme);
+            tabs.propagateTheme(theme);
         }
 
         // Update all panels theme
         if (panels != null) {
             for (Panel panel : panels) {
-                panel.setTheme(theme);
-                panel.propagateTheme(theme);
+                if (panel != null) {
+                    panel.setTheme(theme);
+                    panel.propagateTheme(theme);
+                }
             }
         }
     }
@@ -402,7 +440,8 @@ public class Screen extends ViewGroup {
      *
      * @param language the language to propagate
      */
-    public void propagateLanguage(ru.voboost.components.i18n.Language language) {
+    @Override
+    public void propagateLanguage(Language language) {
         if (language == null) {
             return;
         }
@@ -410,12 +449,16 @@ public class Screen extends ViewGroup {
         // Update tabs language
         if (tabs != null) {
             tabs.setLanguage(language);
+            tabs.propagateLanguage(language);
         }
 
         // Update all panels language
         if (panels != null) {
             for (Panel panel : panels) {
-                panel.propagateLanguage(language);
+                if (panel != null) {
+                    panel.setLanguage(language);
+                    panel.propagateLanguage(language);
+                }
             }
         }
     }
@@ -439,8 +482,7 @@ public class Screen extends ViewGroup {
         // Measure ScrollView for tabs
         if (tabsScrollView != null) {
             int scrollViewWidthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST);
-            int scrollViewHeightSpec =
-                    MeasureSpec.makeMeasureSpec(height - offsetY, MeasureSpec.EXACTLY);
+            int scrollViewHeightSpec = MeasureSpec.makeMeasureSpec(height - offsetY, MeasureSpec.EXACTLY);
             tabsScrollView.measure(scrollViewWidthSpec, scrollViewHeightSpec);
         }
 
