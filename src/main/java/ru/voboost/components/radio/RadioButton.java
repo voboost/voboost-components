@@ -4,17 +4,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Pure data model for radio group option
- * Java equivalent of the Kotlin RadioButton data class
+ * Data model for a single radio button option.
+ *
+ * @param value unique option identifier
+ * @param label localized text: language code → display text
  */
 public class RadioButton {
     private final String value;
     private final Map<String, String> label;
 
     /**
-     * Constructor for RadioButton
-     * @param value Unique option value
-     * @param label Translation map: language code -> localized text
+     * Creates a new RadioButton.
+     *
+     * @param value unique option value
+     * @param label translation map: language code → localized text
+     * @throws IllegalArgumentException if value is blank or label is empty
      */
     public RadioButton(String value, Map<String, String> label) {
         if (value == null || value.trim().isEmpty()) {
@@ -30,9 +34,10 @@ public class RadioButton {
     }
 
     /**
-     * Get localized text for specified language
-     * @param lang Language code ("ru", "en")
-     * @return Localized text from the provided map
+     * Returns localized text for the specified language.
+     *
+     * @param lang language code (e.g. "en", "ru")
+     * @return localized text, or first available label as fallback
      */
     public String getText(String lang) {
         String text = label.get(lang);
@@ -47,16 +52,18 @@ public class RadioButton {
     }
 
     /**
-     * Get the unique value of this radio button
-     * @return The value string
+     * Returns the unique value.
+     *
+     * @return the value string
      */
     public String getValue() {
         return value;
     }
 
     /**
-     * Get the label map
-     * @return Copy of the label map
+     * Returns a defensive copy of the label map.
+     *
+     * @return copy of the label map
      */
     public Map<String, String> getLabel() {
         return new HashMap<>(label);
@@ -64,8 +71,10 @@ public class RadioButton {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
 
         RadioButton that = (RadioButton) obj;
         return value.equals(that.value) && label.equals(that.label);
@@ -77,11 +86,11 @@ public class RadioButton {
     }
 
     /**
-     * Create a copy of this RadioButton with modified values
-     * Equivalent to Kotlin data class copy() method
-     * @param value New value (null to keep current)
-     * @param label New label map (null to keep current)
-     * @return New RadioButton instance
+     * Creates a copy with optionally modified values.
+     *
+     * @param value new value (null to keep current)
+     * @param label new label map (null to keep current)
+     * @return new RadioButton instance
      */
     public RadioButton copy(String value, Map<String, String> label) {
         return new RadioButton(
@@ -89,18 +98,20 @@ public class RadioButton {
     }
 
     /**
-     * Create a copy with only value changed
-     * @param value New value
-     * @return New RadioButton instance
+     * Creates a copy with only value changed.
+     *
+     * @param value new value
+     * @return new RadioButton instance
      */
     public RadioButton copy(String value) {
         return copy(value, null);
     }
 
     /**
-     * Create a copy with only label changed
-     * @param label New label map
-     * @return New RadioButton instance
+     * Creates a copy with only label changed.
+     *
+     * @param label new label map
+     * @return new RadioButton instance
      */
     public RadioButton copy(Map<String, String> label) {
         return copy(null, label);

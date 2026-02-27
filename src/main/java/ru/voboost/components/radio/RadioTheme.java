@@ -38,9 +38,8 @@ class RadioColors {
 }
 
 /**
- * Dimension constants for Radio component
- * Java equivalent of the Kotlin RadioDimensions object
- * Note: ALL values are in pixels as required by .roorules for automotive precision
+ * Dimension constants for the Radio component.
+ * All values are in pixels (automotive requirement).
  */
 class RadioDimensions {
     // Component dimensions (in pixels)
@@ -62,19 +61,13 @@ class RadioDimensions {
     public static final int ANIMATION_DURATION = 400;
     public static final float OVERSHOOT_TENSION = 1.0f;
 
-    // Spring animation constants (dimensionless)
-    public static final float ANIMATION_DAMPING_RATIO = 0.7f;
-    public static final float ANIMATION_STIFFNESS = 850f;
-    public static final float ANIMATION_VISIBILITY_THRESHOLD = 0.4f;
 }
 
 /**
- * Predefined color schemes for all supported themes
- * Java equivalent of the Kotlin RadioColorSchemes object
+ * Predefined color schemes for all supported themes.
  */
 class RadioColorSchemes {
-    private static final java.util.Map<Theme, RadioColors> SCHEMES =
-            new java.util.EnumMap<>(Theme.class);
+    private static final java.util.Map<Theme, RadioColors> SCHEMES = new java.util.EnumMap<>(Theme.class);
 
     static {
         SCHEMES.put(
@@ -88,7 +81,7 @@ class RadioColorSchemes {
                         Color.parseColor("#8dc6ff"), // selectedBorderTop
                         Color.parseColor("#519ae5"), // selectedBorderSide
                         Color.parseColor("#1875d2") // selectedBorderBottom
-                        ));
+                ));
         SCHEMES.put(
                 Theme.FREE_DARK,
                 new RadioColors(
@@ -100,7 +93,7 @@ class RadioColorSchemes {
                         Color.parseColor("#8dc6ff"), // selectedBorderTop
                         Color.parseColor("#519ae5"), // selectedBorderSide
                         Color.parseColor("#1875d2") // selectedBorderBottom
-                        ));
+                ));
         SCHEMES.put(
                 Theme.DREAMER_LIGHT,
                 new RadioColors(
@@ -112,7 +105,7 @@ class RadioColorSchemes {
                         Color.parseColor("#eadac8"), // selectedBorderTop
                         Color.parseColor("#9c8069"), // selectedBorderSide
                         Color.parseColor("#9c8069") // selectedBorderBottom
-                        ));
+                ));
         SCHEMES.put(
                 Theme.DREAMER_DARK,
                 new RadioColors(
@@ -124,45 +117,33 @@ class RadioColorSchemes {
                         Color.parseColor("#eadac8"), // selectedBorderTop
                         Color.parseColor("#9c8069"), // selectedBorderSide
                         Color.parseColor("#9c8069") // selectedBorderBottom
-                        ));
+                ));
     }
 
     public static RadioColors get(Theme theme) {
         return SCHEMES.getOrDefault(theme, SCHEMES.get(Theme.FREE_LIGHT));
     }
 
-    // Keep backward compatibility
-    public static RadioColors get(String themeValue) {
-        return get(Theme.fromValue(themeValue));
-    }
 }
 
 /**
- * Unified theme management for Radio component
- * Java equivalent of the Kotlin RadioTheme object
+ * Unified theme management for the Radio component.
  */
 public class RadioTheme {
     /**
-     * Get color scheme by theme enum
-     * @param theme Theme enum value
-     * @return Corresponding color scheme
+     * Returns the color scheme for the given theme.
+     *
+     * @param theme theme enum value
+     * @return corresponding color scheme
      */
     public static RadioColors getColors(Theme theme) {
         return RadioColorSchemes.get(theme);
     }
 
     /**
-     * Get color scheme by theme name (backward compatibility)
-     * @param theme Theme name: "free-light", "free-dark", "dreamer-light", "dreamer-dark"
-     * @return Corresponding color scheme
-     */
-    public static RadioColors getColors(String theme) {
-        return getColors(Theme.fromValue(theme));
-    }
-
-    /**
-     * Get dimensions for Radio component
-     * @return RadioDimensions class with all size constants
+     * Returns dimension constants.
+     *
+     * @return RadioDimensions instance
      */
     public static RadioDimensions getDimensions() {
         return new RadioDimensions();

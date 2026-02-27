@@ -16,13 +16,19 @@ import android.view.View;
 import android.view.animation.OvershootInterpolator;
 
 import ru.voboost.components.font.Font;
+import ru.voboost.components.i18n.ILocalizable;
 import ru.voboost.components.i18n.Language;
+import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
 
 /**
- * Radio component with internal theming and external localization
+ * Radio component — horizontal segmented control with animated selection.
+ *
+ * <p>
+ * Canvas-based custom View with gradient selection indicator,
+ * touch handling, and overshoot animation.
  */
-public class Radio extends View {
+public class Radio extends View implements IThemable, ILocalizable {
     // Data and state
     private List<RadioButton> buttons = new ArrayList<>();
     private Language currentLanguage = null;
@@ -63,14 +69,15 @@ public class Radio extends View {
     private float itemMinWidthPx;
 
     /**
-     * Interface for value change callbacks
+     * Callback for value selection changes.
      */
     public interface OnValueChangeListener {
         void onValueChange(String newValue);
     }
 
     /**
-     * Check if component is properly initialized
+     * Checks if the component is fully initialized.
+     *
      * @return true if both theme and language are set
      */
     private boolean isInitialized() {
@@ -98,7 +105,7 @@ public class Radio extends View {
     }
 
     private void init() {
-        // Initialize paint objects with default colors (will be updated when theme is set)
+        // Initialize paint objects with base settings
         initPaintsWithDefaults();
 
         // Set pixel dimensions
@@ -147,7 +154,6 @@ public class Radio extends View {
 
     private void initPaintsWithDefaults() {
         backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        backgroundPaint.setColor(0xFF373F4A); // Default gray
 
         selectedBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
@@ -177,8 +183,9 @@ public class Radio extends View {
     }
 
     /**
-     * Set the list of radio button options
-     * @param buttons List of RadioButton objects
+     * Sets the list of radio button options.
+     *
+     * @param buttons list of RadioButton objects
      */
     public void setButtons(List<RadioButton> buttons) {
         if (buttons != null) {
@@ -192,8 +199,9 @@ public class Radio extends View {
     }
 
     /**
-     * Set the current language using Language enum
-     * @param language Language enum value (required, cannot be null)
+     * Sets the display language.
+     *
+     * @param language language enum value
      * @throws IllegalArgumentException if language is null
      */
     public void setLanguage(Language language) {
@@ -230,10 +238,12 @@ public class Radio extends View {
     }
 
     /**
-     * Set the theme using Theme enum
-     * @param theme Theme enum value (required, cannot be null)
+     * Sets the visual theme.
+     *
+     * @param theme theme enum value
      * @throws IllegalArgumentException if theme is null
      */
+    @Override
     public void setTheme(Theme theme) {
         if (theme == null) {
             throw new IllegalArgumentException("Theme cannot be null");
@@ -247,10 +257,21 @@ public class Radio extends View {
         }
     }
 
+    @Override
+    public void propagateTheme(Theme theme) {
+        // Leaf component, no children to propagate to
+    }
+
+    @Override
+    public void propagateLanguage(Language language) {
+        // Leaf component, no children to propagate to
+    }
+
     /**
-     * Set the currently selected value
-     * @param value The value to select
-     * @param isTriggerCallback Whether to trigger onValueChangeListener
+     * Sets the selected value without animation.
+     *
+     * @param value             the value to select
+     * @param isTriggerCallback whether to trigger onValueChangeListener
      */
     public void setSelectedValue(String value, boolean isTriggerCallback) {
         if (value != null && !value.equals(this.selectedValue)) {
@@ -282,8 +303,9 @@ public class Radio extends View {
     }
 
     /**
-     * Set the currently selected value (backward compatible)
-     * @param value The value to select
+     * Sets the selected value without animation or callback.
+     *
+     * @param value the value to select
      */
     public void setSelectedValue(String value) {
         if (value != null) {
@@ -292,32 +314,36 @@ public class Radio extends View {
     }
 
     /**
-     * Get the currently selected value
-     * @return The selected value
+     * Returns the currently selected value.
+     *
+     * @return the selected value
      */
     public String getSelectedValue() {
         return selectedValue;
     }
 
     /**
-     * Get the current theme
-     * @return The current theme, or null if not set
+     * Returns the current theme.
+     *
+     * @return the current theme, or null if not set
      */
     public Theme getCurrentTheme() {
         return currentTheme;
     }
 
     /**
-     * Get the current language
-     * @return The current language, or null if not set
+     * Returns the current language.
+     *
+     * @return the current language, or null if not set
      */
     public Language getCurrentLanguage() {
         return currentLanguage;
     }
 
     /**
-     * Set the value change listener
-     * @param listener Callback for value changes
+     * Sets the value change listener.
+     *
+     * @param listener callback for value changes
      */
     public void setOnValueChangeListener(OnValueChangeListener listener) {
         this.onValueChangeListener = listener;
@@ -359,7 +385,9 @@ public class Radio extends View {
 
     /**
      * Internal method to measure items and calculate positions
-     * @param updateAnimationPosition Whether to update animation position after measurement
+     * 
+     * @param updateAnimationPosition Whether to update animation position after
+     *                                measurement
      */
     private void measureItemsInternal(boolean updateAnimationPosition) {
         if (buttons == null || buttons.isEmpty()) {
@@ -376,10 +404,10 @@ public class Radio extends View {
         // First, measure all texts to find the maximum width needed
         float maxTextWidth = 0f;
         for (RadioButton button : buttons) {
-            if (button == null) continue;
+            if (button == null)
+                continue;
 
-            String text =
-                    button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
+            String text = button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
 
             // Measure with bold typeface to ensure enough space for selected state
             textPaint.setTypeface(Font.getBold(getContext(), text));
@@ -437,8 +465,7 @@ public class Radio extends View {
     private void animateToPosition(float targetX, float targetWidth) {
         cancelAnimations();
 
-        final OvershootInterpolator interpolator =
-                new OvershootInterpolator(RadioDimensions.OVERSHOOT_TENSION);
+        final OvershootInterpolator interpolator = new OvershootInterpolator(RadioDimensions.OVERSHOOT_TENSION);
 
         // Position animation
         positionAnimator = ValueAnimator.ofFloat(animatedX, targetX);
@@ -583,23 +610,23 @@ public class Radio extends View {
 
     private void drawBackgroundLayer(Canvas canvas) {
         // LAYER 1: Control background - size exactly by content
-        if (backgroundPaint == null) return;
+        if (backgroundPaint == null)
+            return;
 
-        RectF backgroundRect =
-                new RectF(contentOffsetX, 0, contentOffsetX + contentWidth, totalHeight);
+        RectF backgroundRect = new RectF(contentOffsetX, 0, contentOffsetX + contentWidth, totalHeight);
         canvas.drawRoundRect(backgroundRect, cornerRadiusPx, cornerRadiusPx, backgroundPaint);
     }
 
     private void drawSelectionLayer(Canvas canvas) {
-        if (selectedBackgroundPaint == null) return;
+        if (selectedBackgroundPaint == null)
+            return;
 
         // Selection rectangle with 1px inset from top and bottom
-        RectF selectedRect =
-                new RectF(
-                        animatedX + 1f, // 1px inset from left
-                        1f, // 1px inset from top
-                        animatedX + animatedWidth,
-                        totalHeight - 1f); // 1px inset from bottom (symmetric with top)
+        RectF selectedRect = new RectF(
+                animatedX + 1f, // 1px inset from left
+                1f, // 1px inset from top
+                animatedX + animatedWidth,
+                totalHeight - 1f); // 1px inset from bottom (symmetric with top)
 
         // Create gradient depending on theme
         LinearGradient gradient = createSelectionGradient(selectedRect);
@@ -607,20 +634,13 @@ public class Radio extends View {
         canvas.drawRoundRect(selectedRect, cornerRadiusPx, cornerRadiusPx, selectedBackgroundPaint);
 
         // Note: Original implementation has a transparent stroke, but testing showed
-        // it doesn't improve pixel-perfect matching. The corner radius fix is sufficient.
+        // it doesn't improve pixel-perfect matching. The corner radius fix is
+        // sufficient.
     }
 
     private LinearGradient createSelectionGradient(RectF rect) {
         if (colors == null) {
-            // Return a simple gray gradient if colors are not available
-            return new LinearGradient(
-                    rect.left,
-                    rect.top,
-                    rect.right,
-                    rect.bottom,
-                    0xFF373F4A,
-                    0xFF373F4A,
-                    Shader.TileMode.CLAMP);
+            return null; // Don't create gradient if colors are missing
         }
 
         if (currentTheme != null && currentTheme.isDreamer()) {
@@ -647,32 +667,31 @@ public class Radio extends View {
     }
 
     private void drawSelectionBorder(Canvas canvas, RectF selectedRect) {
-        if (selectedBorderPaint == null) return;
+        if (selectedBorderPaint == null)
+            return;
 
         // Border is drawn 1px inside the selected rect (half of 2px stroke width)
         float borderInset = 1f;
-        RectF borderRect =
-                new RectF(
-                        selectedRect.left + borderInset,
-                        selectedRect.top + borderInset,
-                        selectedRect.right - borderInset,
-                        selectedRect.bottom - borderInset);
+        RectF borderRect = new RectF(
+                selectedRect.left + borderInset,
+                selectedRect.top + borderInset,
+                selectedRect.right - borderInset,
+                selectedRect.bottom - borderInset);
 
         LinearGradient borderGradient = null;
         if (colors != null) {
-            borderGradient =
-                    new LinearGradient(
-                            0,
-                            borderRect.top,
-                            0,
-                            borderRect.bottom,
-                            new int[] {
-                                colors.selectedBorderTop,
-                                colors.selectedBorderSide,
-                                colors.selectedBorderBottom
-                            },
-                            new float[] {0f, 0.5f, 1f},
-                            Shader.TileMode.CLAMP);
+            borderGradient = new LinearGradient(
+                    0,
+                    borderRect.top,
+                    0,
+                    borderRect.bottom,
+                    new int[] {
+                            colors.selectedBorderTop,
+                            colors.selectedBorderSide,
+                            colors.selectedBorderBottom
+                    },
+                    new float[] { 0f, 0.5f, 1f },
+                    Shader.TileMode.CLAMP);
         }
 
         if (borderGradient != null) {
@@ -685,7 +704,8 @@ public class Radio extends View {
 
     private void drawTextLayer(Canvas canvas) {
         // LAYER 3: Text - width same as background layer
-        if (textPaint == null) return;
+        if (textPaint == null)
+            return;
 
         // Base text Y position (for unselected items)
         float textY = totalHeight / 2f - (textPaint.descent() + textPaint.ascent()) / 2f;
@@ -696,18 +716,19 @@ public class Radio extends View {
         if (buttons != null && itemPositions != null && itemWidths != null) {
             for (int i = 0; i < buttons.size(); i++) {
                 RadioButton button = buttons.get(i);
-                if (button == null) continue;
+                if (button == null)
+                    continue;
 
                 // Get text FIRST — needed for font selection
-                String text =
-                        button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
+                String text = button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
 
                 // Calculate text position - positions already include centering
                 float itemWidth = itemWidths.get(i);
                 float itemX = itemPositions.get(i); // already includes contentOffsetX
                 float textX = itemX + itemWidth / 2f;
 
-                // FINAL LOGIC: Only the target element can change color, and only when animation
+                // FINAL LOGIC: Only the target element can change color, and only when
+                // animation
                 // touches it
                 boolean isTargetElement = (i == targetIndex);
                 boolean isAnimationTouchingThisText = isTextCoveredByAnimation(textX, itemWidth);
@@ -742,12 +763,14 @@ public class Radio extends View {
 
     /**
      * Determines if text is covered by animated background
+     * 
      * @param textCenterX text center X coordinate
-     * @param itemWidth item width
+     * @param itemWidth   item width
      * @return true if text is covered by animation
      */
     private boolean isTextCoveredByAnimation(float textCenterX, float itemWidth) {
-        if (animatedWidth <= 0) return false;
+        if (animatedWidth <= 0)
+            return false;
 
         // Animated background bounds
         float animationLeft = animatedX;
