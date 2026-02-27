@@ -123,13 +123,7 @@ data class ComponentOption(
 
 ### Building the Library
 
-```bash
-# Build the library
-./gradlew assembleDebug
-
-# Run tests
-./gradlew test
-```
+See [Commands Reference](#commands-reference) for all build and test commands.
 
 ## Demo Applications
 
@@ -170,46 +164,8 @@ demo-{type}/
         └── demo_{type}_full_combination.png
 ```
 
-### Building and Running Demos
+See [Commands Reference](#commands-reference) for all build, install, start, and test commands.
 
-```bash
-# Build all demo applications
-./gradlew buildAllDemos
-
-# Install all demos to connected device
-./gradlew installAllDemos
-
-# Build individual demos
-./gradlew buildDemoJava
-./gradlew buildDemoKotlin
-./gradlew buildDemoCompose
-
-# Install individual demos
-./gradlew installDemoJava
-./gradlew installDemoKotlin
-./gradlew installDemoCompose
-
-# Start demo applications
-./gradlew startDemoJava
-./gradlew startDemoKotlin
-./gradlew startDemoCompose
-```
-
-### Testing Demo Applications
-
-```bash
-# Run tests for all demos
-./gradlew testAllDemos
-
-# Record screenshots for all demos (automotive resolution)
-./gradlew recordAllDemoScreenshots
-
-# Verify screenshots for all demos
-./gradlew verifyAllDemoScreenshots
-
-# Complete demo validation (build + test + screenshots)
-./gradlew validateDemosComplete
-```
 
 ### Demo Integration in Development Workflow
 
@@ -265,6 +221,11 @@ This project follows the voboost-codestyle rules with multilingual support. Key 
 - **Architecture**: Java Custom View foundation with Kotlin Compose wrapper
 - **Testing**: Minimum 80% code coverage across both Java and Kotlin implementations
 - **Cross-Platform Compatibility**: Components must work in Java, Kotlin and Compose projects
+
+### Coding Standards
+
+- **ALL sizes MUST be in pixels, not dp** — critical automotive requirement for precise rendering across different display densities. No dp conversion in production code; final values stored as pixels
+- **Lowercase hex colors**: ALL `#RRGGBB` colors MUST use lowercase letters (e.g., `#f1f5fb`, not `#F1F5FB`)
 
 ### Multilingual Component Development Patterns
 
@@ -353,64 +314,43 @@ public class RadioTestVisual {
 }
 ```
 
-## Testing Procedures
+## Commands Reference
 
-### Multilingual Testing Strategy
-
-The library supports comprehensive testing across both Java and Kotlin implementations:
-
-### Local Testing
+### Build
 
 ```bash
-# All tests (Java + Kotlin)
-./gradlew test
-
-# Unit tests
-./gradlew testUnit              # All unit tests
-./gradlew testUnitJava          # Java unit tests only
-
-# Visual tests with Roborazzi
-./gradlew testVisual            # All visual tests
-./gradlew testVisualJava        # Java visual tests only
-./gradlew testVisualSave        # Record and save screenshots
-
-# Record new screenshots
-./gradlew recordRoborazziDebug  # Generate new baseline screenshots
-
-# Cross-platform validation
-./gradlew validateJava          # Java validation (tests + style)
-./gradlew checkJavaStyle        # Java code style validation
-./gradlew formatJavaCode        # Java code formatting
-
-# Code style checks
-./gradlew ktlintCheck           # Kotlin style checks
-./gradlew checkJavaStyle        # Java style checks
+./gradlew build                 # Build library + run tests
 ```
 
-### Component Testing
-
-Each component supports multilingual testing approaches:
+### Tests
 
 ```bash
-# Test specific component (all languages)
-./gradlew test --tests "*RadioTest*"
-./gradlew testJava --tests "*RadioTest*"
-
-# Generate component screenshots (both platforms)
-./gradlew testDebugUnitTest --tests "*RadioVisualTest*"
-./gradlew testJavaVisual --tests "*RadioVisualTest*"
-
-# Performance testing
-./gradlew testPerformance       # Automotive performance validation
+./gradlew test                  # All tests
+./gradlew testUnit              # Unit tests
+./gradlew testVisual            # Visual tests
+./gradlew testJava              # All Java tests
+./gradlew testKotlin            # All Kotlin tests
+./gradlew test --tests "*RadioTest*"  # Specific component
 ```
 
-### Cross-Platform Testing Workflow
+### Validation & Recording
 
-1. **Java Custom View Testing**: Validate core implementation
-2. **Kotlin Wrapper Testing**: Verify Compose integration
-3. **Visual Regression**: Compare screenshots across platforms
-4. **Performance Testing**: Ensure automotive requirements are met
-5. **Integration Testing**: Test in real project scenarios
+```bash
+./gradlew validate              # All checks (tests + style)
+./gradlew record                # Record screenshots to BEM structure
+```
+
+### Demos
+
+```bash
+./gradlew buildDemos            # Build all demos
+./gradlew buildDemoJava         # Build single demo (Java/Kotlin/Compose/Pixel)
+./gradlew installDemoJava       # Install demo
+./gradlew startDemoJava         # Start demo
+./gradlew testDemos             # Test all demos
+./gradlew validateDemos         # Full demo validation
+```
+
 
 ## Project Structure
 
