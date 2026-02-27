@@ -2,48 +2,54 @@ package ru.voboost.components.panel;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import androidx.annotation.Nullable;
 
+import ru.voboost.components.i18n.ILocalizable;
+import ru.voboost.components.i18n.Language;
+import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
 
 /**
  * Panel component - A customizable container with rounded corners and shadow.
  *
- * <p>This component provides a styled container with:
+ * <p>
+ * This component provides a styled container with:
  * <ul>
- *   <li>Rounded corners</li>
- *   <li>Shadow effect</li>
- *   <li>Border</li>
- *   <li>Multi-theme support (Free/Dreamer, Light/Dark)</li>
+ * <li>Rounded corners</li>
+ * <li>Native shadow effect</li>
+ * <li>Border</li>
+ * <li>Multi-theme support (Free/Dreamer, Light/Dark)</li>
+ * <li>Internal vertical scrolling logic</li>
  * </ul>
- *
- * <p>Usage:
- * <pre>
- * Panel panel = new Panel(context);
- * panel.setTheme(Theme.FREE_LIGHT);
- * </pre>
  */
-public class Panel extends ViewGroup {
+public class Panel extends FrameLayout implements IThemable, ILocalizable {
 
-    private static final String TAG = "Panel";
-
-    // Theme
+    // Theme & Language
     private Theme currentTheme;
+    private Language currentLanguage;
 
     // Paints
     private Paint backgroundPaint;
     private Paint borderPaint;
-    private Paint shadowPaint;
 
     // Drawing bounds
     private RectF backgroundRect;
     private RectF borderRect;
+
+    // Internal views
+    private ScrollView scrollView;
+    private LinearLayout contentLayout;
 
     // ============================================================
     // CONSTRUCTORS
@@ -74,16 +80,12 @@ public class Panel extends ViewGroup {
     // ============================================================
 
     private void init(Context context) {
-        // Enable drawing for ViewGroup (ViewGroup defaults to setWillNotDraw(true))
+        // Enable custom drawing
         setWillNotDraw(false);
-
-        // Enable hardware acceleration for better performance
-        setLayerType(LAYER_TYPE_HARDWARE, null);
 
         // Initialize paints
         backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         // Configure border paint
         borderPaint.setStyle(Paint.Style.STROKE);
@@ -92,161 +94,132 @@ public class Panel extends ViewGroup {
         // Initialize drawing bounds
         backgroundRect = new RectF();
         borderRect = new RectF();
+
+        // Setup OutlineProvider for native shadow and clipping
+        setOutlineProvider(new ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, Outline outline) {
+                int left = view.getPaddingLeft();
+                int top = view.getPaddingTop();
+                int right = view.getWidth() - view.getPaddingRight();
+                int bottom = view.getHeight() - view.getPaddingBottom();
+                outline.setRoundRect(left, top, right, bottom, PanelTheme.CORNER_RADIUS);
+            }
+        });
+        setClipToOutline(true);
+        setElevation(PanelTheme.ELEVATION);
+
+        // Setup internal ScrollView
+        scrollView = new ScrollView(context);
+        scrollView.setVerticalScrollBarEnabled(false);
+        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        // ScrollView has its own padding handling, Panel padding is for borders
+
+        contentLayout = new LinearLayout(context);
+        contentLayout.setOrientation(LinearLayout.VERTICAL);
+
+        scrollView.addView(contentLayout, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        // Let the scrollview respect panel paddings so borders are drawn properly
+        FrameLayout.LayoutParams scrollParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+
+        super.addView(scrollView, -1, scrollParams);
+    }
+
+    // ============================================================
+    // CHILD MANAGEMENT
+    // ============================================================
+
+    @Override
+    public void addView(View child, int index, ViewGroup.LayoutParams params) {
+        if (contentLayout == null) {
+            super.addView(child, index, params);
+        } else {
+            contentLayout.addView(child, index, params);
+        }
+    }
+
+    @Override
+    public void removeView(View view) {
+        if (contentLayout != null && view != scrollView) {
+            contentLayout.removeView(view);
+        } else {
+            super.removeView(view);
+        }
+    }
+
+    @Override
+    public void removeAllViews() {
+        if (contentLayout != null) {
+            contentLayout.removeAllViews();
+        } else {
+            super.removeAllViews();
+        }
     }
 
     // ============================================================
     // PUBLIC API
     // ============================================================
 
-    /**
-     * Sets the theme for the component.
-     *
-     * @param theme the theme to apply
-     * @throws IllegalArgumentException if theme is null
-     */
+    @Override
     public void setTheme(Theme theme) {
         if (theme == null) {
             throw new IllegalArgumentException("Theme cannot be null");
         }
-
         this.currentTheme = theme;
         updateColors();
         invalidate();
     }
 
-    /**
-     * Returns the current theme.
-     *
-     * @return the current theme
-     */
     public Theme getCurrentTheme() {
         return currentTheme;
     }
 
-    /**
-     * Propagates the theme to all child components.
-     *
-     * @param theme the theme to propagate
-     */
-    public void propagateTheme(Theme theme) {
-        if (theme == null) {
-            return;
-        }
-
-        // Propagate theme to all child views
-        for (int i = 0; i < getChildCount(); i++) {
-            View child = getChildAt(i);
-            if (child instanceof ru.voboost.components.section.Section) {
-                ru.voboost.components.section.Section section =
-                        (ru.voboost.components.section.Section) child;
-                section.setTheme(theme);
-                section.propagateTheme(theme);
-            } else if (child instanceof android.widget.ScrollView) {
-                android.widget.ScrollView scrollView = (android.widget.ScrollView) child;
-                if (scrollView.getChildCount() > 0) {
-                    View scrollChild = scrollView.getChildAt(0);
-                    if (scrollChild instanceof android.widget.LinearLayout) {
-                        android.widget.LinearLayout layout =
-                                (android.widget.LinearLayout) scrollChild;
-                        for (int j = 0; j < layout.getChildCount(); j++) {
-                            View layoutChild = layout.getChildAt(j);
-                            if (layoutChild instanceof ru.voboost.components.section.Section) {
-                                ru.voboost.components.section.Section section =
-                                        (ru.voboost.components.section.Section) layoutChild;
-                                section.setTheme(theme);
-                                section.propagateTheme(theme);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Propagates the language to all child components.
-     *
-     * @param language the language to propagate
-     */
-    public void propagateLanguage(ru.voboost.components.i18n.Language language) {
+    @Override
+    public void setLanguage(Language language) {
         if (language == null) {
-            return;
+            throw new IllegalArgumentException("Language cannot be null");
         }
-
-        // Propagate language to all child views
-        for (int i = 0; i < getChildCount(); i++) {
-            View child = getChildAt(i);
-            if (child instanceof ru.voboost.components.section.Section) {
-                ru.voboost.components.section.Section section =
-                        (ru.voboost.components.section.Section) child;
-                section.setLanguage(language);
-                section.propagateLanguage(language);
-            } else if (child instanceof android.widget.ScrollView) {
-                android.widget.ScrollView scrollView = (android.widget.ScrollView) child;
-                if (scrollView.getChildCount() > 0) {
-                    View scrollChild = scrollView.getChildAt(0);
-                    if (scrollChild instanceof android.widget.LinearLayout) {
-                        android.widget.LinearLayout layout =
-                                (android.widget.LinearLayout) scrollChild;
-                        for (int j = 0; j < layout.getChildCount(); j++) {
-                            View layoutChild = layout.getChildAt(j);
-                            if (layoutChild instanceof ru.voboost.components.section.Section) {
-                                ru.voboost.components.section.Section section =
-                                        (ru.voboost.components.section.Section) layoutChild;
-                                section.setLanguage(language);
-                                section.propagateLanguage(language);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        this.currentLanguage = language;
+        invalidate();
     }
 
-    // ============================================================
-    // MEASUREMENT
-    // ============================================================
+    public Language getCurrentLanguage() {
+        return currentLanguage;
+    }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-
-        int totalHeight = getPaddingTop() + getPaddingBottom();
-        int maxWidth = 0;
-
-        // Measure all children with full available width
-        for (int i = 0; i < getChildCount(); i++) {
-            View child = getChildAt(i);
-            if (child.getVisibility() == GONE) continue;
-
-            // Give children the full panel width
-            int childWidthSpec =
-                    MeasureSpec.makeMeasureSpec(
-                            widthSize - getPaddingLeft() - getPaddingRight(), MeasureSpec.EXACTLY);
-            int childHeightSpec =
-                    MeasureSpec.makeMeasureSpec(heightSize - totalHeight, MeasureSpec.AT_MOST);
-
-            child.measure(childWidthSpec, childHeightSpec);
-
-            maxWidth = Math.max(maxWidth, child.getMeasuredWidth());
-            totalHeight += child.getMeasuredHeight();
+    public void propagateTheme(Theme theme) {
+        if (theme == null || contentLayout == null) {
+            return;
         }
 
-        // Ensure minimum size for empty panels (for testing purposes)
-        int minSize = 100; // Minimum 100px for empty panels
-        if (maxWidth == 0) maxWidth = minSize;
-        if (totalHeight == 0) totalHeight = minSize;
+        for (int i = 0; i < contentLayout.getChildCount(); i++) {
+            View child = contentLayout.getChildAt(i);
+            if (child instanceof IThemable) {
+                ((IThemable) child).setTheme(theme);
+                ((IThemable) child).propagateTheme(theme);
+            }
+        }
+    }
 
-        int finalWidth =
-                widthMode == MeasureSpec.EXACTLY
-                        ? widthSize
-                        : Math.max(maxWidth + getPaddingLeft() + getPaddingRight(), 0);
-        int finalHeight = heightMode == MeasureSpec.EXACTLY ? heightSize : Math.max(totalHeight, 0);
+    @Override
+    public void propagateLanguage(Language language) {
+        if (language == null || contentLayout == null) {
+            return;
+        }
 
-        setMeasuredDimension(finalWidth, finalHeight);
+        for (int i = 0; i < contentLayout.getChildCount(); i++) {
+            View child = contentLayout.getChildAt(i);
+            if (child instanceof ILocalizable) {
+                ((ILocalizable) child).setLanguage(language);
+                ((ILocalizable) child).propagateLanguage(language);
+            }
+        }
     }
 
     // ============================================================
@@ -254,57 +227,41 @@ public class Panel extends ViewGroup {
     // ============================================================
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
 
-        if (currentTheme == null) {
-            return;
-        }
+        // Update drawing bounds to respect padding
+        float padLeft = getPaddingLeft();
+        float padTop = getPaddingTop();
+        float padRight = getWidth() - getPaddingRight();
+        float padBottom = getHeight() - getPaddingBottom();
 
-        // Update drawing bounds
-        updateDrawingBounds();
-
-        // Draw shadow
-        drawShadow(canvas);
-
-        // Draw background
-        drawBackground(canvas);
-
-        // Draw border
-        drawBorder(canvas);
-    }
-
-    private void updateDrawingBounds() {
-        float left = getPaddingLeft();
-        float top = getPaddingTop();
-        float right = getWidth() - getPaddingRight();
-        float bottom = getHeight() - getPaddingBottom();
-
-        backgroundRect.set(left, top, right, bottom);
+        backgroundRect.set(padLeft, padTop, padRight, padBottom);
 
         // Border is drawn inside the background
         float borderOffset = PanelTheme.BORDER_WIDTH / 2f;
         borderRect.set(
-                left + borderOffset,
-                top + borderOffset,
-                right - borderOffset,
-                bottom - borderOffset);
+                padLeft + borderOffset,
+                padTop + borderOffset,
+                padRight - borderOffset,
+                padBottom - borderOffset);
+
+        // Adjust scroll view to be inside the padding layout
+        scrollView.layout((int) padLeft, (int) padTop, (int) padRight, (int) padBottom);
     }
 
-    private void drawShadow(Canvas canvas) {
-        // Draw shadow as a slightly offset background
-        float shadowOffset = PanelTheme.ELEVATION;
-        shadowPaint.setColor(PanelTheme.getShadow(currentTheme));
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        if (currentTheme != null) {
+            drawBackground(canvas);
+        }
 
-        RectF shadowRect =
-                new RectF(
-                        backgroundRect.left + shadowOffset,
-                        backgroundRect.top + shadowOffset,
-                        backgroundRect.right + shadowOffset,
-                        backgroundRect.bottom + shadowOffset);
+        // Draw ScrollView and children
+        super.dispatchDraw(canvas);
 
-        canvas.drawRoundRect(
-                shadowRect, PanelTheme.CORNER_RADIUS, PanelTheme.CORNER_RADIUS, shadowPaint);
+        if (currentTheme != null) {
+            drawBorder(canvas);
+        }
     }
 
     private void drawBackground(Canvas canvas) {
@@ -330,26 +287,7 @@ public class Panel extends ViewGroup {
         if (currentTheme == null) {
             return;
         }
-
         backgroundPaint.setColor(PanelTheme.getBackground(currentTheme));
         borderPaint.setColor(PanelTheme.getBorder(currentTheme));
-        shadowPaint.setColor(PanelTheme.getShadow(currentTheme));
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        int currentTop = getPaddingTop();
-
-        for (int i = 0; i < getChildCount(); i++) {
-            View child = getChildAt(i);
-
-            int childLeft = getPaddingLeft();
-            int childRight = childLeft + child.getMeasuredWidth();
-            int childBottom = currentTop + child.getMeasuredHeight();
-
-            child.layout(childLeft, currentTop, childRight, childBottom);
-
-            currentTop = childBottom;
-        }
     }
 }

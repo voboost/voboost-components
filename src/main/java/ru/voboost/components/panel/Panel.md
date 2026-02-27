@@ -1,65 +1,72 @@
 # Panel Component
 
-A customizable container component with rounded corners and shadow for automotive applications.
+## Architecture
 
-## Overview
+- **[Panel.java](Panel.java)** — Java ViewGroup: rounded container with shadow and border
+- **[Panel.kt](Panel.kt)** — Kotlin Compose wrapper
 
-The Panel component provides a styled container with rounded corners, shadow effect, and border. It's designed to group related UI elements and provide visual hierarchy in automotive interfaces.
-
-## Features
-
-- Rounded corners with customizable radius
-- Shadow effect for depth
-- Border with configurable width
-- Multi-theme support (Free/Dreamer, Light/Dark)
-- Hardware-accelerated rendering
-- Child view support
+Styled container for grouping child views with visual hierarchy.
 
 ## Usage
 
 ### Java
 
 ```java
-// Create panel
 Panel panel = new Panel(context);
-
-// Configure theme
 panel.setTheme(Theme.FREE_LIGHT);
 
 // Add child views
-TextView textView = new TextView(context);
-textView.setText("Content inside panel");
-panel.addView(textView);
+Section section = new Section(context);
+panel.addView(section);
 ```
 
-### Kotlin (Compose)
+### Kotlin
 
 ```kotlin
-@Composable
-fun MyScreen() {
-    Panel(
-        theme = Theme.FREE_LIGHT
-    ) {
-        Text("Content inside panel")
-        Button(onClick = { /* Handle click */ }) {
-            Text("Button")
-        }
-    }
+val panel = Panel(context).apply {
+    setTheme(Theme.FREE_LIGHT)
+    addView(section)
 }
 ```
 
-## API Reference
+### Compose
 
-### Panel (Java)
+```kotlin
+Panel(theme = Theme.FREE_LIGHT)
+```
 
-| Method | Description |
-|--------|-------------|
-| setTheme(Theme) | Sets the visual theme |
-| getCurrentTheme() | Returns the current theme |
+## API
 
-### Panel (Compose)
+### Java
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| theme | String | Theme identifier |
-| content | @Composable () -> Unit | Content to display inside the panel |
+```java
+// Theme
+void setTheme(Theme theme)
+Theme getCurrentTheme()
+
+// Propagation (to child components)
+void propagateTheme(Theme theme)
+void propagateLanguage(Language language)
+```
+
+### Compose Wrapper
+
+```kotlin
+@Composable
+fun Panel(theme: Theme)
+```
+
+## Implementation Details
+
+Uses native Android features: `ViewOutlineProvider` and `elevation` for rendering shadows and clipping edges. Provides an internal `ScrollView` to automatically manage vertical overflow. Automatically propagates theme and language to child views that support them (Section, Radio, etc.).
+
+## File Structure
+
+```
+panel/
+├── Panel.java           # Core implementation
+├── Panel.kt             # Compose wrapper
+├── PanelTheme.java      # Theme colors
+├── Panel.md             # This doc
+└── Panel.test/          # Tests
+```
