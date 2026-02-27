@@ -6,9 +6,13 @@ import android.graphics.Typeface;
 /**
  * Font component provides the project typeface for all components.
  *
- * <p>Follows BEM structure with co-located font files in the same package as the Font class.
+ * <p>
+ * Follows BEM structure with co-located font files in the same package as the
+ * Font class.
  *
- * <p>Font files are loaded from assets via build.gradle.kts configuration:
+ * <p>
+ * Font files are loaded from assets via build.gradle.kts configuration:
+ * 
  * <pre>
  * sourceSets {
  *     getByName("main") {
@@ -19,18 +23,23 @@ import android.graphics.Typeface;
  * }
  * </pre>
  *
- * <p>Bold fonts come in two variants:
+ * <p>
+ * Bold fonts come in two variants:
  * <ul>
- *   <li>Font_bold_ascii.ttf — for ASCII-only text (English, numbers)</li>
- *   <li>Font_bold_unicode.ttf — for text with non-ASCII characters (Russian, etc.)</li>
+ * <li>Font_bold_ascii.ttf — for ASCII-only text (English, numbers)</li>
+ * <li>Font_bold_unicode.ttf — for text with non-ASCII characters (Russian,
+ * etc.)</li>
  * </ul>
  *
- * <p>Use {@link #getBold(Context, String)} to automatically select the correct
+ * <p>
+ * Use {@link #getBold(Context, String)} to automatically select the correct
  * bold font based on the text content.
  *
- * <p>Caches the Typeface instances to avoid repeated loading.
+ * <p>
+ * Caches the Typeface instances to avoid repeated loading.
  *
- * <p>If the font file is not available, throws RuntimeException.
+ * <p>
+ * If the font file is not available, throws RuntimeException.
  * There is NO fallback to system default fonts.
  */
 public final class Font {
@@ -59,12 +68,13 @@ public final class Font {
     /**
      * Returns the bold-weight typeface appropriate for the given text.
      *
-     * <p>If the text contains only ASCII characters, returns the ASCII bold font.
+     * <p>
+     * If the text contains only ASCII characters, returns the ASCII bold font.
      * If the text contains any non-ASCII characters (e.g., Cyrillic, CJK),
      * returns the Unicode bold font which renders these characters correctly.
      *
      * @param context Android context (used for cache directory access)
-     * @param text the text that will be rendered with this font
+     * @param text    the text that will be rendered with this font
      * @return Bold typeface appropriate for the text content
      * @throws RuntimeException if the font file is not available
      */
@@ -115,18 +125,21 @@ public final class Font {
     /**
      * Loads a font from assets.
      *
-     * <p>Font files are loaded from assets (BEM structure: src/main/java is added to assets.srcDirs).
+     * <p>
+     * Font files are loaded from assets (BEM structure: src/main/java is added to
+     * assets.srcDirs).
      *
-     * @param context Android context (used for assets access)
+     * @param context  Android context (used for assets access)
      * @param fontName Name of the font file (e.g., "Font.ttf")
      * @return the loaded Typeface
      * @throws RuntimeException if the font file cannot be loaded
      */
     private static Typeface loadFont(Context context, String fontName) {
         try {
-            // Load font from assets (BEM structure: src/main/java is added to assets.srcDirs)
-            return Typeface.createFromAsset(
-                    context.getAssets(), "ru/voboost/components/font/" + fontName);
+            // Load font from assets
+            // assets.srcDir points to src/main/java/ru/voboost/components/font/
+            // so font files are at the root of assets
+            return Typeface.createFromAsset(context.getAssets(), fontName);
         } catch (Exception e) {
             throw new RuntimeException(
                     "Failed to load "
@@ -134,7 +147,8 @@ public final class Font {
                             + " from assets. Ensure the font file is available at"
                             + " src/main/java/ru/voboost/components/font/"
                             + fontName
-                            + " and that build.gradle.kts has assets.srcDirs = [\"src/main/java\"]",
+                            + " and that build.gradle.kts has"
+                            + " assets.srcDir(\"src/main/java/ru/voboost/components/font\")",
                     e);
         }
     }
