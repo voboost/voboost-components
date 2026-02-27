@@ -1,124 +1,94 @@
 # Section Component
 
-A titled container component with rounded corners and border for automotive applications.
+## Architecture
 
-## Overview
+- **[Section.java](Section.java)** — Java ViewGroup: titled container with gradient header
+- **[Section.kt](Section.kt)** — Kotlin Compose wrapper
 
-The Section component provides a styled container with a localized title, rounded corners, and border. It's designed to group related UI elements and provide visual hierarchy with clear section headers in automotive interfaces.
-
-## Features
-
-- Localized title text with multi-language support
-- Rounded corners with customizable radius
-- Border with configurable width
-- Multi-theme support (Free/Dreamer, Light/Dark)
-- Hardware-accelerated rendering
-- Child view support
+Titled container with rounded corners for grouping related elements (e.g. Radio inside Section inside Panel).
 
 ## Usage
 
 ### Java
 
 ```java
-// Create section
 Section section = new Section(context);
-
-// Configure theme and language
-section.setTheme(Theme.FREE_LIGHT);
+section.setTheme(Theme.FREE_DARK);
 section.setLanguage(Language.EN);
-
-// Set localized title
-Map<String, String> title = new HashMap<>();
-title.put("en", "Settings");
-title.put("ru", "Настройки");
-section.setTitle(title);
+section.setTitle(Map.of("en", "Language Selection", "ru", "Выбор языка"));
 
 // Add child views
-TextView textView = new TextView(context);
-textView.setText("Content inside section");
-section.addView(textView);
+section.addView(radioComponent);
 ```
 
-### Kotlin (Compose)
+### Kotlin
 
 ```kotlin
-@Composable
-fun MyScreen() {
-    Section(
-        title = mapOf("en" to "Settings", "ru" to "Настройки"),
-        lang = "en",
-        theme = "free-light"
-    ) {
-        Text("Content inside section")
-        Button(onClick = { /* Handle click */ }) {
-            Text("Button")
-        }
-    }
+val section = Section(context).apply {
+    setTheme(Theme.FREE_DARK)
+    setLanguage(Language.EN)
+    setTitle(mapOf("en" to "Language Selection", "ru" to "Выбор языка"))
+    addView(radioComponent)
 }
 ```
 
-## API Reference
+### Compose
 
-### Section (Java)
+```kotlin
+Section(
+    title = mapOf("en" to "Settings", "ru" to "Настройки"),
+    lang = Language.EN,
+    theme = Theme.FREE_LIGHT,
+    content = { sectionView ->
+        sectionView.addView(radioComponent)
+    }
+)
+```
 
-| Method | Description |
-|--------|-------------|
-| setTitle(Map<String, String>) | Sets the localized title |
-| getTitle() | Returns the Map of localized titles |
-| getTitleText() | Returns the title text for current language |
-| setTheme(Theme) | Sets the visual theme |
-| getCurrentTheme() | Returns the current theme |
-| setLanguage(Language) | Sets the display language |
-| getCurrentLanguage() | Returns the current language |
+## API
 
-### Section (Compose)
+### Java
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| title | Map<String, String> | Localized title text |
-| lang | String | Language code ("en", "ru") |
-| theme | String | Theme identifier |
-| content | @Composable () -> Unit | Content to display inside the section |
+```java
+// Title
+void setTitle(Map<String, String> title)
+Map<String, String> getTitle()
+String getTitleText()                   // current language
 
-## Themes
+// Theme and language
+void setTheme(Theme theme)
+Theme getCurrentTheme()
+void setLanguage(Language language)
+Language getCurrentLanguage()
 
-| Theme | Description |
-|-------|-------------|
-| free-light | Free car model, light theme |
-| free-dark | Free car model, dark theme |
-| dreamer-light | Dreamer car model, light theme |
-| dreamer-dark | Dreamer car model, dark theme |
+// Propagation (to child components)
+void propagateTheme(Theme theme)
+void propagateLanguage(Language language)
+```
 
-## Dimensions
+### Compose Wrapper
 
-All dimensions are in pixels (automotive requirement):
+```kotlin
+@Composable
+fun Section(
+    title: Map<String, String>,
+    lang: Language,
+    theme: Theme,
+    content: ((Section) -> Unit)? = null
+)
+```
 
-| Dimension | Value | Description |
-|-----------|-------|-------------|
-| CORNER_RADIUS | 16px | Corner radius for the section |
-| PADDING | 20px | Default padding inside the section |
-| TITLE_SPACING | 16px | Spacing between title and content |
-| TITLE_TEXT_SIZE | 32px | Title text size |
-| BORDER_WIDTH | 1px | Border width |
+## Implementation Details
 
-## Colors
+Canvas-based rendering: gradient title bar with top-only rounded corners, border, background. State persistence via `onSaveInstanceState`/`onRestoreInstanceState`. Propagates theme and language to children.
 
-### Free Light Theme
-- Background: #f8f9fa (very light gray)
-- Border: #e9ecef (light gray)
-- Title Text: #212529 (dark gray)
+## File Structure
 
-### Free Dark Theme
-- Background: #343a40 (dark gray)
-- Border: #495057 (medium gray)
-- Title Text: #f8f9fa (very light gray)
-
-### Dreamer Light Theme
-- Background: #fafbfc (almost white)
-- Border: #e1e4e8 (light gray)
-- Title Text: #24292e (dark gray)
-
-### Dreamer Dark Theme
-- Background: #2d3748 (dark gray)
-- Border: #4a5568 (medium gray)
-- Title Text: #f7fafc (very light gray)
+```
+section/
+├── Section.java         # Core implementation
+├── Section.kt           # Compose wrapper
+├── SectionTheme.java    # Theme colors
+├── Section.md           # This doc
+└── Section.test/        # Tests
+```

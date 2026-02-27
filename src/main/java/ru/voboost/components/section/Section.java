@@ -16,31 +16,22 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import ru.voboost.components.font.Font;
+import ru.voboost.components.i18n.ILocalizable;
 import ru.voboost.components.i18n.Language;
+import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
 
 /**
- * Section component - A titled container with rounded corners.
+ * Section component — titled container with rounded corners and gradient
+ * header.
  *
- * <p>This is a ViewGroup that can contain child views (like Radio).
- * It draws:
- * <ul>
- *   <li>A full-width title bar with top-only rounded corners</li>
- *   <li>A content area with bottom-only rounded corners</li>
- *   <li>Title text inside the title bar</li>
- * </ul>
+ * <p>
+ * ViewGroup that draws a title bar with optional gradient overlay
+ * and a content area for child views (e.g. Radio).
  *
- * <p>The vendor design has:
- * <ul>
- *   <li>Section background: #1a1e28 (dark theme)</li>
- *   <li>Corner radius: 20px</li>
- *   <li>Title: 32sp, bold, white text</li>
- *   <li>Title margin: 30px left, 25px top</li>
- *   <li>Content padding bottom: 25px</li>
- *   <li>Horizontal margin: 30px on each side</li>
- * </ul>
- *
- * <p>Usage:
+ * <p>
+ * Usage:
+ * 
  * <pre>
  * Section section = new Section(context);
  * section.setTheme(Theme.FREE_DARK);
@@ -49,9 +40,7 @@ import ru.voboost.components.theme.Theme;
  * section.addView(radioComponent);
  * </pre>
  */
-public class Section extends ViewGroup {
-
-    private static final String TAG = "Section";
+public class Section extends ViewGroup implements IThemable, ILocalizable {
 
     // Data
     private Map<String, String> title;
@@ -172,6 +161,7 @@ public class Section extends ViewGroup {
      * @param theme the theme to apply
      * @throws IllegalArgumentException if theme is null
      */
+    @Override
     public void setTheme(Theme theme) {
         if (theme == null) {
             throw new IllegalArgumentException("Theme cannot be null");
@@ -197,6 +187,7 @@ public class Section extends ViewGroup {
      * @param language the language to apply
      * @throws IllegalArgumentException if language is null
      */
+    @Override
     public void setLanguage(Language language) {
         if (language == null) {
             throw new IllegalArgumentException("Language cannot be null");
@@ -222,6 +213,7 @@ public class Section extends ViewGroup {
      *
      * @param theme the theme to propagate
      */
+    @Override
     public void propagateTheme(Theme theme) {
         if (theme == null) {
             return;
@@ -230,8 +222,10 @@ public class Section extends ViewGroup {
         // Propagate theme to all child views
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
-            if (child instanceof ru.voboost.components.radio.Radio) {
-                ((ru.voboost.components.radio.Radio) child).setTheme(theme);
+            if (child instanceof IThemable) {
+                IThemable themable = (IThemable) child;
+                themable.setTheme(theme);
+                themable.propagateTheme(theme);
             }
         }
     }
@@ -241,6 +235,7 @@ public class Section extends ViewGroup {
      *
      * @param language the language to propagate
      */
+    @Override
     public void propagateLanguage(Language language) {
         if (language == null) {
             return;
@@ -249,8 +244,10 @@ public class Section extends ViewGroup {
         // Propagate language to all child views
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
-            if (child instanceof ru.voboost.components.radio.Radio) {
-                ((ru.voboost.components.radio.Radio) child).setLanguage(language);
+            if (child instanceof ILocalizable) {
+                ILocalizable localizable = (ILocalizable) child;
+                localizable.setLanguage(language);
+                localizable.propagateLanguage(language);
             }
         }
     }
@@ -260,7 +257,8 @@ public class Section extends ViewGroup {
     // ============================================================
 
     private void calculateTitleBarHeight() {
-        // Title bar height is fixed at 98dp (98 pixels) to match original implementation
+        // Title bar height is fixed at 98dp (98 pixels) to match original
+        // implementation
         titleBarHeight = 98;
     }
 
@@ -284,7 +282,8 @@ public class Section extends ViewGroup {
         // Measure children
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == GONE)
+                continue;
 
             // Give children the content width (section width minus horizontal padding)
             int childWidthSpec = MeasureSpec.makeMeasureSpec(contentWidth, MeasureSpec.EXACTLY);
@@ -297,7 +296,8 @@ public class Section extends ViewGroup {
         // Add content padding bottom + bottom margin (spacing after section)
         totalHeight += SectionTheme.CONTENT_PADDING_BOTTOM + SectionTheme.BOTTOM_MARGIN;
 
-        // The measured width includes horizontal margins (so parent knows total space needed)
+        // The measured width includes horizontal margins (so parent knows total space
+        // needed)
         setMeasuredDimension(
                 resolveSize(sectionWidth + 2 * SectionTheme.HORIZONTAL_MARGIN, widthMeasureSpec),
                 resolveSize(totalHeight, heightMeasureSpec));
@@ -312,13 +312,15 @@ public class Section extends ViewGroup {
         int sectionLeft = SectionTheme.HORIZONTAL_MARGIN;
         int sectionRight = sectionLeft + SectionTheme.SECTION_WIDTH;
 
-        // Children start below the title bar with title spacing, with horizontal content padding
+        // Children start below the title bar with title spacing, with horizontal
+        // content padding
         int currentTop = titleBarHeight + SectionTheme.TITLE_SPACING;
         int childLeft = sectionLeft + SectionTheme.CONTENT_PADDING_HORIZONTAL;
 
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
-            if (child.getVisibility() == GONE) continue;
+            if (child.getVisibility() == GONE)
+                continue;
 
             int childRight = childLeft + child.getMeasuredWidth();
             int childBottom = currentTop + child.getMeasuredHeight();
@@ -386,7 +388,8 @@ public class Section extends ViewGroup {
 
     private void drawTitleGradient(
             Canvas canvas, float sectionLeft, float sectionRight, float sectionTop, float radius) {
-        // Horizontal gradient: darker on the left, fading to section background on the right
+        // Horizontal gradient: darker on the left, fading to section background on the
+        // right
         int gradientStart = SectionTheme.getTitleGradientStart(currentTheme);
         int bgColor = SectionTheme.getBackground(currentTheme);
 
@@ -404,7 +407,7 @@ public class Section extends ViewGroup {
 
         // Draw gradient only in the title area with top rounded corners
         Path titlePath = new Path();
-        float[] radii = new float[] {radius, radius, radius, radius, 0, 0, 0, 0};
+        float[] radii = new float[] { radius, radius, radius, radius, 0, 0, 0, 0 };
         titlePath.addRoundRect(
                 new RectF(sectionLeft, sectionTop, sectionRight, gradientBottom),
                 radii,
@@ -423,54 +426,5 @@ public class Section extends ViewGroup {
 
         backgroundPaint.setColor(SectionTheme.getBackground(currentTheme));
         titlePaint.setColor(SectionTheme.getTitleTextColor(currentTheme));
-    }
-
-    // ============================================================
-    // STATE PERSISTENCE
-    // ============================================================
-
-    @Override
-    protected android.os.Parcelable onSaveInstanceState() {
-        android.os.Bundle bundle = new android.os.Bundle();
-
-        bundle.putParcelable("superState", super.onSaveInstanceState());
-        bundle.putString(
-                "currentLanguage", currentLanguage != null ? currentLanguage.getCode() : null);
-        bundle.putString("currentTheme", currentTheme != null ? currentTheme.getValue() : null);
-        bundle.putSerializable("title", (java.io.Serializable) title);
-
-        return bundle;
-    }
-
-    @Override
-    protected void onRestoreInstanceState(android.os.Parcelable state) {
-        if (state instanceof android.os.Bundle) {
-            android.os.Bundle bundle = (android.os.Bundle) state;
-
-            String langCode = bundle.getString("currentLanguage");
-            currentLanguage = langCode != null ? Language.fromCode(langCode) : null;
-
-            String themeValue = bundle.getString("currentTheme");
-            currentTheme = themeValue != null ? Theme.fromValue(themeValue) : null;
-
-            @SuppressWarnings("unchecked")
-            Map<String, String> titleFromBundle =
-                    (Map<String, String>) bundle.getSerializable("title");
-            title = titleFromBundle;
-
-            super.onRestoreInstanceState(bundle.getParcelable("superState"));
-
-            if (currentTheme != null) {
-                updateColors();
-            }
-
-            if (title != null) {
-                calculateTitleBarHeight();
-            }
-
-            invalidate();
-        } else {
-            super.onRestoreInstanceState(state);
-        }
     }
 }
