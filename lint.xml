@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Ignore ExpiredTargetSdkVersion for SDK 30 (Android 11)
+         We intentionally target Android 11 as it's the primary platform for our users
+         while maintaining Android 9+ compatibility (minSdk = 28) -->
+    <issue id="ExpiredTargetSdkVersion" severity="ignore">
+        <ignore path="**" />
+    </issue>
+</lint>
