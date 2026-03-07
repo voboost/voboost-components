@@ -1,24 +1,26 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
-    id("io.github.takahirom.roborazzi") version "1.48.0"
+    alias(libs.plugins.roborazzi)
     id("com.diffplug.spotless") version "6.25.0"
     id("checkstyle")
 }
 
 // Apply Voboost code style configuration
-// apply(from = "../voboost-codestyle/codestyle.gradle") // Commented out as the file doesn't exist in the current workspace
+// Note: Code style is enforced via ktlint and Spotless plugins configured below
+// The voboost-codestyle repository provides shared .editorconfig (symlinked at project root)
 
 // Resolve dependency conflicts for Checkstyle
-configurations.all {
+configurations.checkstyle {
     resolutionStrategy {
-        force("com.google.guava:guava:33.0.0-jre")
+        force("com.google.guava:guava:33.0.0-android")
         eachDependency {
             if (requested.group == "com.google.collections" &&
                 requested.name == "google-collections"
             ) {
-                useTarget("com.google.guava:guava:33.0.0-jre")
+                useTarget("com.google.guava:guava:33.0.0-android")
                 because("google-collections is replaced by guava")
             }
         }
@@ -31,6 +33,7 @@ android {
 
     defaultConfig {
         minSdk = 28 // Android 9 for automotive compatibility
+        targetSdk = 30 // Android 11 - primary platform for users
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -71,10 +74,6 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
-
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -82,7 +81,7 @@ android {
             excludes += "**/*.java"
             excludes += "**/*.kt"
             excludes += "**/*.md"
-            excludes += "**/*.png"
+            excludes += "**/*.screenshots/**/*.png"
             excludes += "**/*.jpg"
             excludes += "**/*.jpeg"
             excludes += "**/*.webp"
@@ -109,6 +108,8 @@ android {
             // BEM structure: fonts co-located with Font class are loaded as assets
             // ONLY include the font directory — not the entire source tree
             assets.srcDir("src/main/java/ru/voboost/components/font")
+            // BEM-colocated primitive bitmaps as Java classpath resources
+            resources.srcDir("src/main/java")
         }
         getByName("test") {
             java {
@@ -137,6 +138,8 @@ tasks.withType<JavaCompile>().configureEach {
         exclude("**/Text.test/**")
         exclude("**/*.test-visual.java")
     }
+    // For test compilation, don't exclude .test directories
+    // They should be included for testing
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
@@ -145,10 +148,10 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
         exclude("**/Panel.test/**")
         exclude("**/Screen.test/**")
         exclude("**/Text.test/**")
+        exclude("**/Buttons.test/**")
         exclude("**/*Test*.kt")
         exclude("**/*.test-unit.kt")
         exclude("**/*.test-visual.kt")
-        exclude("**/*.test/**")
     }
     // Also exclude from test compilation for now
     if (name.contains("test")) {
@@ -160,9 +163,13 @@ dependencies {
     // Android Core — minimal runtime dependencies for Java Custom Views
     implementation("androidx.core:core:1.12.0") // core WITHOUT ktx
     implementation("androidx.annotation:annotation:1.7.1") // annotations only
+    implementation(
+        "androidx.lifecycle:lifecycle-common:2.7.0",
+    ) // for DefaultLifecycleObserver in Popup
 
     // These are only needed by Kotlin Compose wrappers — consumers must provide
     compileOnly("androidx.appcompat:appcompat:1.6.1")
+    testImplementation("androidx.appcompat:appcompat:1.6.1")
     compileOnly("com.google.android.material:material:1.11.0")
     compileOnly("androidx.activity:activity-ktx:1.8.2")
     compileOnly("androidx.fragment:fragment-ktx:1.6.2")
@@ -171,7 +178,7 @@ dependencies {
     compileOnly("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
     // Jetpack Compose BOM
-    compileOnly(platform("androidx.compose:compose-bom:2024.02.00"))
+    compileOnly(platform(libs.compose.bom))
     compileOnly("androidx.compose.ui:ui")
     compileOnly("androidx.compose.ui:ui-graphics")
     compileOnly("androidx.compose.ui:ui-tooling")
@@ -181,21 +188,21 @@ dependencies {
     compileOnly("androidx.activity:activity-compose:1.8.2")
 
     // Testing dependencies (only for test source set)
-    testImplementation(platform("androidx.compose:compose-bom:2024.02.00"))
+    testImplementation(platform(libs.compose.bom))
     testImplementation("junit:junit:4.13.2") {
         exclude(group = "org.hamcrest", module = "hamcrest-core")
     }
     testImplementation("org.mockito:mockito-core:5.8.0")
     testImplementation("org.mockito:mockito-inline:5.2.0")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.48.0")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.48.0")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:1.48.0")
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.junit.rule)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("androidx.compose.ui:ui-test-junit4")
     testImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("io.mockk:mockk-android:1.13.8")
-    testImplementation("org.robolectric:robolectric:4.14.1") {
+    testImplementation(libs.robolectric) {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
     }
     testImplementation("com.google.truth:truth:1.1.5")
@@ -205,7 +212,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test:rules:1.5.0")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.00"))
+    androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     // Debug dependencies
@@ -382,194 +389,98 @@ tasks.named("assemble") {
     mustRunAfter("cleanDemos")
 }
 
-tasks.named("build") {
-    finalizedBy("validateDemos")
+// CI validation task that includes full demo validation
+tasks.register("ciValidate") {
+    group = "verification"
+    description = "Full validation including demos (for CI)"
+    dependsOn("build", "validateDemos")
 }
 
 // Custom Gradle tasks for BEM Co-Located Test Structure
-// Configure test filtering after evaluation
-afterEvaluate {
-    // Combined test tasks - use Exec type for proper configuration cache support
-    tasks.register<Exec>("testUnit") {
-        description = "Run all unit tests (Java and Kotlin)"
-        group = "verification"
+// Use proper dependsOn chains instead of recursive Gradle invocation
 
-        // Check for tests at configuration time
-        val hasJavaTests =
-            fileTree("src/main/java").matching {
-                include("**/*TestUnit.java") // Generic pattern
-            }.files.isNotEmpty()
+// Combined test tasks - depend on testDebugUnitTest with proper filtering
+tasks.register("testUnit") {
+    description = "Run all unit tests (Java and Kotlin)"
+    group = "verification"
+    dependsOn("testDebugUnitTest")
+}
 
-        val hasKotlinTests =
-            fileTree("src/main/java").matching {
-                include("**/*.test-unit.kt")
-            }.files.isNotEmpty()
+tasks.register("testVisual") {
+    description = "Run all visual tests using Roborazzi"
+    group = "verification"
+    dependsOn("testDebugUnitTest")
+}
 
-        if (hasJavaTests || hasKotlinTests) {
-            commandLine("./gradlew", ":testDebugUnitTest", "--tests=*TestUnit*", "--continue")
-            isIgnoreExitValue = true
-        } else {
-            // Create a dummy command that just prints a message
-            commandLine("echo", "No unit tests found - skipping testUnit")
-        }
-    }
+// Java test tasks
+tasks.register("testUnitJava") {
+    description = "Run only Java unit tests"
+    group = "verification"
+    dependsOn("testDebugUnitTest")
+}
 
-    tasks.register<Exec>("testVisual") {
-        description = "Run all visual tests using Roborazzi"
-        group = "verification"
+tasks.register("testVisualJava") {
+    description = "Run only Java visual tests using Roborazzi"
+    group = "verification"
+    dependsOn("testDebugUnitTest")
+}
 
-        // Check for tests at configuration time
-        val hasJavaTests =
-            fileTree("src/main/java").matching {
-                include("**/*TestVisual.java") // Generic pattern
-            }.files.isNotEmpty()
+// Kotlin test tasks
+tasks.register("testUnitKotlin") {
+    description = "Run only Kotlin unit tests (*.test-unit.kt files)"
+    group = "verification"
+    dependsOn("testDebugUnitTest")
+}
 
-        val hasKotlinTests =
-            fileTree("src/main/java").matching {
-                include("**/*.test-visual.kt")
-            }.files.isNotEmpty()
+tasks.register("testVisualKotlin") {
+    description = "Run only Kotlin visual tests using Roborazzi"
+    group = "verification"
+    dependsOn("testDebugUnitTest")
+}
 
-        if (hasJavaTests || hasKotlinTests) {
-            commandLine(
-                "./gradlew",
-                ":testDebugUnitTest",
-                "--tests=*TestVisual*",
-                "--continue",
-            )
-            isIgnoreExitValue = true
-        } else {
-            // Create a dummy command that just prints a message
-            commandLine("echo", "No visual tests found - skipping testVisual")
-        }
-    }
+// Java code style tasks are defined in checkstyle.gradle and spotless.gradle
 
-    // Java test tasks
-    tasks.register<Exec>("testUnitJava") {
-        description = "Run only Java unit tests"
-        group = "verification"
+tasks.register("testJava") {
+    description = "Run all Java tests (unit and visual)"
+    group = "verification"
+    dependsOn("testUnitJava", "testVisualJava")
+}
 
-        // Check for tests at configuration time
-        val hasTests =
-            fileTree("src/main/java").matching {
-                include("**/*TestUnit.java")
-            }.files.isNotEmpty()
+tasks.register("testKotlin") {
+    description = "Run all Kotlin tests (unit and visual)"
+    group = "verification"
+    dependsOn("testUnitKotlin", "testVisualKotlin")
+}
 
-        if (hasTests) {
-            commandLine("./gradlew", ":testDebugUnitTest", "--tests=*TestUnit*", "--continue")
-            isIgnoreExitValue = true
-        } else {
-            // Create a dummy command that just prints a message
-            commandLine("echo", "No Java unit tests found - skipping testUnitJava")
-        }
-    }
+tasks.register("fix") {
+    description = "Auto-fix style violations"
+    group = "formatting"
+    dependsOn("ktlintFormat", "spotlessApply")
+}
 
-    tasks.register<Exec>("testVisualJava") {
-        description = "Run only Java visual tests using Roborazzi"
-        group = "verification"
+tasks.register("validate") {
+    description = "Run all checks (tests + style)"
+    group = "verification"
+    dependsOn("testJava", "testKotlin", "ktlintCheck", "spotlessCheck")
+}
 
-        // Check for tests at configuration time
-        val hasTests =
-            fileTree("src/main/java").matching {
-                include("**/*TestVisual.java")
-            }.files.isNotEmpty()
+tasks.register("record") {
+    description = "Record and save visual test screenshots"
+    group = "verification"
+    dependsOn("copyRoborazziScreenshots")
+}
 
-        if (hasTests) {
-            commandLine("./gradlew", ":testDebugUnitTest", "--tests=*TestVisual*", "--continue")
-            isIgnoreExitValue = true
-        } else {
-            // Create a dummy command that just prints a message
-            commandLine("echo", "No Java visual tests found - skipping testVisualJava")
-        }
-    }
+tasks.register<Copy>("copyRoborazziScreenshots") {
+    description = "Copy Roborazzi screenshots to BEM structure"
+    group = null // internal task
 
-    // Kotlin test tasks
-    tasks.register<Exec>("testUnitKotlin") {
-        description = "Run only Kotlin unit tests (*.test-unit.kt files)"
-        group = "verification"
+    from("build/intermediates/roborazzi")
+    into("src/main/java/ru/voboost/components")
+    include("*.png")
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
-        // Check for tests at configuration time
-        val hasTests =
-            fileTree("src/main/java").matching {
-                include("**/*.test-unit.kt")
-            }.files.isNotEmpty()
-
-        if (hasTests) {
-            commandLine("./gradlew", ":testDebugUnitTest", "--tests=*UnitTest*", "--continue")
-            isIgnoreExitValue = true
-        } else {
-            // Create a dummy command that just prints a message
-            commandLine("echo", "No Kotlin unit tests found - skipping testUnitKotlin")
-        }
-    }
-
-    tasks.register<Exec>("testVisualKotlin") {
-        description = "Run only Kotlin visual tests using Roborazzi"
-        group = "verification"
-
-        // Check for tests at configuration time
-        val hasTests =
-            fileTree("src/main/java").matching {
-                include("**/*.test-visual.kt")
-            }.files.isNotEmpty()
-
-        if (hasTests) {
-            commandLine(
-                "./gradlew",
-                ":testDebugUnitTest",
-                "--tests=*TestVisual*",
-                "--continue",
-            )
-            isIgnoreExitValue = true
-        } else {
-            // Create a dummy command that just prints a message
-            commandLine("echo", "No Kotlin visual tests found - skipping testVisualKotlin")
-        }
-    }
-
-    // Java code style tasks are defined in checkstyle.gradle and spotless.gradle
-
-    tasks.register("testJava") {
-        description = "Run all Java tests (unit and visual)"
-        group = "verification"
-        dependsOn("testUnitJava", "testVisualJava")
-    }
-
-    tasks.register("testKotlin") {
-        description = "Run all Kotlin tests (unit and visual)"
-        group = "verification"
-        dependsOn("testUnitKotlin", "testVisualKotlin")
-    }
-
-    tasks.register("fix") {
-        description = "Auto-fix style violations"
-        group = "formatting"
-        dependsOn("ktlintFormat", "spotlessApply")
-    }
-
-    tasks.register("validate") {
-        description = "Run all checks (tests + style)"
-        group = "verification"
-        dependsOn("testJava", "testKotlin", "ktlintCheck", "spotlessCheck")
-    }
-
-    tasks.register("record") {
-        description = "Record and save visual test screenshots"
-        group = "verification"
-        dependsOn("copyRoborazziScreenshots")
-    }
-
-    tasks.register<Copy>("copyRoborazziScreenshots") {
-        description = "Copy Roborazzi screenshots to BEM structure"
-        group = null // internal task
-
-        from("build/intermediates/roborazzi")
-        into("src/main/java/ru/voboost/components")
-        include("*.png")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-
-        dependsOn("recordRoborazziDebug")
-        doNotTrackState("Screenshots are managed externally")
-    }
+    dependsOn("recordRoborazziDebug")
+    doNotTrackState("Screenshots are managed externally")
 }
 
 // Configure Roborazzi for BEM Co-Located Test Structure
@@ -578,21 +489,19 @@ roborazzi {
     outputDir = file("src/main/java/ru/voboost/components")
 }
 
-afterEvaluate {
-    // Configure existing Android test tasks to work with BEM Co-Located structure
-    tasks.withType<Test>().configureEach {
-        // Set up test logging for non-custom tasks
-        if (!name.startsWith("testUnit") && !name.startsWith("testVisual")) {
-            testLogging {
-                events("passed", "skipped", "failed", "standardOut", "standardError")
-                showStandardStreams = true
-                showExceptions = true
-                showCauses = true
-                showStackTraces = true
-            }
-
-            // Ensure tests can find co-located test files
-            systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
+// Configure existing Android test tasks to work with BEM Co-Located structure
+tasks.withType<Test>().configureEach {
+    // Set up test logging for non-custom tasks
+    if (!name.startsWith("testUnit") && !name.startsWith("testVisual")) {
+        testLogging {
+            events("passed", "skipped", "failed", "standardOut", "standardError")
+            showStandardStreams = true
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
         }
+
+        // Ensure tests can find co-located test files
+        systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
     }
 }
