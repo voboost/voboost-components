@@ -36,6 +36,41 @@
 -keep public class ru.voboost.components.font.Font { *; }
 -keep public class ru.voboost.components.theme.Theme { *; }
 -keep public class ru.voboost.components.i18n.Language { *; }
+-keep public class ru.voboost.components.button.Button { *; }
+-keep public class ru.voboost.components.button.ButtonStyle { *; }
+# Checkbox component - keep all public classes and inner classes
+-keep public class ru.voboost.components.checkbox.Checkbox { *; }
+-keep public class ru.voboost.components.checkbox.CheckboxColors { *; }
+-keep public class ru.voboost.components.checkbox.CheckboxColorSchemes { *; }
+-keep public class ru.voboost.components.checkbox.CheckboxDimensions { *; }
+-keep public class ru.voboost.components.checkbox.CheckboxTextColors { *; }
+-keep public class ru.voboost.components.checkbox.CheckboxTextColorSchemes { *; }
+-keep public class ru.voboost.components.checkbox.CheckboxTextDimensions { *; }
+-keep public class ru.voboost.components.checkbox.CheckboxTheme { *; }
+-keep public class ru.voboost.components.toast.Toast { *; }
+-keep public class ru.voboost.components.dialog.Dialog { *; }
+-keep public class ru.voboost.components.dialog.DialogColors { *; }
+-keep public class ru.voboost.components.dialog.DialogDimensions { *; }
+-keep public class ru.voboost.components.dialog.DialogColorSchemes { *; }
+-keep public class ru.voboost.components.dialog.DialogTheme { *; }
+-keep public class ru.voboost.components.popup.Popup { *; }
+-keep public class ru.voboost.components.popup.PopupColors { *; }
+-keep public class ru.voboost.components.popup.PopupDimensions { *; }
+-keep public class ru.voboost.components.popup.PopupColorSchemes { *; }
+-keep public class ru.voboost.components.popup.PopupTheme { *; }
+-keep public class ru.voboost.components.select.Select { *; }
+-keep public class ru.voboost.components.select.SelectOption { *; }
+-keep public class ru.voboost.components.select.SelectColors { *; }
+-keep public class ru.voboost.components.select.SelectDimensions { *; }
+-keep public class ru.voboost.components.select.SelectColorSchemes { *; }
+-keep public class ru.voboost.components.select.SelectTheme { *; }
+-keep public class ru.voboost.components.select.SelectPopup { *; }
+-keep public class ru.voboost.components.select.SelectWheel { *; }
+-keep public class ru.voboost.components.select.SelectOption { *; }
+-keep public class ru.voboost.components.buttons.Buttons { *; }
+-keep public class ru.voboost.components.buttons.ButtonConfig { *; }
+-keep public class ru.voboost.components.i18n.ILocalizable { *; }
+-keep public class ru.voboost.components.theme.IThemable { *; }
 
 # Keep Android View constructors for custom views
 -keepclasseswithmembers class * extends android.view.View {
