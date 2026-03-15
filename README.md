@@ -97,15 +97,33 @@ data class ComponentOption(
 
 ## Technical Specifications
 
+### Build System Requirements
+
+**DO NOT UPGRADE** - These versions are locked for Android 9/11 compatibility:
+
+| Component | Version | Rationale |
+|-----------|---------|-----------|
+| **Java** | 11 | Max compatibility with Android 9/11. NO Java 17/21. |
+| **AGP** | 8.2.2 | Last AGP version supporting Java 11. NO AGP 8.7+. |
+| **Gradle** | 8.14.1 | Build tool version |
+| **Kotlin** | 1.9.25 | Language version |
+| **Compile SDK** | 34 | Android 14 |
+| **Min SDK** | 28 | Android 9 (automotive) |
+| **Target SDK** | 34 | Android 14 |
+
+**Critical**: Upgrading Java to 17+ or AGP to 8.7+ will break Android 9/11 compatibility without desugaring.
+
 ### Android Compatibility
 - **Minimum SDK**: 28 (Android 9)
 - **Target SDK**: 34 (Android 14)
 - **Compile SDK**: 34
 
 ### Dependencies
-- **Jetpack Compose BOM**: 2024.02.00
+- **Jetpack Compose BOM**: 2024.10.01
 - **Kotlin**: 1.9.25
 - **Lifecycle Components**: 2.7.0
+- **Roborazzi**: 1.48.0
+- **Robolectric**: 4.14.1
 
 ### Performance Requirements
 - **Target Frame Rate**: 60fps on automotive hardware
@@ -117,9 +135,12 @@ data class ComponentOption(
 
 ### Prerequisites
 
-1. **JDK**: 11 or later
+1. **JDK**: 11 (exactly - NO 17, NO 21)
 2. **Android SDK**: API 28
-3. **Gradle**: 8.7.3 or later
+3. **Gradle**: 8.14.1
+4. **AGP**: 8.2.2 (NO 8.7+)
+
+See [Build System Requirements](#build-system-requirements) for version lock rationale.
 
 ### Building the Library
 
