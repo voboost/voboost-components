@@ -1,5 +1,8 @@
 package ru.voboost.components.theme;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 /**
  * Shared theme enum for all Voboost components.
  *
@@ -11,6 +14,9 @@ package ru.voboost.components.theme;
  * NOTE: Consuming projects (like voboost-config) should use this enum
  * instead of defining their own, since voboost-components is a standalone
  * library that can be used outside the voboost infrastructure.
+ *
+ * <p><b>Thread Safety:</b> This enum is immutable and thread-safe.
+ * All methods can be safely called concurrently.
  */
 public enum Theme {
     FREE_LIGHT("free-light"),
@@ -27,7 +33,10 @@ public enum Theme {
     /**
      * Get the string value for this theme (e.g., "free-light").
      * Used for serialization and backward compatibility.
+     *
+     * @return Non-null string representation of this theme
      */
+    @NonNull
     public String getValue() {
         return value;
     }
@@ -62,10 +71,15 @@ public enum Theme {
 
     /**
      * Get Theme from string value.
-     * @param value Theme value (e.g., "free-light")
-     * @return Theme enum value, or FREE_DARK as default
+     *
+     * <p>Parsing is case-insensitive for backward compatibility.
+     * Invalid values (null, empty, unknown) return FREE_DARK as default.
+     *
+     * @param value Theme value (e.g., "free-light"), or null
+     * @return Theme enum value, never null (returns FREE_DARK as fallback)
      */
-    public static Theme fromValue(String value) {
+    @NonNull
+    public static Theme fromValue(@Nullable String value) {
         if (value == null) {
             return FREE_DARK;
         }
@@ -77,5 +91,26 @@ public enum Theme {
         }
 
         return FREE_DARK; // Default fallback
+    }
+
+    /**
+     * Checks if a string value is a valid theme identifier.
+     *
+     * <p>This method performs strict case-sensitive matching.
+     * Use this to validate user input before parsing.
+     *
+     * @param value The string value to check
+     * @return true if the value is a valid theme identifier, false otherwise
+     */
+    public static boolean isValidThemeValue(@Nullable String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return false;
+        }
+        for (Theme theme : values()) {
+            if (theme.value.equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
