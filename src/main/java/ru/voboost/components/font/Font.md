@@ -30,14 +30,41 @@ Typeface boldRu = Font.getBold(context, "Привет"); // → Font_bold_unicod
 ## API
 
 ```java
+// Returns regular typeface (never null)
+// @throws RuntimeException if font file not found
 static Typeface getRegular(Context context)
-static Typeface getBold(Context context, String text)  // auto-selects variant
-static void clearCache()                               // for tests
+
+// Returns bold typeface appropriate for text content (never null)
+// - ASCII text → Font_bold_ascii.ttf
+// - Text with non-ASCII chars → Font_bold_unicode.ttf
+// - null or empty string → Font_bold_ascii.ttf
+// @param text the text to be rendered (used for font variant selection)
+// @throws RuntimeException if font file not found
+static Typeface getBold(Context context, String text)
+
+// Clears all cached Typeface instances (for testing only)
+static void clearCache()
 ```
 
 ## Key Behavior
 
 - **Cached** — Typeface instances loaded once, reused
-- **No fallback** — throws `RuntimeException` if font file not found
+- **No fallback** — throws `RuntimeException` if font file not found, never returns `null`
 - **Two bold variants** — ASCII-only text uses `Font_bold_ascii.ttf`, text with non-ASCII chars uses `Font_bold_unicode.ttf`
 - **Asset loading** — fonts loaded from assets via `build.gradle.kts` config: `assets.srcDir("src/main/java/ru/voboost/components/font")`
+
+## Thread Safety
+
+All public methods in Font are **thread-safe**:
+
+- `getRegular()` — synchronized, caches Typeface instance
+- `getBold()` — synchronized, caches bold font variants (ASCII/Unicode)
+- `clearCache()` — synchronized, resets all cached instances
+
+The component uses static cached Typeface instances that are loaded once and reused.
+All cache access is synchronized to prevent race conditions in multi-threaded environments.
+
+In automotive UI systems, Font is typically called from the main UI thread only,
+but the implementation ensures thread-safety for any usage pattern.
+- **Null handling** — `getBold(context, null)` returns ASCII bold font (same as empty string)
+- **Thread-safe** — all public methods are synchronized

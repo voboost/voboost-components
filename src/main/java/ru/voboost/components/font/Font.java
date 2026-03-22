@@ -12,7 +12,7 @@ import android.graphics.Typeface;
  *
  * <p>
  * Font files are loaded from assets via build.gradle.kts configuration:
- * 
+ *
  * <pre>
  * sourceSets {
  *     getByName("main") {
@@ -43,9 +43,10 @@ import android.graphics.Typeface;
  * There is NO fallback to system default fonts.
  */
 public final class Font {
-    private static Typeface regular;
-    private static Typeface boldAscii;
-    private static Typeface boldUnicode;
+    private static volatile Typeface regular;
+    private static volatile Typeface boldAscii;
+    private static volatile Typeface boldUnicode;
+    private static volatile Typeface semiBold;
 
     private Font() {
         // Prevent instantiation
@@ -58,7 +59,7 @@ public final class Font {
      * @return Regular typeface
      * @throws RuntimeException if the font file is not available
      */
-    public static Typeface getRegular(Context context) {
+    public static synchronized Typeface getRegular(Context context) {
         if (regular == null) {
             regular = loadFont(context, "Font.ttf");
         }
@@ -78,28 +79,68 @@ public final class Font {
      * @return Bold typeface appropriate for the text content
      * @throws RuntimeException if the font file is not available
      */
-    public static Typeface getBold(Context context, String text) {
-        if (isAsciiOnly(text)) {
-            if (boldAscii == null) {
-                boldAscii = loadFont(context, "Font_bold_ascii.ttf");
-            }
-            return boldAscii;
-        } else {
-            if (boldUnicode == null) {
-                boldUnicode = loadFont(context, "Font_bold_unicode.ttf");
-            }
-
-            return boldUnicode;
+    public static synchronized Typeface getBold(Context context, String text) {
+        if (text == null || text.isEmpty()) {
+            return getBoldAscii(context);
         }
+
+        if (isAsciiOnly(text)) {
+            return getBoldAscii(context);
+        } else {
+            return getBoldUnicode(context);
+        }
+    }
+
+    /**
+     * Returns the ASCII bold typeface.
+     *
+     * @param context Android context (used for cache directory access)
+     * @return ASCII bold typeface
+     * @throws RuntimeException if the font file is not available
+     */
+    private static synchronized Typeface getBoldAscii(Context context) {
+        if (boldAscii == null) {
+            boldAscii = loadFont(context, "Font_bold_ascii.ttf");
+        }
+        return boldAscii;
+    }
+
+    /**
+     * Returns the Unicode bold typeface.
+     *
+     * @param context Android context (used for cache directory access)
+     * @return Unicode bold typeface
+     * @throws RuntimeException if the font file is not available
+     */
+    private static synchronized Typeface getBoldUnicode(Context context) {
+        if (boldUnicode == null) {
+            boldUnicode = loadFont(context, "Font_bold_unicode.ttf");
+        }
+        return boldUnicode;
     }
 
     /**
      * Clears the font cache. Call this in tests if needed.
      */
-    public static void clearCache() {
+    public static synchronized void clearCache() {
         regular = null;
         boldAscii = null;
         boldUnicode = null;
+        semiBold = null;
+    }
+
+    /**
+     * Returns the semi-bold (weight 500) typeface based on the Regular font.
+     * Uses the same glyph set as Regular with synthetic weight.
+     *
+     * @param context Android context
+     * @return Semi-bold typeface
+     */
+    public static synchronized Typeface getSemiBold(Context context) {
+        if (semiBold == null) {
+            semiBold = Typeface.create(getRegular(context), Typeface.BOLD);
+        }
+        return semiBold;
     }
 
     /**
@@ -113,13 +154,8 @@ public final class Font {
             return true;
         }
 
-        for (int i = 0; i < text.length(); i++) {
-            if (text.charAt(i) > 127) {
-                return false;
-            }
-        }
-
-        return true;
+        // Use Java 8+ streams for better readability (project uses Java 11)
+        return text.chars().allMatch(c -> c <= 127);
     }
 
     /**
@@ -140,7 +176,9 @@ public final class Font {
             // assets.srcDir points to src/main/java/ru/voboost/components/font/
             // so font files are at the root of assets
             return Typeface.createFromAsset(context.getAssets(), fontName);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            // Catch RuntimeException specifically (RuntimeException, NullPointerException, etc.)
+            // Don't catch generic Exception which could hide programming errors
             throw new RuntimeException(
                     "Failed to load "
                             + fontName
