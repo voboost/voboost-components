@@ -113,6 +113,11 @@ public class Text extends AppCompatTextView implements IThemable, ILocalizable {
     }
 
     @Override
+    public Language getCurrentLanguage() {
+        return language;
+    }
+
+    @Override
     public void propagateLanguage(Language language) {
         // Leaf component, no children
     }

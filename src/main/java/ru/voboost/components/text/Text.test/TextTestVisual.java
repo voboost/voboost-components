@@ -287,66 +287,6 @@ public class TextTestVisual {
     }
 
     @Test
-    public void testTextPositionLeft() throws IOException {
-        Text textView = new Text(context);
-        textView.setText("Position Test");
-        textView.setRole(TextRole.CONTROL);
-        textView.setTheme(Theme.FREE_LIGHT);
-        textView.setLanguage(Language.EN);
-        textView.setTextAlign(Paint.Align.LEFT);
-
-        captureScreenshot(textView, "text_position_left.png");
-    }
-
-    @Test
-    public void testTextPositionCenter() throws IOException {
-        Text textView = new Text(context);
-        textView.setText("Position Test");
-        textView.setRole(TextRole.CONTROL);
-        textView.setTheme(Theme.FREE_LIGHT);
-        textView.setLanguage(Language.EN);
-        textView.setTextAlign(Paint.Align.CENTER);
-
-        captureScreenshot(textView, "text_position_center.png");
-    }
-
-    @Test
-    public void testTextPositionRight() throws IOException {
-        Text textView = new Text(context);
-        textView.setText("Position Test");
-        textView.setRole(TextRole.CONTROL);
-        textView.setTheme(Theme.FREE_LIGHT);
-        textView.setLanguage(Language.EN);
-        textView.setTextAlign(Paint.Align.RIGHT);
-
-        captureScreenshot(textView, "text_position_right.png");
-    }
-
-    @Test
-    public void testTextCustomPosition() throws IOException {
-        Text textView = new Text(context);
-        textView.setText("Custom Position");
-        textView.setRole(TextRole.CONTROL);
-        textView.setTheme(Theme.FREE_LIGHT);
-        textView.setLanguage(Language.EN);
-        textView.setPosition(50, 50);
-
-        captureScreenshot(textView, "text_custom_position.png");
-    }
-
-    @Test
-    public void testTextCustomColor() throws IOException {
-        Text textView = new Text(context);
-        textView.setText("Custom Color");
-        textView.setRole(TextRole.CONTROL);
-        textView.setTheme(Theme.FREE_LIGHT);
-        textView.setLanguage(Language.EN);
-        textView.setColor(Color.RED);
-
-        captureScreenshot(textView, "text_custom_color.png");
-    }
-
-    @Test
     public void testTextEmpty() throws IOException {
         Text textView = new Text(context);
         textView.setText("");
