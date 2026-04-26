@@ -7,6 +7,10 @@ import android.content.Context;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.github.takahirom.roborazzi.RoborazziOptions;
 
 import org.junit.Before;
@@ -18,6 +22,10 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 
+import ru.voboost.components.i18n.Language;
+import ru.voboost.components.radio.Radio;
+import ru.voboost.components.radio.RadioButton;
+import ru.voboost.components.section.Section;
 import ru.voboost.components.theme.Theme;
 
 /**
@@ -41,7 +49,7 @@ public class PanelTestVisual {
     public void setUp() {
         // Create an Activity to attach views to (required for Roborazzi screenshot capture)
         ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
-        controller.create();
+        controller.create().start().resume();
         activity = controller.get();
         context = activity;
         container = new FrameLayout(context);
@@ -59,7 +67,7 @@ public class PanelTestVisual {
                 break;
             }
         }
-        return testMethodName + ".png";
+        return SCREENSHOT_BASE_PATH + "/" + testMethodName + ".png";
     }
 
     private Panel createPanel(Theme theme) {
@@ -67,18 +75,19 @@ public class PanelTestVisual {
         panel.setTheme(theme);
 
         // Set layout parameters for proper rendering
+        // Panel is transparent and fills available space
         ViewGroup.LayoutParams params =
                 new ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         panel.setLayoutParams(params);
 
         // Force measurement and layout for screenshot capture with proper dimensions
         int widthMeasureSpec =
                 android.view.View.MeasureSpec.makeMeasureSpec(
-                        1920, android.view.View.MeasureSpec.AT_MOST);
+                        1920, android.view.View.MeasureSpec.EXACTLY);
         int heightMeasureSpec =
                 android.view.View.MeasureSpec.makeMeasureSpec(
-                        720, android.view.View.MeasureSpec.AT_MOST);
+                        720, android.view.View.MeasureSpec.EXACTLY);
 
         panel.measure(widthMeasureSpec, heightMeasureSpec);
 
@@ -130,6 +139,39 @@ public class PanelTestVisual {
     @Test
     public void panel_withContent() {
         Panel panel = createPanel(Theme.FREE_LIGHT);
+
+        // Add Section with content (как в демо)
+        Map<String, String> sectionTitle = new HashMap<String, String>() {{
+            put("en", "Test Section");
+            put("ru", "Тестовая секция");
+        }};
+        Section section = Section.create(context, Theme.FREE_LIGHT, Language.EN, sectionTitle).build();
+
+        // Add Radio component to Section using typed API
+        Radio radio = Radio.create(
+                context,
+                Theme.FREE_LIGHT,
+                Language.EN,
+                Arrays.asList(
+                        new RadioButton("option1", new HashMap<String, String>() {{
+                            put("en", "Option 1");
+                            put("ru", "Опция 1");
+                        }}),
+                        new RadioButton("option2", new HashMap<String, String>() {{
+                            put("en", "Option 2");
+                            put("ru", "Опция 2");
+                        }})),
+                "option1").build();
+        section.addRadio(radio);
+        panel.addView(section);
+
+        // Force remeasure and relayout
+        panel.measure(
+            android.view.View.MeasureSpec.makeMeasureSpec(1920, android.view.View.MeasureSpec.EXACTLY),
+            android.view.View.MeasureSpec.makeMeasureSpec(720, android.view.View.MeasureSpec.EXACTLY)
+        );
+        panel.layout(0, 0, panel.getMeasuredWidth(), panel.getMeasuredHeight());
+
         captureRoboImage(panel, getScreenshotName(), new RoborazziOptions());
     }
 }
