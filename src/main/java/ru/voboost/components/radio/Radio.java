@@ -1,19 +1,20 @@
 package ru.voboost.components.radio;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.LinearGradient;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.Shader;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.animation.OvershootInterpolator;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import ru.voboost.components.font.Font;
 import ru.voboost.components.i18n.ILocalizable;
@@ -22,66 +23,67 @@ import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
 
 /**
- * Radio component — horizontal segmented control with animated selection.
+ * Radio component — segmented control with optional title and descriptions.
  *
  * <p>
- * Canvas-based custom View with gradient selection indicator,
- * touch handling, and overshoot animation.
+ * Layout (vertical):
+ *
+ * <pre>
+ * [Title text]               (optional, 32px)
+ * [Description above]        (optional, 24px, gap 5px from title)
+ * [RadioPrimitive]           (canvas-based segmented control)
+ * [Description below]        (optional, 24px, gap 14px from primitive)
+ * </pre>
+ *
+ * <p>
+ * When no text is set, behaves identically to the previous canvas-only Radio.
  */
-public class Radio extends View implements IThemable, ILocalizable {
-    // Data and state
-    private List<RadioButton> buttons = new ArrayList<>();
-    private Language currentLanguage = null;
+public class Radio extends LinearLayout implements IThemable, ILocalizable {
+
     private Theme currentTheme = null;
-    private String selectedValue = "";
-    private OnValueChangeListener onValueChangeListener;
+    private Language currentLanguage = null;
+    private RadioTextColors textColors;
 
-    // Theme and dimensions
-    private RadioColors colors;
+    // Child views
+    private TextView titleView;
+    private TextView descAboveView;
+    private RadioPrimitive primitive;
+    private TextView descBelowView;
 
-    // Layout measurements
-    private List<Float> itemWidths = new ArrayList<>();
-    private List<Float> itemPositions = new ArrayList<>();
-    private float totalWidth = 0f;
-    private float totalHeight = 0f;
-    private float contentWidth = 0f; // Content width only (for background)
-    private float animationPadding = 0f; // Additional space for animation
-    private float contentOffsetX = 0f; // Content offset inside View (centering)
+    // Text data
+    private Map<String, String> title;
+    private Map<String, String> descriptionAbove;
+    private Map<String, String> description;
 
-    // Animation state
-    private ValueAnimator positionAnimator;
-    private ValueAnimator widthAnimator;
-    private float animatedX = 0f;
-    private float animatedWidth = 0f;
+    // Per-option handlers (UI changes on selection)
+    private Map<String, Consumer<Radio>> optionHandlers;
 
-    // Paint objects for drawing
-    private Paint backgroundPaint;
-    private Paint selectedBackgroundPaint;
-    private Paint selectedBorderPaint;
-    private Paint textPaint;
+    // Margin (managed by parent Section)
+    private int marginLeft = 0;
+    private int marginTop = 0;
+    private int marginRight = 0;
+    private int marginBottom = 0;
+    private boolean marginSet = false;
 
-    // Dimensions in pixels
-    private float heightPx;
-    private float cornerRadiusPx;
-    private float borderWidthPx;
-    private float textSizePx;
-    private float itemPaddingHorizontalPx;
-    private float itemMinWidthPx;
+    public int getMarginLeft() { return marginLeft; }
+    public int getMarginTop() { return marginTop; }
+    public int getMarginRight() { return marginRight; }
+    public int getMarginBottom() { return marginBottom; }
+    public boolean isMarginSet() { return marginSet; }
+
+    public void setMargin(int left, int top, int right, int bottom) {
+        this.marginLeft = left;
+        this.marginTop = top;
+        this.marginRight = right;
+        this.marginBottom = bottom;
+        this.marginSet = true;
+    }
 
     /**
      * Callback for value selection changes.
      */
     public interface OnValueChangeListener {
         void onValueChange(String newValue);
-    }
-
-    /**
-     * Checks if the component is fully initialized.
-     *
-     * @return true if both theme and language are set
-     */
-    private boolean isInitialized() {
-        return currentTheme != null && currentLanguage != null;
     }
 
     public Radio(Context context) {
@@ -99,688 +101,368 @@ public class Radio extends View implements IThemable, ILocalizable {
         init();
     }
 
-    public Radio(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
-    }
-
     private void init() {
-        // Initialize paint objects with base settings
-        initPaintsWithDefaults();
+        setOrientation(VERTICAL);
+        setClipChildren(false);
+        setClipToPadding(false);
+        setPadding(0, 0, 0, 0);
 
-        // Set pixel dimensions
-        setDimensions();
+        Context ctx = getContext();
+        Typeface typeface = Font.getRegular(ctx);
 
-        // Enable hardware acceleration for better performance
-        setLayerType(LAYER_TYPE_HARDWARE, null);
+        // Title
+        titleView = new TextView(ctx);
+        titleView.setTextSize(0, RadioTextDimensions.TITLE_TEXT_SIZE_PX);
+        titleView.setTypeface(typeface);
+        titleView.setVisibility(GONE);
+        addView(titleView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        // Load custom font AFTER paints are initialized (requires context)
-        loadFont();
+        // Description above
+        descAboveView = new TextView(ctx);
+        descAboveView.setTextSize(0, RadioTextDimensions.DESCRIPTION_TEXT_SIZE_PX);
+        descAboveView.setTypeface(typeface);
+        descAboveView.setVisibility(GONE);
+        LayoutParams descAboveParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        descAboveParams.topMargin = RadioTextDimensions.TITLE_TO_DESCRIPTION_GAP_PX;
+        descAboveParams.bottomMargin = RadioTextDimensions.DESCRIPTION_ABOVE_TO_PRIMITIVE_GAP_PX;
+        addView(descAboveView, descAboveParams);
+
+        // RadioPrimitive (canvas-based segmented control)
+        primitive = new RadioPrimitive(ctx);
+        addView(primitive, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+
+        // Description below
+        descBelowView = new TextView(ctx);
+        descBelowView.setTextSize(0, RadioTextDimensions.DESCRIPTION_TEXT_SIZE_PX);
+        descBelowView.setTypeface(typeface);
+        descBelowView.setVisibility(GONE);
+        LayoutParams descBelowParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        descBelowParams.topMargin = RadioTextDimensions.PRIMITIVE_TO_DESCRIPTION_GAP_PX;
+        descBelowParams.bottomMargin = RadioTextDimensions.DESCRIPTION_BELOW_BOTTOM_GAP_PX;
+        addView(descBelowView, descBelowParams);
     }
 
-    /**
-     * Loads the project font and applies it to text paint.
-     * Must be called after initPaintsWithDefaults() creates textPaint.
-     */
-    private void loadFont() {
-        if (textPaint != null) {
-            textPaint.setTypeface(Font.getRegular(getContext()));
-        }
+    // --- Text API (optional) ---
+
+    /** Sets the title text (localized). */
+    public void setTitle(Map<String, String> title) {
+        this.title = title;
+        updateTexts();
     }
 
-    private void updateTheme() {
-        if (currentTheme != null) {
-            colors = RadioTheme.getColors(currentTheme);
-        }
+    /** Sets the description text above the radio (localized). */
+    public void setDescriptionAbove(Map<String, String> text) {
+        this.descriptionAbove = text;
+        updateTexts();
     }
 
-    private void initPaints() {
-        backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        if (colors != null) {
-            backgroundPaint.setColor(colors.background);
-        }
-
-        selectedBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        selectedBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        selectedBorderPaint.setStyle(Paint.Style.STROKE);
-
-        if (textPaint == null) {
-            textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            textPaint.setTypeface(Font.getRegular(getContext()));
-            textPaint.setTextAlign(Paint.Align.CENTER);
-        }
+    /** Sets the description text below the radio control (localized). */
+    public void setDescription(Map<String, String> text) {
+        this.description = text;
+        updateTexts();
     }
 
-    private void initPaintsWithDefaults() {
-        backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    // --- Delegated to RadioPrimitive ---
 
-        selectedBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        selectedBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        selectedBorderPaint.setStyle(Paint.Style.STROKE);
-
-        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        // Typeface set in loadFont() which runs immediately after
-        textPaint.setTextAlign(Paint.Align.CENTER);
-    }
-
-    private void setDimensions() {
-        cornerRadiusPx = RadioDimensions.CORNER_RADIUS_PX;
-        heightPx = RadioDimensions.HEIGHT_PX;
-        borderWidthPx = RadioDimensions.BORDER_WIDTH_PX;
-        textSizePx = RadioDimensions.TEXT_SIZE_PX;
-        itemPaddingHorizontalPx = RadioDimensions.ITEM_PADDING_HORIZONTAL_PX;
-        itemMinWidthPx = RadioDimensions.ITEM_MIN_WIDTH_PX;
-
-        if (textPaint != null) {
-            textPaint.setTextSize(textSizePx);
-        }
-
-        if (selectedBorderPaint != null) {
-            selectedBorderPaint.setStrokeWidth(borderWidthPx);
-        }
-    }
-
-    /**
-     * Sets the list of radio button options.
-     *
-     * @param buttons list of RadioButton objects
-     */
+    /** Sets the list of radio button options. */
     public void setButtons(List<RadioButton> buttons) {
-        if (buttons != null) {
-            this.buttons = new ArrayList<>(buttons);
-        } else {
-            this.buttons = new ArrayList<>();
-        }
-        measureItems();
-        requestLayout(); // Force layout recalculation for dynamic width
-        invalidate();
+        primitive.setButtons(buttons);
     }
 
-    /**
-     * Sets the display language.
-     *
-     * @param language language enum value
-     * @throws IllegalArgumentException if language is null
-     */
-    public void setLanguage(Language language) {
-        if (language == null) {
-            throw new IllegalArgumentException("Language cannot be null");
-        }
-
-        if (!language.equals(this.currentLanguage)) {
-            this.currentLanguage = language;
-
-            // Store current selected index
-            int selectedIndex = findSelectedIndex();
-
-            // Cancel any running animations to prevent conflicts
-            cancelAnimations();
-
-            measureItemsForLanguageChange();
-            requestLayout(); // Force layout recalculation for dynamic width
-
-            // Immediately snap to correct position for selected item - no animation
-            if (selectedIndex >= 0
-                    && itemPositions != null
-                    && itemWidths != null
-                    && buttons != null
-                    && selectedIndex < itemPositions.size()
-                    && selectedIndex < itemWidths.size()
-                    && selectedIndex < buttons.size()) {
-                animatedX = itemPositions.get(selectedIndex);
-                animatedWidth = itemWidths.get(selectedIndex);
-            }
-
-            invalidate();
-        }
-    }
-
-    /**
-     * Sets the visual theme.
-     *
-     * @param theme theme enum value
-     * @throws IllegalArgumentException if theme is null
-     */
-    @Override
-    public void setTheme(Theme theme) {
-        if (theme == null) {
-            throw new IllegalArgumentException("Theme cannot be null");
-        }
-
-        if (!theme.equals(this.currentTheme)) {
-            this.currentTheme = theme;
-            updateTheme();
-            initPaints();
-            invalidate();
-        }
-    }
-
-    @Override
-    public void propagateTheme(Theme theme) {
-        // Leaf component, no children to propagate to
-    }
-
-    @Override
-    public void propagateLanguage(Language language) {
-        // Leaf component, no children to propagate to
-    }
-
-    /**
-     * Sets the selected value without animation.
-     *
-     * @param value             the value to select
-     * @param isTriggerCallback whether to trigger onValueChangeListener
-     */
-    public void setSelectedValue(String value, boolean isTriggerCallback) {
-        if (value != null && !value.equals(this.selectedValue)) {
-            this.selectedValue = value;
-
-            int selectedIndex = findSelectedIndex();
-            if (selectedIndex >= 0
-                    && itemPositions != null
-                    && itemWidths != null
-                    && buttons != null
-                    && selectedIndex < itemPositions.size()
-                    && selectedIndex < itemWidths.size()
-                    && selectedIndex < buttons.size()) {
-                float targetX = itemPositions.get(selectedIndex);
-                float targetWidth = itemWidths.get(selectedIndex);
-
-                // Always snap to position immediately - no animation on initial setup
-                animatedX = targetX;
-                animatedWidth = targetWidth;
-            }
-
-            // Trigger callback if requested (useful for testing)
-            if (isTriggerCallback && onValueChangeListener != null) {
-                onValueChangeListener.onValueChange(value);
-            }
-
-            invalidate();
-        }
-    }
-
-    /**
-     * Sets the selected value without animation or callback.
-     *
-     * @param value the value to select
-     */
+    /** Sets the selected value without animation. */
     public void setSelectedValue(String value) {
-        if (value != null) {
-            setSelectedValue(value, false);
-        }
+        primitive.setSelectedValue(value);
     }
 
-    /**
-     * Returns the currently selected value.
-     *
-     * @return the selected value
-     */
+    /** Sets the selected value with optional callback trigger. */
+    public void setSelectedValue(String value, boolean isTriggerCallback) {
+        primitive.setSelectedValue(value, isTriggerCallback);
+    }
+
+    /** Returns the currently selected value. */
     public String getSelectedValue() {
-        return selectedValue;
+        return primitive.getSelectedValue();
     }
 
-    /**
-     * Returns the current theme.
-     *
-     * @return the current theme, or null if not set
-     */
-    public Theme getCurrentTheme() {
-        return currentTheme;
-    }
+    private OnValueChangeListener userListener;
 
-    /**
-     * Returns the current language.
-     *
-     * @return the current language, or null if not set
-     */
-    public Language getCurrentLanguage() {
-        return currentLanguage;
-    }
-
-    /**
-     * Sets the value change listener.
-     *
-     * @param listener callback for value changes
-     */
+    /** Sets the value change listener. Fires after per-option handler. */
     public void setOnValueChangeListener(OnValueChangeListener listener) {
-        this.onValueChangeListener = listener;
+        this.userListener = listener;
+        ensurePrimitiveListener();
     }
 
-    private int findSelectedIndex() {
-        if (buttons == null || selectedValue == null) {
-            return -1;
-        }
-
-        for (int i = 0; i < buttons.size(); i++) {
-            RadioButton button = buttons.get(i);
-            if (button != null
-                    && selectedValue != null
-                    && selectedValue.equals(button.getValue())) {
-                return i;
-            }
-        }
-
-        return -1; // Return -1 if not found to avoid jitter
+    /** Registers a per-option handler for the given value. */
+    public void setOptionHandler(String value, Consumer<Radio> handler) {
+        if (optionHandlers == null) optionHandlers = new HashMap<>();
+        optionHandlers.put(value, handler);
+        ensurePrimitiveListener();
     }
 
-    private void measureItems() {
-        if (!isInitialized()) {
-            return;
-        }
-        measureItemsInternal(true);
-    }
-
-    /**
-     * Measure items for language change without updating animation position
-     */
-    private void measureItemsForLanguageChange() {
-        if (!isInitialized()) {
-            return;
-        }
-        measureItemsInternal(false);
-    }
-
-    /**
-     * Internal method to measure items and calculate positions
-     * 
-     * @param updateAnimationPosition Whether to update animation position after
-     *                                measurement
-     */
-    private void measureItemsInternal(boolean updateAnimationPosition) {
-        if (buttons == null || buttons.isEmpty()) {
-            return;
-        }
-
-        itemWidths.clear();
-        itemPositions.clear();
-
-        // Calculate equal width for all items (like layout_weight="1")
-        int itemCount = buttons.size();
-        float currentX = 0f;
-
-        // First, measure all texts to find the maximum width needed
-        float maxTextWidth = 0f;
-        for (RadioButton button : buttons) {
-            if (button == null)
-                continue;
-
-            String text = button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
-
-            // Measure with bold typeface to ensure enough space for selected state
-            textPaint.setTypeface(Font.getBold(getContext(), text));
-            float boldTextWidth = textPaint != null ? textPaint.measureText(text) : 0;
-            maxTextWidth = Math.max(maxTextWidth, boldTextWidth);
-        }
-
-        // Calculate equal width for all items based on the widest text
-        float equalItemWidth = Math.max(maxTextWidth + 2 * itemPaddingHorizontalPx, itemMinWidthPx);
-
-        // Assign equal width to all items
-        for (int i = 0; i < itemCount; i++) {
-            itemWidths.add(equalItemWidth);
-            itemPositions.add(currentX);
-            currentX += equalItemWidth;
-        }
-
-        contentWidth = currentX;
-
-        // Animation padding in pixels (as required by .roorules)
-        animationPadding = RadioDimensions.ANIMATION_PADDING_PX;
-
-        // View dimensions with animation padding
-        totalWidth = contentWidth + 2 * animationPadding;
-        totalHeight = heightPx;
-        contentOffsetX = animationPadding;
-
-        // Adjust item positions accounting for padding
-        for (int i = 0; i < itemPositions.size(); i++) {
-            itemPositions.set(i, itemPositions.get(i) + contentOffsetX);
-        }
-
-        setTranslationX(-animationPadding);
-
-        if (updateAnimationPosition) {
-            updateAnimationPosition();
+    /** Installs primitive listener if option handlers or user listener exist. */
+    private void ensurePrimitiveListener() {
+        if (optionHandlers != null || userListener != null) {
+            primitive.setOnValueChangeListener(newValue -> {
+                applyOptionHandler(newValue);
+                if (userListener != null) userListener.onValueChange(newValue);
+            });
         }
     }
 
-    private void updateAnimationPosition() {
-        int selectedIndex = findSelectedIndex();
-
-        if (selectedIndex >= 0
-                && itemPositions != null
-                && itemWidths != null
-                && buttons != null
-                && selectedIndex < itemPositions.size()
-                && selectedIndex < itemWidths.size()
-                && selectedIndex < buttons.size()) {
-            animatedX = itemPositions.get(selectedIndex);
-            animatedWidth = itemWidths.get(selectedIndex);
+    /** Applies the per-option handler for the given value. */
+    private void applyOptionHandler(String value) {
+        if (optionHandlers == null) return;
+        Consumer<Radio> handler = optionHandlers.get(value);
+        if (handler != null) {
+            handler.accept(this);
         }
     }
 
-    private void animateToPosition(float targetX, float targetWidth) {
-        cancelAnimations();
-
-        final OvershootInterpolator interpolator = new OvershootInterpolator(RadioDimensions.OVERSHOOT_TENSION);
-
-        // Position animation
-        positionAnimator = ValueAnimator.ofFloat(animatedX, targetX);
-        positionAnimator.setDuration(RadioDimensions.ANIMATION_DURATION);
-        positionAnimator.setInterpolator(interpolator);
-        positionAnimator.addUpdateListener(
-                animation -> {
-                    animatedX = (Float) animation.getAnimatedValue();
-                    invalidate();
-                });
-        positionAnimator.start();
-
-        // Width animation
-        widthAnimator = ValueAnimator.ofFloat(animatedWidth, targetWidth);
-        widthAnimator.setDuration(RadioDimensions.ANIMATION_DURATION);
-        widthAnimator.setInterpolator(interpolator);
-        widthAnimator.addUpdateListener(
-                animation -> {
-                    animatedWidth = (Float) animation.getAnimatedValue();
-                    invalidate();
-                });
-        widthAnimator.start();
-    }
-
-    private void cancelAnimations() {
-        if (positionAnimator != null) {
-            positionAnimator.cancel();
-        }
-
-        if (widthAnimator != null) {
-            widthAnimator.cancel();
-        }
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        measureItems();
-
-        // totalWidth now includes animation padding
-        int width = (int) Math.ceil(totalWidth);
-        int height = (int) Math.ceil(totalHeight);
-
-        setMeasuredDimension(width, height);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        // Do not draw if not initialized
-        if (!isInitialized()) {
-            return;
-        }
-
-        if (buttons == null || buttons.isEmpty()) {
-            return;
-        }
-
-        // LAYER 1: Bottom background - size exactly by content (e.g., 500px)
-        drawBackgroundLayer(canvas);
-
-        // LAYER 2: Selection layer - wider by animation size on left and right
-        // (e.g., 20px + 500px + 20px = 540px, offset 20px to the left)
-        if (animatedWidth > 0) {
-            drawSelectionLayer(canvas);
-        }
-
-        // LAYER 3: Text layer - width same as bottom layer
-        drawTextLayer(canvas);
+    /** Sets fixed total width for the radio items area (0 = auto by text). */
+    public void setWidth(int widthPx) {
+        primitive.setWidth(widthPx);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // Ignore touch events if not initialized
-        if (!isInitialized()) {
-            return false;
-        }
-
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            float touchX = event.getX();
-
-            // Find which item was touched - accounting for content offset
-            if (itemPositions != null && itemWidths != null && buttons != null) {
-                for (int i = 0; i < itemPositions.size(); i++) {
-                    float itemStart = itemPositions.get(i); // already includes contentOffsetX
-                    float itemEnd = itemStart + itemWidths.get(i);
-
-                    if (touchX >= itemStart && touchX <= itemEnd) {
-                        RadioButton button = buttons.get(i);
-                        if (button != null) {
-                            String newValue = button.getValue();
-
-                            if (selectedValue != null && !selectedValue.equals(newValue)) {
-                                // This is a user click - animate the transition
-                                setSelectedValueWithAnimation(newValue);
-
-                                if (onValueChangeListener != null) {
-                                    onValueChangeListener.onValueChange(newValue);
-                                }
-                            }
-                        }
-
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return super.onTouchEvent(event);
-    }
-
-    private void setSelectedValueWithAnimation(String value) {
-        if (value != null && !value.equals(this.selectedValue)) {
-            this.selectedValue = value;
-
-            int selectedIndex = findSelectedIndex();
-
-            if (selectedIndex >= 0
-                    && itemPositions != null
-                    && itemWidths != null
-                    && buttons != null
-                    && selectedIndex < itemPositions.size()
-                    && selectedIndex < itemWidths.size()
-                    && selectedIndex < buttons.size()) {
-                float targetX = itemPositions.get(selectedIndex);
-                float targetWidth = itemWidths.get(selectedIndex);
-
-                animateToPosition(targetX, targetWidth);
-            }
-
-            invalidate();
-        }
+        // Delegate to primitive
+        return primitive.onTouchEvent(event);
     }
 
     @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        cancelAnimations();
-        positionAnimator = null;
-        widthAnimator = null;
+    public int getLayerType() {
+        return primitive.getLayerType();
     }
 
-    private void drawBackgroundLayer(Canvas canvas) {
-        // LAYER 1: Control background - size exactly by content
-        if (backgroundPaint == null)
+    // --- Theme & Language ---
+
+    @Override
+    public void setTheme(Theme theme) {
+        if (theme == null)
+            throw new IllegalArgumentException("Theme cannot be null");
+        this.currentTheme = theme;
+        this.textColors = RadioTheme.getTextColors(theme);
+        updateColors();
+        propagateTheme(theme);
+    }
+
+    @Override
+    public void propagateTheme(Theme theme) {
+        primitive.setTheme(theme);
+    }
+
+    @Override
+    public void setLanguage(Language language) {
+        if (language == null)
+            throw new IllegalArgumentException("Language cannot be null");
+        this.currentLanguage = language;
+        updateTexts();
+        propagateLanguage(language);
+    }
+
+    @Override
+    public void propagateLanguage(Language language) {
+        primitive.setLanguage(language);
+    }
+
+    public Theme getCurrentTheme() {
+        return currentTheme;
+    }
+
+    public Language getCurrentLanguage() {
+        return currentLanguage;
+    }
+
+    // --- Internal ---
+
+    private void updateColors() {
+        if (textColors == null)
             return;
-
-        RectF backgroundRect = new RectF(contentOffsetX, 0, contentOffsetX + contentWidth, totalHeight);
-        canvas.drawRoundRect(backgroundRect, cornerRadiusPx, cornerRadiusPx, backgroundPaint);
+        titleView.setTextColor(textColors.titleColor);
+        descAboveView.setTextColor(textColors.descriptionColor);
+        descBelowView.setTextColor(textColors.descriptionColor);
     }
 
-    private void drawSelectionLayer(Canvas canvas) {
-        if (selectedBackgroundPaint == null)
-            return;
+    private void updateTexts() {
+        String langCode = currentLanguage != null ? currentLanguage.getCode() : "en";
 
-        // Selection rectangle with 1px inset from top and bottom
-        RectF selectedRect = new RectF(
-                animatedX + 1f, // 1px inset from left
-                1f, // 1px inset from top
-                animatedX + animatedWidth,
-                totalHeight - 1f); // 1px inset from bottom (symmetric with top)
-
-        // Create gradient depending on theme
-        LinearGradient gradient = createSelectionGradient(selectedRect);
-        selectedBackgroundPaint.setShader(gradient);
-        canvas.drawRoundRect(selectedRect, cornerRadiusPx, cornerRadiusPx, selectedBackgroundPaint);
-
-        // Note: Original implementation has a transparent stroke, but testing showed
-        // it doesn't improve pixel-perfect matching. The corner radius fix is
-        // sufficient.
-    }
-
-    private LinearGradient createSelectionGradient(RectF rect) {
-        if (colors == null) {
-            return null; // Don't create gradient if colors are missing
-        }
-
-        if (currentTheme != null && currentTheme.isDreamer()) {
-            // Horizontal gradient for dreamer theme
-            return new LinearGradient(
-                    rect.left,
-                    0,
-                    rect.right,
-                    0,
-                    colors.selectedGradientStart,
-                    colors.selectedGradientEnd,
-                    Shader.TileMode.CLAMP);
+        if (title != null && !title.isEmpty()) {
+            titleView.setText(title.getOrDefault(langCode, title.values().iterator().next()));
+            titleView.setVisibility(VISIBLE);
         } else {
-            // Vertical gradient for free theme
-            return new LinearGradient(
-                    0,
-                    rect.top,
-                    0,
-                    rect.bottom,
-                    colors.selectedGradientStart,
-                    colors.selectedGradientEnd,
-                    Shader.TileMode.CLAMP);
+            titleView.setVisibility(GONE);
+        }
+
+        boolean hasDescAbove = descriptionAbove != null && !descriptionAbove.isEmpty();
+        if (hasDescAbove) {
+            descAboveView.setText(descriptionAbove.getOrDefault(langCode, descriptionAbove.values().iterator().next()));
+            descAboveView.setVisibility(VISIBLE);
+        } else {
+            descAboveView.setVisibility(GONE);
+        }
+
+        // Gap after title: applied via primitive topMargin when descAbove is GONE
+        LayoutParams primitiveParams = (LayoutParams) primitive.getLayoutParams();
+        if (hasDescAbove) {
+            primitiveParams.topMargin = 0;
+        } else if (title != null) {
+            primitiveParams.topMargin = RadioTextDimensions.TITLE_TO_DESCRIPTION_GAP_PX;
+        } else {
+            primitiveParams.topMargin = 0;
+        }
+
+        if (description != null && !description.isEmpty()) {
+            descBelowView.setText(description.getOrDefault(langCode, description.values().iterator().next()));
+            descBelowView.setVisibility(VISIBLE);
+        } else {
+            descBelowView.setVisibility(GONE);
         }
     }
 
-    private void drawSelectionBorder(Canvas canvas, RectF selectedRect) {
-        if (selectedBorderPaint == null)
-            return;
+    // ============================================================
+    // BUILDER API
+    // ============================================================
 
-        // Border is drawn 1px inside the selected rect (half of 2px stroke width)
-        float borderInset = 1f;
-        RectF borderRect = new RectF(
-                selectedRect.left + borderInset,
-                selectedRect.top + borderInset,
-                selectedRect.right - borderInset,
-                selectedRect.bottom - borderInset);
-
-        LinearGradient borderGradient = null;
-        if (colors != null) {
-            borderGradient = new LinearGradient(
-                    0,
-                    borderRect.top,
-                    0,
-                    borderRect.bottom,
-                    new int[] {
-                            colors.selectedBorderTop,
-                            colors.selectedBorderSide,
-                            colors.selectedBorderBottom
-                    },
-                    new float[] { 0f, 0.5f, 1f },
-                    Shader.TileMode.CLAMP);
-        }
-
-        if (borderGradient != null) {
-            selectedBorderPaint.setShader(borderGradient);
-            float adjustedCornerRadius = Math.max(0, cornerRadiusPx - borderInset);
-            canvas.drawRoundRect(
-                    borderRect, adjustedCornerRadius, adjustedCornerRadius, selectedBorderPaint);
-        }
+    @NonNull
+    public static Builder create(@NonNull android.content.Context context,
+                                 @NonNull Theme theme,
+                                 @NonNull Language language,
+                                 @NonNull List<RadioButton> buttons,
+                                 @NonNull String selectedValue) {
+        return new Builder(context, theme, language, buttons, selectedValue);
     }
 
-    private void drawTextLayer(Canvas canvas) {
-        // LAYER 3: Text - width same as background layer
-        if (textPaint == null)
-            return;
+    public static class Builder {
+        private final android.content.Context context;
+        private final Theme theme;
+        private final Language language;
+        private final List<RadioButton> buttons;
+        private final String selectedValue;
+        private Map<String, String> title;
+        private Map<String, String> descriptionAbove;
+        private Map<String, String> description;
+        private int marginTop = 0;
+        private int marginBottom = 0;
+        private int marginLeft = 0;
+        private int marginRight = 0;
+        private boolean marginSet = false;
+        private int width = 0;
+        private OnValueChangeListener onValueChange;
+        private final List<Map.Entry<String, Consumer<Radio>>> optionEntries = new ArrayList<>();
 
-        // Base text Y position (for unselected items)
-        float textY = totalHeight / 2f - (textPaint.descent() + textPaint.ascent()) / 2f;
+        private Builder(android.content.Context context, Theme theme, Language language,
+                       List<RadioButton> buttons, String selectedValue) {
+            this.context = context;
+            this.theme = theme;
+            this.language = language;
+            this.buttons = buttons;
+            this.selectedValue = selectedValue;
+        }
 
-        // Find the target index (where animation is heading to)
-        int targetIndex = findSelectedIndex();
+        @NonNull
+        public Builder title(@Nullable Map<String, String> title) {
+            this.title = title;
+            return this;
+        }
 
-        if (buttons != null && itemPositions != null && itemWidths != null) {
-            for (int i = 0; i < buttons.size(); i++) {
-                RadioButton button = buttons.get(i);
-                if (button == null)
-                    continue;
+        @NonNull
+        public Builder descriptionAbove(@Nullable Map<String, String> descriptionAbove) {
+            this.descriptionAbove = descriptionAbove;
+            return this;
+        }
 
-                // Get text FIRST — needed for font selection
-                String text = button.getText(currentLanguage != null ? currentLanguage.getCode() : "en");
+        @NonNull
+        public Builder description(@Nullable Map<String, String> description) {
+            this.description = description;
+            return this;
+        }
 
-                // Calculate text position - positions already include centering
-                float itemWidth = itemWidths.get(i);
-                float itemX = itemPositions.get(i); // already includes contentOffsetX
-                float textX = itemX + itemWidth / 2f;
+        @NonNull
+        public Builder marginTop(int top) {
+            this.marginTop = top;
+            this.marginSet = true;
+            return this;
+        }
 
-                // FINAL LOGIC: Only the target element can change color, and only when
-                // animation
-                // touches it
-                boolean isTargetElement = (i == targetIndex);
-                boolean isAnimationTouchingThisText = isTextCoveredByAnimation(textX, itemWidth);
+        @NonNull
+        public Builder marginBottom(int bottom) {
+            this.marginBottom = bottom;
+            this.marginSet = true;
+            return this;
+        }
 
-                // Color changes ONLY for target element AND ONLY when animation touches it
-                boolean shouldUseSelectedColor = isTargetElement && isAnimationTouchingThisText;
+        @NonNull
+        public Builder marginLeft(int left) {
+            this.marginLeft = left;
+            this.marginSet = true;
+            return this;
+        }
 
-                // Set text color - only target element changes color when animation touches it
-                if (colors != null) {
-                    textPaint.setColor(
-                            shouldUseSelectedColor ? colors.selectedText : colors.unselectedText);
-                }
+        @NonNull
+        public Builder marginRight(int right) {
+            this.marginRight = right;
+            this.marginSet = true;
+            return this;
+        }
 
-                // Set font: bold for selected, regular for unselected
-                if (shouldUseSelectedColor) {
-                    textPaint.setTypeface(Font.getBold(getContext(), text));
-                } else {
-                    textPaint.setTypeface(Font.getRegular(getContext()));
-                }
+        @NonNull
+        public Builder margin(int left, int top, int right, int bottom) {
+            this.marginLeft = left;
+            this.marginTop = top;
+            this.marginRight = right;
+            this.marginBottom = bottom;
+            this.marginSet = true;
+            return this;
+        }
 
-                // Set text size
-                textPaint.setTextSize(textSizePx);
+        @NonNull
+        public Builder onValueChange(@Nullable OnValueChangeListener listener) {
+            this.onValueChange = listener;
+            return this;
+        }
 
-                // Unselected text needs +1px offset for visual centering compensation
-                float itemTextY = shouldUseSelectedColor ? textY : textY + 1f;
+        @NonNull
+        public Builder on(String value, Consumer<Radio> handler) {
+            optionEntries.add(new java.util.AbstractMap.SimpleEntry<>(value, handler));
+            return this;
+        }
 
-                // Draw text (text variable already available)
-                canvas.drawText(text, textX, itemTextY, textPaint);
+        @NonNull
+        public Builder width(int widthPx) {
+            this.width = widthPx;
+            return this;
+        }
+
+        @NonNull
+        public Radio build() {
+            Radio radio = new Radio(context);
+            radio.setButtons(buttons);
+            radio.setSelectedValue(selectedValue);
+            radio.setTheme(theme);
+            radio.setLanguage(language);
+            if (title != null) {
+                radio.setTitle(title);
             }
+            if (descriptionAbove != null) {
+                radio.setDescriptionAbove(descriptionAbove);
+            }
+            if (description != null) {
+                radio.setDescription(description);
+            }
+            if (marginSet) {
+                radio.setMargin(marginLeft, marginTop, marginRight, marginBottom);
+            }
+            if (width > 0) {
+                radio.setWidth(width);
+            }
+            if (onValueChange != null) {
+                radio.setOnValueChangeListener(onValueChange);
+            }
+            for (Map.Entry<String, Consumer<Radio>> entry : optionEntries) {
+                radio.setOptionHandler(entry.getKey(), entry.getValue());
+            }
+            radio.applyOptionHandler(selectedValue);
+            return radio;
         }
-    }
-
-    /**
-     * Determines if text is covered by animated background
-     * 
-     * @param textCenterX text center X coordinate
-     * @param itemWidth   item width
-     * @return true if text is covered by animation
-     */
-    private boolean isTextCoveredByAnimation(float textCenterX, float itemWidth) {
-        if (animatedWidth <= 0)
-            return false;
-
-        // Animated background bounds
-        float animationLeft = animatedX;
-        float animationRight = animatedX + animatedWidth;
-
-        // Text bounds (with small margin for smoothness)
-        float textLeftBound = textCenterX - itemWidth * 0.4f;
-        float textRightBound = textCenterX + itemWidth * 0.4f;
-
-        // Text is considered covered when animation overlaps with text bounds
-        return animationRight >= textLeftBound && animationLeft <= textRightBound;
     }
 }

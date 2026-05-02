@@ -50,7 +50,7 @@ public class RadioTestVisual {
     public void setUp() {
         // Create an Activity to attach views to (required for Roborazzi screenshot capture)
         ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
-        controller.create();
+        controller.create().start().resume();
         activity = controller.get();
         context = activity;
         container = new FrameLayout(context);
@@ -702,13 +702,18 @@ public class RadioTestVisual {
 
         // Use reflection to access animation fields and set progress
         try {
-            // Get the animatedX and animatedWidth fields
-            java.lang.reflect.Field animatedXField = Radio.class.getDeclaredField("animatedX");
+            // Get the primitive field from Radio
+            java.lang.reflect.Field primitiveField = Radio.class.getDeclaredField("primitive");
+            primitiveField.setAccessible(true);
+            Object primitive = primitiveField.get(radio);
+
+            // Get the animatedX and animatedWidth fields from primitive
+            java.lang.reflect.Field animatedXField = primitive.getClass().getDeclaredField("animatedX");
             java.lang.reflect.Field animatedWidthField =
-                    Radio.class.getDeclaredField("animatedWidth");
+                    primitive.getClass().getDeclaredField("animatedWidth");
             java.lang.reflect.Field itemPositionsField =
-                    Radio.class.getDeclaredField("itemPositions");
-            java.lang.reflect.Field itemWidthsField = Radio.class.getDeclaredField("itemWidths");
+                    primitive.getClass().getDeclaredField("itemPositions");
+            java.lang.reflect.Field itemWidthsField = primitive.getClass().getDeclaredField("itemWidths");
 
             animatedXField.setAccessible(true);
             animatedWidthField.setAccessible(true);
@@ -717,18 +722,18 @@ public class RadioTestVisual {
 
             @SuppressWarnings("unchecked")
             java.util.List<Float> itemPositions =
-                    (java.util.List<Float>) itemPositionsField.get(radio);
+                    (java.util.List<Float>) itemPositionsField.get(primitive);
             @SuppressWarnings("unchecked")
-            java.util.List<Float> itemWidths = (java.util.List<Float>) itemWidthsField.get(radio);
+            java.util.List<Float> itemWidths = (java.util.List<Float>) itemWidthsField.get(primitive);
 
             // Find indices
             int fromIndex = -1;
             int toIndex = -1;
-            java.lang.reflect.Field buttonsField = Radio.class.getDeclaredField("buttons");
+            java.lang.reflect.Field buttonsField = primitive.getClass().getDeclaredField("buttons");
             buttonsField.setAccessible(true);
             @SuppressWarnings("unchecked")
             java.util.List<RadioButton> buttons =
-                    (java.util.List<RadioButton>) buttonsField.get(radio);
+                    (java.util.List<RadioButton>) buttonsField.get(primitive);
 
             for (int i = 0; i < buttons.size(); i++) {
                 if (buttons.get(i).getValue().equals(fromValue)) fromIndex = i;
@@ -747,8 +752,8 @@ public class RadioTestVisual {
                 float currentX = startX + (endX - startX) * overshootProgress;
                 float currentWidth = startWidth + (endWidth - startWidth) * overshootProgress;
 
-                animatedXField.setFloat(radio, currentX);
-                animatedWidthField.setFloat(radio, currentWidth);
+                animatedXField.setFloat(primitive, currentX);
+                animatedWidthField.setFloat(primitive, currentWidth);
 
                 // Force redraw
                 radio.invalidate();

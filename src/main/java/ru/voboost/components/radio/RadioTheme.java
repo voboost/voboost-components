@@ -87,7 +87,7 @@ class RadioColorSchemes {
                 new RadioColors(
                         Color.parseColor("#373f4a"), // background
                         Color.parseColor("#ffffff"), // selectedText
-                        Color.parseColor("#CACACA"), // unselectedText
+                        Color.parseColor("#cacaca"), // unselectedText
                         Color.parseColor("#79bbfd"), // selectedGradientStart
                         Color.parseColor("#2781dd"), // selectedGradientEnd
                         Color.parseColor("#8dc6ff"), // selectedBorderTop
@@ -111,7 +111,7 @@ class RadioColorSchemes {
                 new RadioColors(
                         Color.parseColor("#40444a"), // background
                         Color.parseColor("#2f2e36"), // selectedText
-                        Color.parseColor("#80ffffff"), // unselectedText - 50% white opacity
+                        Color.parseColor("#80ffffff"), // unselectedText
                         Color.parseColor("#eadac8"), // selectedGradientStart
                         Color.parseColor("#9c8069"), // selectedGradientEnd
                         Color.parseColor("#eadac8"), // selectedBorderTop
@@ -141,11 +141,79 @@ public class RadioTheme {
     }
 
     /**
+     * Returns text color scheme for the given theme.
+     */
+    public static RadioTextColors getTextColors(Theme theme) {
+        return RadioTextColorSchemes.get(theme);
+    }
+
+    /**
      * Returns dimension constants.
      *
      * @return RadioDimensions instance
      */
     public static RadioDimensions getDimensions() {
         return new RadioDimensions();
+    }
+}
+
+/**
+ * Text colors for Radio container (title and descriptions).
+ */
+class RadioTextColors {
+    public final int titleColor;
+    public final int descriptionColor;
+
+    public RadioTextColors(int titleColor, int descriptionColor) {
+        this.titleColor = titleColor;
+        this.descriptionColor = descriptionColor;
+    }
+}
+
+/**
+ * Dimension constants for Radio container text elements.
+ */
+class RadioTextDimensions {
+    /** Container left padding */
+    public static final int CONTAINER_PADDING_LEFT_PX = 2;
+    /** Title text size in px — matches setting_text_size_32 */
+    public static final float TITLE_TEXT_SIZE_PX = 32f;
+    /** Description text size in px — matches setting_text_size_24 */
+    public static final float DESCRIPTION_TEXT_SIZE_PX = 24f;
+    /** Gap between title and description above */
+    public static final int TITLE_TO_DESCRIPTION_GAP_PX = 37;
+    /** Gap between description above and RadioPrimitive */
+    public static final int DESCRIPTION_ABOVE_TO_PRIMITIVE_GAP_PX = 47;
+    /** Gap between RadioPrimitive and description below */
+    public static final int PRIMITIVE_TO_DESCRIPTION_GAP_PX = 20;
+    /** Gap after description below (bottom margin of the component) */
+    public static final int DESCRIPTION_BELOW_BOTTOM_GAP_PX = 47;
+    /** Container bottom padding */
+    public static final int CONTAINER_PADDING_BOTTOM_PX = 42;
+}
+
+/**
+ * Text color schemes per theme.
+ */
+class RadioTextColorSchemes {
+    private static final java.util.Map<Theme, RadioTextColors> SCHEMES = new java.util.EnumMap<>(Theme.class);
+
+    static {
+        SCHEMES.put(Theme.FREE_DARK, new RadioTextColors(
+                Color.parseColor("#ffffff"),
+                Color.parseColor("#919397")));
+        SCHEMES.put(Theme.DREAMER_DARK, new RadioTextColors(
+                Color.parseColor("#ffffff"),
+                Color.parseColor("#ffcacaca")));
+        SCHEMES.put(Theme.FREE_LIGHT, new RadioTextColors(
+                Color.parseColor("#ff2d3442"),
+                Color.parseColor("#802d3442")));
+        SCHEMES.put(Theme.DREAMER_LIGHT, new RadioTextColors(
+                Color.parseColor("#1a1e28"),
+                Color.parseColor("#cc1a1e28")));
+    }
+
+    public static RadioTextColors get(Theme theme) {
+        return SCHEMES.getOrDefault(theme, SCHEMES.get(Theme.FREE_DARK));
     }
 }

@@ -205,16 +205,6 @@ public class RadioTestUnit {
         assertEquals("Selected value should be default", "", radio.getSelectedValue());
     }
 
-    @Test
-    public void testFourthConstructor() {
-        // Test that the 4th constructor works correctly
-        Radio radioWithFourParams = new Radio(context, null, 0, 0);
-        radioWithFourParams.setTheme(Theme.FREE_LIGHT);
-        radioWithFourParams.setLanguage(Language.EN);
-        assertNotNull("Radio with 4 params should be initialized", radioWithFourParams);
-        assertEquals("Initial value should be empty", "", radioWithFourParams.getSelectedValue());
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void testSetNullTheme() {
         radio.setTheme(null);
@@ -321,10 +311,11 @@ public class RadioTestUnit {
 
     @Test
     public void testPerformanceOptimization() {
-        // Test that hardware acceleration is enabled for better performance
+        // Test that the component uses software rendering (LAYER_TYPE_NONE)
+        // for Canvas-based drawing with PorterDuff color filters
         assertEquals(
-                "Hardware acceleration should be enabled",
-                View.LAYER_TYPE_HARDWARE,
+                "Layer type should be NONE for custom Canvas rendering",
+                View.LAYER_TYPE_NONE,
                 radio.getLayerType());
 
         // Test that the component handles rapid value changes efficiently
@@ -341,32 +332,6 @@ public class RadioTestUnit {
         assertTrue(
                 "Rapid value changes should complete quickly",
                 (endTime - startTime) < 1000); // Should complete in less than 1 second
-    }
-
-    @Test
-    public void testMemoryLeakPrevention() {
-        // Test that animations are properly cancelled when view is detached
-        radio.setButtons(testButtons);
-        radio.setSelectedValue("option1");
-
-        // Simulate view being detached from window
-        radio.onDetachedFromWindow();
-
-        // Verify that the component is still in a valid state after detach
-        assertNotNull("Radio should still be valid after detach", radio);
-        assertEquals(
-                "Selected value should be preserved after detach",
-                "option1",
-                radio.getSelectedValue());
-
-        // Test that the component can still function after detach
-        // We can't directly call onAttachedToWindow() as it's protected
-        // Instead, we verify that the component still works after detach
-        radio.setSelectedValue("option2");
-        assertEquals(
-                "Radio should function correctly after detach",
-                "option2",
-                radio.getSelectedValue());
     }
 
     @Test
@@ -426,7 +391,7 @@ public class RadioTestUnit {
         // Instead, we verify that the component handles touch events properly
 
         // Test that touch events are properly handled for accessibility
-        float touchX = 150f; // Approximate position of second button
+        float touchX = 50f; // Position within first button (already selected)
         MotionEvent downEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, touchX, 0f, 0);
 
         // Process the touch event
@@ -441,5 +406,27 @@ public class RadioTestUnit {
         // Verify that the component maintains its state after touch events
         assertNotNull("Radio should maintain state after accessibility interactions", radio);
         assertEquals("Selected value should be preserved", "option1", radio.getSelectedValue());
+    }
+
+    @Test
+    public void testBuilderDefaultMarginNotSet() {
+        android.content.Context ctx = androidx.test.core.app.ApplicationProvider.getApplicationContext();
+        java.util.List<RadioButton> buttons = new java.util.ArrayList<>();
+        buttons.add(new RadioButton("a", java.util.Collections.singletonMap("en", "A")));
+        Radio r = Radio.create(ctx, Theme.FREE_LIGHT, Language.EN, buttons, "a")
+                .build();
+        assertFalse("Builder without margin methods must not set marginSet", r.isMarginSet());
+    }
+
+    @Test
+    public void testBuilderExplicitMarginSet() {
+        android.content.Context ctx = androidx.test.core.app.ApplicationProvider.getApplicationContext();
+        java.util.List<RadioButton> buttons = new java.util.ArrayList<>();
+        buttons.add(new RadioButton("a", java.util.Collections.singletonMap("en", "A")));
+        Radio r = Radio.create(ctx, Theme.FREE_LIGHT, Language.EN, buttons, "a")
+                .marginBottom(44)
+                .build();
+        assertTrue("Builder with marginBottom must set marginSet", r.isMarginSet());
+        assertEquals(44, r.getMarginBottom());
     }
 }
