@@ -2,7 +2,14 @@ package ru.voboost.components.tabs;
 
 import static org.junit.Assert.*;
 
+import android.view.MotionEvent;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,5 +135,141 @@ public class TabsTestUnit {
         tabs.setItems(null);
         // Should not throw exception
         assertNotNull(tabs);
+    }
+
+    @Test
+    public void testDisabledTabNotSelected() {
+        Map<String, String> labels = new HashMap<>();
+        labels.put("en", "Test");
+
+        TabItem enabledItem = new TabItem("enabled", labels, true);
+        TabItem disabledItem = new TabItem("disabled", labels, false);
+
+        tabs.setItems(Arrays.asList(enabledItem, disabledItem));
+        tabs.setSelectedValue("enabled");
+
+        tabs.setSelectedValue("disabled", true);
+
+        // Should still be on enabled tab
+        assertEquals("enabled", tabs.getSelectedValue());
+    }
+
+    @Test
+    public void testDisabledTabNotSelectedViaTouch() {
+        Map<String, String> labels = new HashMap<>();
+        labels.put("en", "Test");
+
+        TabItem enabledItem = new TabItem("enabled", labels, true);
+        TabItem disabledItem = new TabItem("disabled", labels, false);
+
+        tabs.setItems(Arrays.asList(enabledItem, disabledItem));
+        tabs.setSelectedValue("enabled");
+
+        // Measure and layout tabs
+        int width = TabsTheme.SIDEBAR_WIDTH;
+        int height = 1000;
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width, height);
+        tabs.setLayoutParams(params);
+        tabs.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(width, android.view.View.MeasureSpec.EXACTLY),
+                android.view.View.MeasureSpec.makeMeasureSpec(height, android.view.View.MeasureSpec.EXACTLY));
+        tabs.layout(0, 0, width, height);
+
+        // Simulate touch on disabled tab
+        float y = tabs.getTopPadding() + TabsTheme.TAB_ITEM_HEIGHT + 40 + 1;
+        MotionEvent event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 50f, y, 0);
+        tabs.onTouchEvent(event);
+        event.recycle();
+
+        // Should still be on enabled tab
+        assertEquals("enabled", tabs.getSelectedValue());
+    }
+
+    @Test
+    public void testNullValueInSelectedValue() {
+        tabs.setItems(testItems);
+        tabs.setSelectedValue(null);
+        assertEquals("", tabs.getSelectedValue());
+    }
+
+    @Test
+    public void testSetFontCacheCleared() {
+        tabs.setItems(testItems);
+        tabs.setLanguage(Language.EN);
+        tabs.setLanguage(Language.RU);
+        // Should not throw exception
+        assertNotNull(tabs);
+    }
+
+    @Test
+    public void testTabItemDefaultNoMore() {
+        Map<String, String> labels = new HashMap<>();
+        labels.put("en", "Test");
+        TabItem item = new TabItem("test", labels);
+        assertFalse(item.hasMore());
+    }
+
+    @Test
+    public void testTabItemMoreViaConstructor() {
+        Map<String, String> labels = new HashMap<>();
+        labels.put("en", "Test");
+        TabItem item = new TabItem("test", labels, true, 40, true);
+        assertTrue(item.hasMore());
+    }
+
+    @Test
+    public void testTabItemBuilderMore() {
+        Map<String, String> labels = new HashMap<>();
+        labels.put("en", "Test");
+        TabItem item = TabItem.create("test", labels).more(true).build();
+        assertTrue(item.hasMore());
+    }
+
+    @Test
+    public void testTabItemBuilderMoreDefaultFalse() {
+        Map<String, String> labels = new HashMap<>();
+        labels.put("en", "Test");
+        TabItem item = TabItem.create("test", labels).build();
+        assertFalse(item.hasMore());
+    }
+
+    @Test
+    public void testTabItemEqualsDiffersByMore() {
+        Map<String, String> labels = new HashMap<>();
+        labels.put("en", "Test");
+        TabItem a = new TabItem("test", labels, true, 40, true);
+        TabItem b = new TabItem("test", labels, true, 40, false);
+        assertNotEquals(a, b);
+        assertNotEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    public void testDefaultTopPadding() {
+        assertEquals(TabsTheme.DEFAULT_TOP_PADDING, tabs.getTopPadding());
+    }
+
+    @Test
+    public void testSetTopPadding() {
+        tabs.setTopPadding(80);
+        assertEquals(80, tabs.getTopPadding());
+    }
+
+    @Test
+    public void testDefaultBottomPadding() {
+        assertEquals(5, tabs.getPaddingBottom());
+    }
+
+    @Test
+    public void testMeasuredHeightIncludesPaddings() {
+        tabs.setItems(testItems);
+        tabs.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(TabsTheme.SIDEBAR_WIDTH, android.view.View.MeasureSpec.EXACTLY),
+                android.view.View.MeasureSpec.makeMeasureSpec(9999, android.view.View.MeasureSpec.AT_MOST));
+
+        int expected = TabsTheme.DEFAULT_TOP_PADDING
+                + testItems.size() * TabsTheme.TAB_ITEM_HEIGHT
+                + (testItems.size() - 1) * 40
+                + tabs.getPaddingBottom();
+        assertEquals(expected, tabs.getMeasuredHeight());
     }
 }

@@ -35,9 +35,6 @@ public final class TabsTheme {
     /** Width of a single tab item */
     public static final int TAB_ITEM_WIDTH = 268;
 
-    /** Vertical spacing between tab items */
-    public static final int TAB_ITEM_SPACING = 40;
-
     /** Corner radius for the selection indicator */
     public static final int CORNER_RADIUS = 20;
 
@@ -47,30 +44,48 @@ public final class TabsTheme {
     /** Right padding inside the sidebar (visual gap between tab items and content panel) */
     public static final int SIDEBAR_PADDING_RIGHT = 42;
 
-    /** Bottom padding inside the sidebar (space after last tab item) */
-    public static final int SIDEBAR_PADDING_BOTTOM = 30;
-
     /** Text size for tab labels */
     public static final int TEXT_SIZE = 34;
 
+    /** Baseline offset for vertical text centering */
+    public static final float TEXT_BASELINE_OFFSET = -6f;
+
+    /** Default top padding inside Tabs (visual offset of first item + overshoot buffer for selection slider) */
+    public static final int DEFAULT_TOP_PADDING = 50;
+
+    /** Default bottom padding inside Tabs (overshoot buffer for selection slider) */
+    public static final int DEFAULT_BOTTOM_PADDING = 30;
+
     /** Animation duration in milliseconds */
     public static final int ANIMATION_DURATION = 400;
+
+    /** Visual bounding box of the trailing more-indicator ">" (px, matches source PNG size). */
+    public static final int MORE_SIZE = 30;
+
+    /** Distance from tab-item right edge to more-indicator right edge (px). */
+    public static final int MORE_MARGIN_END = 26;
 
     // ============================================================
     // COLORS - FREE LIGHT THEME
     // ============================================================
 
     /** Background color for the sidebar - Free Light */
-    public static final int FREE_LIGHT_SIDEBAR_BACKGROUND = Color.parseColor("#f1f5fb");
+    public static final int FREE_LIGHT_SIDEBAR_BACKGROUND = Color.TRANSPARENT;
 
     /** Background color for selected tab indicator - Free Light */
-    public static final int FREE_LIGHT_SELECTED_BACKGROUND = Color.parseColor("#ffffff");
+    public static final int FREE_LIGHT_SELECTED_BACKGROUND = Color.parseColor("#bfffffff");
 
     /** Text color for selected tab - Free Light */
-    public static final int FREE_LIGHT_SELECTED_TEXT = Color.parseColor("#1a1a1a");
+    public static final int FREE_LIGHT_SELECTED_TEXT = Color.parseColor("#4099F3");
 
     /** Text color for unselected tab - Free Light */
-    public static final int FREE_LIGHT_UNSELECTED_TEXT = Color.parseColor("#666666");
+    public static final int FREE_LIGHT_UNSELECTED_TEXT = Color.parseColor("#2d3442");
+
+    /** Text color for disabled tab - Free Light */
+    public static final int FREE_LIGHT_DISABLED_TEXT = Color.parseColor("#b32d3442");
+
+    /** Text color for pressed tab - Free Light */
+    public static final int FREE_LIGHT_PRESSED_TEXT = Color.parseColor("#802d3442");
 
     // ============================================================
     // COLORS - FREE DARK THEME
@@ -83,17 +98,23 @@ public final class TabsTheme {
     public static final int FREE_DARK_SELECTED_BACKGROUND = Color.parseColor("#23272f");
 
     /** Text color for selected tab - Free Dark */
-    public static final int FREE_DARK_SELECTED_TEXT = Color.parseColor("#47b4ff");
+    public static final int FREE_DARK_SELECTED_TEXT = Color.parseColor("#4099F3");
 
     /** Text color for unselected tab - Free Dark */
     public static final int FREE_DARK_UNSELECTED_TEXT = Color.parseColor("#CACACA");
+
+    /** Text color for disabled tab - Free Dark */
+    public static final int FREE_DARK_DISABLED_TEXT = Color.parseColor("#666666");
+
+    /** Text color for pressed tab - Free Dark */
+    public static final int FREE_DARK_PRESSED_TEXT = Color.parseColor("#80cacaca");
 
     // ============================================================
     // COLORS - DREAMER LIGHT THEME
     // ============================================================
 
     /** Background color for the sidebar - Dreamer Light */
-    public static final int DREAMER_LIGHT_SIDEBAR_BACKGROUND = Color.parseColor("#f5f5f5");
+    public static final int DREAMER_LIGHT_SIDEBAR_BACKGROUND = Color.TRANSPARENT;
 
     /** Background color for selected tab indicator - Dreamer Light */
     public static final int DREAMER_LIGHT_SELECTED_BACKGROUND = Color.parseColor("#ffffff");
@@ -102,14 +123,20 @@ public final class TabsTheme {
     public static final int DREAMER_LIGHT_SELECTED_TEXT = Color.parseColor("#1a1a1a");
 
     /** Text color for unselected tab - Dreamer Light */
-    public static final int DREAMER_LIGHT_UNSELECTED_TEXT = Color.parseColor("#666666");
+    public static final int DREAMER_LIGHT_UNSELECTED_TEXT = Color.parseColor("#2d3442");
+
+    /** Text color for disabled tab - Dreamer Light */
+    public static final int DREAMER_LIGHT_DISABLED_TEXT = Color.parseColor("#999999");
+
+    /** Text color for pressed tab - Dreamer Light */
+    public static final int DREAMER_LIGHT_PRESSED_TEXT = Color.parseColor("#80666666");
 
     // ============================================================
     // COLORS - DREAMER DARK THEME
     // ============================================================
 
     /** Background color for the sidebar - Dreamer Dark */
-    public static final int DREAMER_DARK_SIDEBAR_BACKGROUND = Color.parseColor("#0a0a0a");
+    public static final int DREAMER_DARK_SIDEBAR_BACKGROUND = Color.TRANSPARENT;
 
     /** Background color for selected tab indicator - Dreamer Dark */
     public static final int DREAMER_DARK_SELECTED_BACKGROUND = Color.parseColor("#2a2a2a");
@@ -119,6 +146,12 @@ public final class TabsTheme {
 
     /** Text color for unselected tab - Dreamer Dark */
     public static final int DREAMER_DARK_UNSELECTED_TEXT = Color.parseColor("#888888");
+
+    /** Text color for disabled tab - Dreamer Dark */
+    public static final int DREAMER_DARK_DISABLED_TEXT = Color.parseColor("#555555");
+
+    /** Text color for pressed tab - Dreamer Dark */
+    public static final int DREAMER_DARK_PRESSED_TEXT = Color.parseColor("#80888888");
 
     // ============================================================
     // COLOR GETTERS
@@ -207,4 +240,44 @@ public final class TabsTheme {
                 return FREE_LIGHT_UNSELECTED_TEXT;
         }
     }
+
+    /**
+     * Returns the disabled tab text color for the specified theme.
+     *
+     * @param theme the current theme
+     * @return the disabled tab text color
+     */
+    public static int getDisabledTextColor(Theme theme) {
+        switch (theme) {
+            case FREE_LIGHT:
+                return FREE_LIGHT_DISABLED_TEXT;
+            case FREE_DARK:
+                return FREE_DARK_DISABLED_TEXT;
+            case DREAMER_LIGHT:
+                return DREAMER_LIGHT_DISABLED_TEXT;
+            case DREAMER_DARK:
+                return DREAMER_DARK_DISABLED_TEXT;
+            default:
+                return FREE_LIGHT_DISABLED_TEXT;
+        }
+    }
+
+    /**
+     * Returns the pressed tab text color for the specified theme.
+     */
+    public static int getPressedTextColor(Theme theme) {
+        switch (theme) {
+            case FREE_LIGHT:
+                return FREE_LIGHT_PRESSED_TEXT;
+            case FREE_DARK:
+                return FREE_DARK_PRESSED_TEXT;
+            case DREAMER_LIGHT:
+                return DREAMER_LIGHT_PRESSED_TEXT;
+            case DREAMER_DARK:
+                return DREAMER_DARK_PRESSED_TEXT;
+            default:
+                return FREE_LIGHT_PRESSED_TEXT;
+        }
+    }
+
 }

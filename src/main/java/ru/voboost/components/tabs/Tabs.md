@@ -96,11 +96,39 @@ interface OnTabChangeListener {
 
 ```java
 TabItem(String value, Map<String, String> label)
+TabItem(String value, Map<String, String> label, boolean enabled)
+TabItem(String value, Map<String, String> label, boolean enabled, int marginTop)
+TabItem(String value, Map<String, String> label, boolean enabled, int marginTop, boolean more)
 
 String getValue()
 Map<String, String> getLabel()
 String getText(String langCode)
+boolean isEnabled()
+int getMarginTop()
+boolean hasMore()
 ```
+
+#### Builder
+
+```java
+TabItem item = TabItem.create("vehicle", labels)
+    .enabled(true)
+    .selected(false)
+    .marginTop(30)
+    .more(true)
+    .build();
+```
+
+A tab with `more(true)` renders a trailing ">" indicator on the right side of the tab. The
+indicator is drawn from 30x30 PNG assets, with a separate pair per theme brightness:
+dark themes use `Tabs_theme_dark.png` / `Tabs_theme_dark.Tabs_pressed.png` (copied byte-for-byte
+from the original Voyah `icon_menu_more_nor.png` / `icon_menu_more_pre.png`, gray+alpha);
+light themes use `Tabs_theme_light.png` / `Tabs_theme_light.Tabs_pressed.png` (from the Voyah
+`resc-defaulttheme-simple` light skin, RGBA with `#2D3442` matching the unselected text color).
+When the user touches such a tab the indicator switches to the `*_pressed` variant — matches
+the original `state_pressed` behavior on the trailing icon. PNGs are loaded lazily from
+classpath alongside `Tabs.class`. The text and background of the tab itself do not change on
+press — only the more-indicator does.
 
 ### Compose Wrapper
 
@@ -130,3 +158,41 @@ tabs/
 ├── Tabs.md              # This doc
 └── Tabs.test/           # Tests
 ```
+
+## Error Handling
+
+The Tabs component validates input and throws exceptions for invalid arguments:
+
+- `setTheme(null)` → throws `IllegalArgumentException`
+- `setLanguage(null)` → throws `IllegalArgumentException`
+- `setItems(List<TabItem>)` with null elements → throws `IllegalArgumentException`
+- `TabItem(null, label)` → throws `IllegalArgumentException`
+- `TabItem(value, null)` → throws `IllegalArgumentException`
+
+Disabled tabs are ignored when selected via touch or `setSelectedValue()`.
+
+## Themes
+
+| Enum | Style |
+|------|-------|
+| `Theme.FREE_LIGHT` | Light background + white selection |
+| `Theme.FREE_DARK` | Transparent background + dark selection |
+| `Theme.DREAMER_LIGHT` | Light gray background + white selection |
+| `Theme.DREAMER_DARK` | Dark background + dark gray selection |
+
+## Disabled Tabs
+
+Tabs can be disabled to prevent user interaction:
+
+```java
+TabItem enabledTab = new TabItem("settings", labels, true);
+TabItem disabledTab = new TabItem("admin", labels, false);
+
+tabs.setItems(Arrays.asList(enabledTab, disabledTab));
+```
+
+Disabled tabs:
+- Are displayed with gray text
+- Do not respond to touch events
+- Are ignored when selected via `setSelectedValue()`
+- Do not trigger `OnValueChangeListener`

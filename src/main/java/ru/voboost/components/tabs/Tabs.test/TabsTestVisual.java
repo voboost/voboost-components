@@ -52,7 +52,7 @@ public class TabsTestVisual {
     public void setUp() {
         // Create an Activity to attach views to (required for Roborazzi screenshot capture)
         ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
-        controller.create();
+        controller.create().start().resume();
         activity = controller.get();
         context = activity;
         container = new FrameLayout(context);
@@ -105,6 +105,38 @@ public class TabsTestVisual {
         settingsLabels.put("en", "Settings");
         settingsLabels.put("ru", "Настройки");
         items.add(new TabItem("settings", settingsLabels));
+
+        return items;
+    }
+
+    // 5-tab test set where the last tab has a trailing "more" indicator
+    private List<TabItem> createMoreTestItems() {
+        List<TabItem> items = new ArrayList<>();
+
+        Map<String, String> storeLabels = new HashMap<>();
+        storeLabels.put("en", "Store");
+        storeLabels.put("ru", "Магазин");
+        items.add(new TabItem("store", storeLabels));
+
+        Map<String, String> appsLabels = new HashMap<>();
+        appsLabels.put("en", "Applications");
+        appsLabels.put("ru", "Приложения");
+        items.add(new TabItem("apps", appsLabels));
+
+        Map<String, String> interfaceLabels = new HashMap<>();
+        interfaceLabels.put("en", "Interface");
+        interfaceLabels.put("ru", "Интерфейс");
+        items.add(new TabItem("interface", interfaceLabels));
+
+        Map<String, String> settingsLabels = new HashMap<>();
+        settingsLabels.put("en", "Settings");
+        settingsLabels.put("ru", "Настройки");
+        items.add(new TabItem("settings", settingsLabels));
+
+        Map<String, String> vehicleLabels = new HashMap<>();
+        vehicleLabels.put("en", "Vehicle");
+        vehicleLabels.put("ru", "Автомобиль");
+        items.add(new TabItem("vehicle", vehicleLabels, true, 30, true));
 
         return items;
     }
@@ -419,6 +451,20 @@ public class TabsTestVisual {
     public void tabs_lastItemSelected() {
         Tabs tabs =
                 createTabs(createStandardTestItems(), Language.EN, Theme.FREE_LIGHT, "settings");
+        captureRoboImage(tabs, getScreenshotPath(), new RoborazziOptions());
+    }
+
+    @Test
+    public void tabs_more_lastItem_free_dark_en() {
+        Tabs tabs =
+                createTabs(createMoreTestItems(), Language.EN, Theme.FREE_DARK, "store");
+        captureRoboImage(tabs, getScreenshotPath(), new RoborazziOptions());
+    }
+
+    @Test
+    public void tabs_more_lastItem_free_light_en() {
+        Tabs tabs =
+                createTabs(createMoreTestItems(), Language.EN, Theme.FREE_LIGHT, "store");
         captureRoboImage(tabs, getScreenshotPath(), new RoborazziOptions());
     }
 

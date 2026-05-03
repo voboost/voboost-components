@@ -8,10 +8,10 @@ import ru.voboost.components.theme.Theme
 /**
  * Tabs component for Jetpack Compose.
  *
- * A vertical navigation sidebar with animated selection indicator.
+ * Vertical navigation sidebar with animated selection indicator.
  *
- * @param items List of TabItem objects representing the tabs
- * @param lang Language enum value for localization
+ * @param items List of TabItem representing the tabs
+ * @param lang Language for localization (Language.EN, Language.RU)
  * @param theme Theme enum value
  * @param value Currently selected tab value
  * @param onValueChange Callback when tab selection changes
@@ -31,14 +31,18 @@ fun Tabs(
                 setLanguage(lang)
                 setItems(items)
                 setSelectedValue(value)
-                setOnValueChangeListener { newValue ->
-                    onValueChange(newValue)
-                }
+                setOnValueChangeListener { onValueChange(it) }
             }
         },
         update = { tabsView ->
-            tabsView.setTheme(theme)
-            tabsView.setLanguage(lang)
+            // Only update if values actually changed
+            if (tabsView.getCurrentTheme() != theme) {
+                tabsView.setTheme(theme)
+            }
+            if (tabsView.getCurrentLanguage() != lang) {
+                tabsView.setLanguage(lang)
+            }
+            // Always update items and value (no cheap comparison available)
             tabsView.setItems(items)
             tabsView.setSelectedValue(value)
         },
