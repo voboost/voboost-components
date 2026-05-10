@@ -22,6 +22,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 
 import ru.voboost.components.i18n.Language;
+import ru.voboost.components.radio.Radio;
 import ru.voboost.components.theme.Theme;
 
 /**
@@ -45,7 +46,7 @@ public class SectionTestVisual {
     public void setUp() {
         // Create an Activity to attach views to (required for Roborazzi screenshot capture)
         ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
-        controller.create();
+        controller.create().start().resume();
         activity = controller.get();
         context = activity;
         container = new FrameLayout(context);
@@ -63,7 +64,7 @@ public class SectionTestVisual {
                 break;
             }
         }
-        return testMethodName + ".png";
+        return SCREENSHOT_BASE_PATH + "/" + testMethodName + ".png";
     }
 
     private Section createSection(Theme theme, Language language, Map<String, String> title) {
@@ -324,15 +325,9 @@ public class SectionTestVisual {
         section.setLanguage(language);
         section.setTitle(title);
 
-        // Create and configure Radio
-        ru.voboost.components.radio.Radio radio = new ru.voboost.components.radio.Radio(context);
-        radio.setButtons(radioButtons);
-        radio.setTheme(theme);
-        radio.setLanguage(language);
-        radio.setSelectedValue(selectedValue);
-
-        // Add Radio as child of Section
-        section.addView(radio);
+        // Add Radio using the typed API
+        Radio radio = Radio.create(context, theme, language, radioButtons, selectedValue).build();
+        section.addRadio(radio);
 
         // Set layout parameters for proper rendering
         ViewGroup.LayoutParams params =
@@ -434,6 +429,269 @@ public class SectionTestVisual {
         Section section =
                 createSectionWithRadio(
                         Theme.DREAMER_DARK, Language.RU, title, createSampleRadioButtons(), "ru");
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    // ============================================================
+    // EDGE CASE VISUAL TESTS - Phase 5
+    // ============================================================
+
+    /**
+     * Test Section with very long title that wraps to multiple lines.
+     */
+    @Test
+    public void section_veryLongTitleMultipleLines() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "This is an extremely long section title that should definitely wrap to multiple lines and test the layout engine");
+        title.put("ru", "Это чрезвычайно длинный заголовок раздела, который точно должен переноситься на несколько строк и проверять движок верстки");
+
+        Section section = createSection(Theme.FREE_LIGHT, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with title containing only special characters.
+     */
+    @Test
+    public void section_specialCharactersOnly() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "@#$%^&*()_+-=[]{}|;':\",./<>?");
+        title.put("ru", "@#$%^&*()_+-=[]{}|;':\",./<>?");
+
+        Section section = createSection(Theme.FREE_DARK, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with title containing emoji.
+     */
+    @Test
+    public void section_withEmoji() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Settings ⚙️ 🎛️ 🔧");
+        title.put("ru", "Настройки ⚙️ 🎛️ 🔧");
+
+        Section section = createSection(Theme.DREAMER_LIGHT, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with mixed RTL/LTR text.
+     */
+    @Test
+    public void section_mixedRtlLtr() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "English Settings الإعدادات");
+        title.put("ru", "Русский Настройки הגדרות");
+
+        Section section = createSection(Theme.FREE_LIGHT, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with title containing numbers and special formatting.
+     */
+    @Test
+    public void section_withNumbersAndFormatting() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Version 2.0.1 (Build #1234) [Stable]");
+        title.put("ru", "Версия 2.0.1 (Сборка #1234) [Стабильная]");
+
+        Section section = createSection(Theme.DREAMER_DARK, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with single character title.
+     */
+    @Test
+    public void section_singleCharacterTitle() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "A");
+        title.put("ru", "А");
+
+        Section section = createSection(Theme.FREE_LIGHT, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with title containing newlines (should be handled gracefully).
+     */
+    @Test
+    public void section_titleWithNewlines() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Line 1\nLine 2\nLine 3");
+
+        Section section = createSection(Theme.FREE_DARK, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with title containing tabs (should be handled gracefully).
+     */
+    @Test
+    public void section_titleWithTabs() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Tab\tSeparated\tWords");
+
+        Section section = createSection(Theme.DREAMER_LIGHT, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with all theme combinations for very short title.
+     */
+    @Test
+    public void section_shortTitleAllThemes() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "OK");
+        title.put("ru", "ОК");
+
+        // Test all 4 theme variants
+        Section section1 = createSection(Theme.FREE_LIGHT, Language.EN, title);
+        captureRoboImage(section1, getScreenshotName() + "_free_light", new RoborazziOptions());
+
+        Section section2 = createSection(Theme.FREE_DARK, Language.EN, title);
+        captureRoboImage(section2, getScreenshotName() + "_free_dark", new RoborazziOptions());
+
+        Section section3 = createSection(Theme.DREAMER_LIGHT, Language.EN, title);
+        captureRoboImage(section3, getScreenshotName() + "_dreamer_light", new RoborazziOptions());
+
+        Section section4 = createSection(Theme.DREAMER_DARK, Language.EN, title);
+        captureRoboImage(section4, getScreenshotName() + "_dreamer_dark", new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with title at maximum reasonable length.
+     */
+    @Test
+    public void section_maximumLengthTitle() {
+        Map<String, String> title = new HashMap<>();
+        StringBuilder longTitle = new StringBuilder();
+        for (int i = 0; i < 200; i++) {
+            longTitle.append("Word");
+            if (i < 199) longTitle.append(" ");
+        }
+        title.put("en", longTitle.toString());
+
+        Section section = createSection(Theme.FREE_LIGHT, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    /**
+     * Test Section with title containing only spaces.
+     */
+    @Test
+    public void section_titleOnlySpaces() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "     ");
+
+        Section section = createSection(Theme.FREE_DARK, Language.EN, title);
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    // ============================================================
+    // TITLE CHECKBOX + INFO ICON VISUAL TESTS
+    // ============================================================
+
+    @Test
+    public void section_titleCheckboxOnFreeLight() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Privacy protection");
+        Section section = createSection(Theme.FREE_LIGHT, Language.EN, title);
+        section.setTitleCheckbox(true);
+        section.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(1920, android.view.View.MeasureSpec.AT_MOST),
+                android.view.View.MeasureSpec.makeMeasureSpec(720, android.view.View.MeasureSpec.AT_MOST));
+        section.layout(0, 0, section.getMeasuredWidth(), section.getMeasuredHeight());
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    @Test
+    public void section_titleCheckboxOnFreeDark() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Privacy protection");
+        Section section = createSection(Theme.FREE_DARK, Language.EN, title);
+        section.setTitleCheckbox(true);
+        section.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(1920, android.view.View.MeasureSpec.AT_MOST),
+                android.view.View.MeasureSpec.makeMeasureSpec(720, android.view.View.MeasureSpec.AT_MOST));
+        section.layout(0, 0, section.getMeasuredWidth(), section.getMeasuredHeight());
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    @Test
+    public void section_titleCheckboxOffCollapsedFreeDark() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Privacy protection");
+        Section section = createSection(Theme.FREE_DARK, Language.EN, title);
+        section.setTitleCheckbox(false);
+        section.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(1920, android.view.View.MeasureSpec.AT_MOST),
+                android.view.View.MeasureSpec.makeMeasureSpec(720, android.view.View.MeasureSpec.AT_MOST));
+        section.layout(0, 0, section.getMeasuredWidth(), section.getMeasuredHeight());
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    @Test
+    public void section_withInfoIconFreeLight() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Power mode");
+        Map<String, String> info = new HashMap<>();
+        info.put("en", "Help");
+        Section section = createSection(Theme.FREE_LIGHT, Language.EN, title);
+        section.setPopupText(info);
+        section.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(1920, android.view.View.MeasureSpec.AT_MOST),
+                android.view.View.MeasureSpec.makeMeasureSpec(720, android.view.View.MeasureSpec.AT_MOST));
+        section.layout(0, 0, section.getMeasuredWidth(), section.getMeasuredHeight());
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    @Test
+    public void section_withInfoIconFreeDark() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Power mode");
+        Map<String, String> info = new HashMap<>();
+        info.put("en", "Help");
+        Section section = createSection(Theme.FREE_DARK, Language.EN, title);
+        section.setPopupText(info);
+        section.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(1920, android.view.View.MeasureSpec.AT_MOST),
+                android.view.View.MeasureSpec.makeMeasureSpec(720, android.view.View.MeasureSpec.AT_MOST));
+        section.layout(0, 0, section.getMeasuredWidth(), section.getMeasuredHeight());
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    @Test
+    public void section_withInfoIconAndCheckboxOn() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Privacy protection");
+        Map<String, String> info = new HashMap<>();
+        info.put("en", "Help");
+        Section section = createSection(Theme.FREE_DARK, Language.EN, title);
+        section.setPopupText(info);
+        section.setTitleCheckbox(true);
+        section.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(1920, android.view.View.MeasureSpec.AT_MOST),
+                android.view.View.MeasureSpec.makeMeasureSpec(720, android.view.View.MeasureSpec.AT_MOST));
+        section.layout(0, 0, section.getMeasuredWidth(), section.getMeasuredHeight());
+        captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
+    }
+
+    @Test
+    public void section_withInfoIconAndCheckboxOffCollapsed() {
+        Map<String, String> title = new HashMap<>();
+        title.put("en", "Privacy protection");
+        Map<String, String> info = new HashMap<>();
+        info.put("en", "Help");
+        Section section = createSection(Theme.FREE_DARK, Language.EN, title);
+        section.setPopupText(info);
+        section.setTitleCheckbox(false);
+        section.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(1920, android.view.View.MeasureSpec.AT_MOST),
+                android.view.View.MeasureSpec.makeMeasureSpec(720, android.view.View.MeasureSpec.AT_MOST));
+        section.layout(0, 0, section.getMeasuredWidth(), section.getMeasuredHeight());
         captureRoboImage(section, getScreenshotName(), new RoborazziOptions());
     }
 }
