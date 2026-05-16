@@ -50,7 +50,7 @@ public class ScreenTestVisual {
     public void setUp() {
         // Create an Activity to attach views to (required for Roborazzi screenshot capture)
         ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
-        controller.create();
+        controller.create().start().resume();
         activity = controller.get();
         context = activity;
         container = new FrameLayout(context);
@@ -68,7 +68,7 @@ public class ScreenTestVisual {
                 break;
             }
         }
-        return testMethodName + ".png";
+        return SCREENSHOT_BASE_PATH + "/" + testMethodName + ".png";
     }
 
     private Screen createScreen(Theme theme) {
@@ -201,21 +201,19 @@ public class ScreenTestVisual {
     @Test
     public void screen_withTabsFirstSelected() {
         Screen screen = createScreenWithTabs(Theme.FREE_LIGHT, "network");
-        captureRoboImage(
-                screen, SCREENSHOT_BASE_PATH + "/" + getScreenshotName(), new RoborazziOptions());
+        captureRoboImage(screen, getScreenshotName(), new RoborazziOptions());
     }
 
     @Test
     public void screen_withTabsSecondSelected() {
         Screen screen = createScreenWithTabs(Theme.FREE_LIGHT, "display");
-        captureRoboImage(
-                screen, SCREENSHOT_BASE_PATH + "/" + getScreenshotName(), new RoborazziOptions());
+        captureRoboImage(screen, getScreenshotName(), new RoborazziOptions());
     }
 
     @Test
     public void screen_withTabsFreeDark() {
         Screen screen = createScreenWithTabs(Theme.FREE_DARK, "display");
-        captureRoboImage(
-                screen, SCREENSHOT_BASE_PATH + "/" + getScreenshotName(), new RoborazziOptions());
+        captureRoboImage(screen, getScreenshotName(), new RoborazziOptions());
     }
 }
+

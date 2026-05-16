@@ -1,6 +1,11 @@
 package ru.voboost.components.screen;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 
 import ru.voboost.components.theme.Theme;
 
@@ -28,8 +33,17 @@ public final class ScreenTheme {
     /** Padding inside the screen */
     public static final int PADDING = 32;
 
-    /** Horizontal gap between Tabs and Panel */
-    public static final int GAP_X = 42;
+    /** Default horizontal offset for screen content */
+    public static final int DEFAULT_OFFSET_X = 145;
+
+    /** Default vertical offset for screen content */
+    public static final int DEFAULT_OFFSET_Y = 50;
+
+    /** Default horizontal gap between Tabs and Panel */
+    public static final int DEFAULT_GAP_X = 0;
+
+    /** Panel width in compact mode */
+    public static final int PANEL_WIDTH = 705;
 
     // ============================================================
     // COLORS - FREE LIGHT THEME
@@ -43,7 +57,7 @@ public final class ScreenTheme {
     // ============================================================
 
     /** Background color for the screen - Free Dark */
-    public static final int FREE_DARK_BACKGROUND = Color.parseColor("#121212");
+    public static final int FREE_DARK_BACKGROUND = Color.parseColor("#000000");
 
     // ============================================================
     // COLORS - DREAMER LIGHT THEME
@@ -60,8 +74,60 @@ public final class ScreenTheme {
     public static final int DREAMER_DARK_BACKGROUND = Color.parseColor("#000000");
 
     // ============================================================
+    // ANIMATION CONSTANTS
+    // ============================================================
+
+    /** Duration of panel transition animation in milliseconds */
+    public static final int PANEL_TRANSITION_DURATION = 300;
+
+    // ============================================================
     // COLOR GETTERS
     // ============================================================
+
+    private static volatile Bitmap lightBackgroundBitmap;
+
+    public static Bitmap getLightBackgroundBitmap() {
+        Bitmap b = lightBackgroundBitmap;
+        if (b == null) {
+            synchronized (ScreenTheme.class) {
+                b = lightBackgroundBitmap;
+                if (b == null) {
+                    BitmapFactory.Options opts = new BitmapFactory.Options();
+                    opts.inScaled = false;
+                    try (java.io.InputStream in = ScreenTheme.class
+                            .getResourceAsStream("Screen_theme_light.png")) {
+                        if (in != null) {
+                            b = BitmapFactory.decodeStream(in, null, opts);
+                        }
+                    } catch (Exception ignored) {
+                    }
+                    lightBackgroundBitmap = b;
+                }
+            }
+        }
+        return b;
+    }
+
+    public static Drawable getBackgroundDrawable(android.content.Context context, Theme theme) {
+        if (theme == Theme.FREE_LIGHT || theme == Theme.DREAMER_LIGHT) {
+            Bitmap bmp = getLightBackgroundBitmap();
+            if (bmp != null) {
+                return new BitmapDrawable(context.getResources(), bmp);
+            }
+        }
+        return new ColorDrawable(getBackgroundColor(theme));
+    }
+
+    private static int getBackgroundColor(Theme theme) {
+        switch (theme) {
+            case FREE_DARK:
+                return FREE_DARK_BACKGROUND;
+            case DREAMER_DARK:
+                return DREAMER_DARK_BACKGROUND;
+            default:
+                return FREE_DARK_BACKGROUND;
+        }
+    }
 
     /**
      * Returns the background color for the specified theme.
@@ -84,3 +150,4 @@ public final class ScreenTheme {
         }
     }
 }
+

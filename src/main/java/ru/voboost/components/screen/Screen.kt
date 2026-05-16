@@ -1,6 +1,10 @@
 package ru.voboost.components.screen
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.viewinterop.AndroidView
 import ru.voboost.components.panel.Panel
 import ru.voboost.components.tabs.TabItem
@@ -10,28 +14,36 @@ import ru.voboost.components.theme.Theme
 /**
  * Screen component for Jetpack Compose.
  *
- * A full-screen container that can contain tabs and a panel.
+ * Full-screen container with tabs and panels. Automatically manages Tabs creation
+ * and panel switching based on selectedTab state.
  *
- * @param tabs List of TabItem objects for the sidebar navigation (optional)
- * @param panels Array of Panel components to display in the main content area (optional)
- * @param offsetX Horizontal offset for content positioning in pixels (default: 175)
- * @param offsetY Vertical offset for content positioning in pixels (default: 50)
- * @param gapX Horizontal gap between Tabs and Panel in pixels (default: 42)
- * @param screenLiftState Screen lift state (1 for lowered, 2 for raised, default: 2)
+ * @param tabs List of TabItem for sidebar navigation
+ * @param panels Array of Panel components for each tab
+ * @param selectedTab Currently selected tab value
+ * @param onTabSelected Callback when tab selection changes
+ * @param offsetX Horizontal offset in pixels (default: 175)
+ * @param offsetY Vertical offset in pixels (default: 50)
+ * @param gapX Horizontal gap between tabs and panels in pixels (default: 0)
+ * @param screenLiftState Screen lift state (1=lowered, 2=raised, default: 2)
  * @param theme Theme enum value
- * @param onScreenLift Callback when screen lift state changes (optional)
+ * @param onScreenLift Callback when screen lift state changes
  */
 @Composable
 fun Screen(
-    tabs: List<TabItem>? = null,
-    panels: Array<Panel>? = null,
+    tabs: List<TabItem>,
+    panels: Array<Panel>,
+    selectedTab: String,
+    onTabSelected: (String) -> Unit,
+    theme: Theme,
     offsetX: Int = 175,
     offsetY: Int = 50,
-    gapX: Int = 42,
+    gapX: Int = 0,
     screenLiftState: Int = 2,
-    theme: Theme,
     onScreenLift: ((Int) -> Unit)? = null,
 ) {
+    // Track last selected tab to avoid redundant updates
+    var lastSelectedTab by remember { mutableStateOf(selectedTab) }
+
     AndroidView(
         factory = { context ->
             ru.voboost.components.screen.Screen(context).apply {
@@ -40,27 +52,26 @@ fun Screen(
                 setOffsetY(offsetY)
                 setGapX(gapX)
 
-                // Set tabs if provided
-                if (tabs != null) {
-                    val tabsView =
-                        Tabs(context).apply {
-                            setTheme(theme)
-                            setItems(tabs)
+                // Create and configure Tabs
+                val tabsView =
+                    Tabs(context).apply {
+                        setTheme(theme)
+                        setItems(tabs)
+                        setSelectedValue(selectedTab, false)
+                        setOnValueChangeListener { newValue ->
+                            onTabSelected(newValue)
+                            lastSelectedTab = newValue
                         }
-                    setTabs(tabsView)
-                }
+                    }
+                setTabs(tabsView)
 
-                // Set panels if provided
-                if (panels != null) {
-                    setPanels(panels)
-                }
+                // Set panels
+                setPanels(panels)
 
-                // Set screen lift state
+                // Configure screen lift
                 onScreenLift(screenLiftState)
-
-                // Set screen lift listener if provided
-                setOnScreenLiftListener { state ->
-                    onScreenLift?.invoke(state)
+                if (onScreenLift != null) {
+                    setOnScreenLiftListener { onScreenLift(it) }
                 }
             }
         },
@@ -70,29 +81,27 @@ fun Screen(
             screenView.setOffsetY(offsetY)
             screenView.setGapX(gapX)
 
-            // Update tabs if provided
-            if (tabs != null) {
-                screenView.getTabs()?.apply {
-                    setTheme(theme)
-                    setItems(tabs)
-                }
-            } else {
-                // Remove tabs if no longer provided
-                screenView.setTabs(null)
-            }
+            // Update tabs
+            screenView.getTabs()?.apply {
+                setTheme(theme)
+                setItems(tabs)
 
-            // Update panels if provided
-            if (panels != null) {
-                screenView.setPanels(panels)
+                if (selectedTab != lastSelectedTab) {
+                    setSelectedValue(selectedTab, false)
+                    lastSelectedTab = selectedTab
+                }
             }
 
             // Update screen lift state
             screenView.onScreenLift(screenLiftState)
-
-            // Update screen lift listener
-            screenView.setOnScreenLiftListener { state ->
-                onScreenLift?.invoke(state)
+            if (onScreenLift != null) {
+                screenView.setOnScreenLiftListener { onScreenLift(it) }
             }
+        },
+        onReset = { view ->
+            // Cleanup listeners to prevent memory leaks
+            view.getTabs()?.setOnValueChangeListener(null)
+            view.setOnScreenLiftListener(null)
         },
     )
 }

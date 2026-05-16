@@ -1,11 +1,18 @@
 package ru.voboost.components.screen;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ScrollView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import ru.voboost.components.i18n.ILocalizable;
@@ -14,6 +21,8 @@ import ru.voboost.components.panel.Panel;
 import ru.voboost.components.tabs.Tabs;
 import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
+import ru.voboost.components.toast.Toast;
+import ru.voboost.components.toast.ToastTheme;
 
 /**
  * Screen component - A full-screen container for automotive applications.
@@ -28,7 +37,7 @@ import ru.voboost.components.theme.Theme;
  *
  * <p>
  * Usage:
- * 
+ *
  * <pre>
  * Screen screen = new Screen(context);
  * screen.setTheme(Theme.FREE_LIGHT);
@@ -36,9 +45,6 @@ import ru.voboost.components.theme.Theme;
  */
 public class Screen extends ViewGroup implements IThemable, ILocalizable {
     // Constants
-    private static final int DEFAULT_OFFSET_X = 145;
-    private static final int DEFAULT_OFFSET_Y = 50;
-    private static final int DEFAULT_GAP_X = 0;
     public static final int SCREEN_LOWERED = 1;
     public static final int SCREEN_RAISED = 2;
 
@@ -46,10 +52,13 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
     private Theme currentTheme;
     private Language currentLanguage;
 
-    // Offset fields
-    private int offsetX = DEFAULT_OFFSET_X;
-    private int offsetY = DEFAULT_OFFSET_Y;
-    private int gapX = DEFAULT_GAP_X;
+    // Offset fields (using defaults from ScreenTheme)
+    private int offsetX = ScreenTheme.DEFAULT_OFFSET_X;
+    private int offsetY = ScreenTheme.DEFAULT_OFFSET_Y;
+    private int gapX = ScreenTheme.DEFAULT_GAP_X;
+
+    // Compact panel mode: full height, narrow width, side image
+    private boolean compactPanel = false;
 
     // Screen lift state
     private int screenLiftState = SCREEN_RAISED;
@@ -59,7 +68,16 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
     private Tabs tabs;
     private Panel[] panels;
     private int activePanelIndex = -1;
-    private android.widget.ScrollView tabsScrollView;
+    private ScreenView tabsScrollView;
+    private ScreenView[] panelWrappers;
+    private Toast currentToast;
+    private Tabs.OnTabChangeListener previousTabChangeListener;
+
+    private final Paint imagePaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+
+    // Animation state
+    private AnimatorSet currentPanelTransition;
+    private ScreenView animatingOutWrapper;
 
     // ============================================================
     // INTERFACES
@@ -106,16 +124,26 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
     // INITIALIZATION
     // ============================================================
 
+    private Context savedContext;
+
     private void init(Context context) {
-        // Initialization logic - hardware acceleration not needed as this is a
-        // container ViewGroup
-        // without custom drawing operations
+        this.savedContext = context;
+        // Disable clip for panel transition animation and child overflow
+        setClipChildren(false);
+        setClipToPadding(false);
     }
 
     // ============================================================
     // PUBLIC API
     // ============================================================
 
+    /**
+     * Returns the available content height in pixels.
+     * Currently fixed at 720px; will account for screen lift state in future.
+     */
+    public int getAvailableHeight() {
+        return 720;
+    }
     /**
      * Sets the theme for the component.
      *
@@ -129,6 +157,8 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         }
 
         this.currentTheme = theme;
+        setBackground(ScreenTheme.getBackgroundDrawable(savedContext, theme));
+        propagateTheme(theme);
         invalidate();
     }
 
@@ -154,6 +184,7 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         }
 
         this.currentLanguage = language;
+        propagateLanguage(language);
         invalidate();
     }
 
@@ -202,6 +233,9 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         }
 
         this.offsetY = offsetY;
+        if (tabs != null) {
+            tabs.setTopPadding(offsetY);
+        }
         requestLayout();
     }
 
@@ -238,12 +272,49 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         return gapX;
     }
 
+    public void setCompactPanel(boolean compactPanel) {
+        this.compactPanel = compactPanel;
+        if (panels != null) {
+            for (Panel p : panels) {
+                if (p != null) {
+                    p.setCompact(compactPanel);
+                }
+            }
+        }
+        requestLayout();
+    }
+
+    private ScreenView ensurePanelWrapper(int index) {
+        if (panelWrappers == null || index < 0 || index >= panelWrappers.length) {
+            return null;
+        }
+        ScreenView w = panelWrappers[index];
+        if (w == null) {
+            w = new ScreenView(getContext());
+            w.setVerticalScrollBarEnabled(false);
+            w.addView(panels[index]);
+            panelWrappers[index] = w;
+        }
+        panels[index].setCompact(compactPanel);
+
+        return w;
+    }
+
+    public boolean isCompactPanel() {
+        return compactPanel;
+    }
+
     /**
      * Sets the Tabs component for the screen.
      *
      * @param tabs the Tabs component to add
      */
     public void setTabs(Tabs tabs) {
+        // Remove old listener if exists
+        if (this.tabs != null && previousTabChangeListener != null) {
+            this.tabs.setOnTabChangeListener(null);
+        }
+
         // Remove old tabs and scroll view if they exist
         if (this.tabs != null) {
             if (tabsScrollView != null) {
@@ -257,24 +328,34 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
 
         this.tabs = tabs;
 
-        // Add new tabs to the ViewGroup with ScrollView
+        // Add new tabs into a ScreenView wrapper (rubber-band stretch)
         if (tabs != null) {
-            // Create ScrollView for tabs
-            tabsScrollView = new ScrollView(getContext());
+            tabsScrollView = new ScreenView(getContext());
             tabsScrollView.setVerticalScrollBarEnabled(false);
-            tabsScrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            tabsScrollView.setClipChildren(false);
+            tabsScrollView.setClipToPadding(false);
 
-            // Add tabs to ScrollView
+            // Sync Tabs internal top padding with Screen offsetY so the first
+            // tab visually starts at offsetY from the screen top edge.
+            tabs.setTopPadding(offsetY);
+
             tabsScrollView.addView(tabs);
-
-            // Add ScrollView to Screen
             addView(tabsScrollView);
 
-            // Set listener for tab changes
-            tabs.setOnTabChangeListener(
-                    newIndex -> {
-                        setActivePanel(newIndex);
-                    });
+            // Set listener for tab changes (store reference for cleanup)
+            Tabs.OnTabChangeListener newListener = newIndex -> setActivePanel(newIndex);
+            previousTabChangeListener = newListener;
+            tabs.setOnTabChangeListener(newListener);
+        } else {
+            previousTabChangeListener = null;
+        }
+
+        // Activate the panel for the initially selected tab
+        if (tabs != null) {
+            int selectedIndex = tabs.getSelectedIndex();
+            if (selectedIndex >= 0) {
+                setActivePanel(selectedIndex);
+            }
         }
 
         requestLayout();
@@ -294,8 +375,20 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
      *
      * @return the ScrollView containing tabs, or null if not set
      */
-    public android.widget.ScrollView getTabsScrollView() {
+    public ScreenView getTabsScrollView() {
         return tabsScrollView;
+    }
+
+    /**
+     * Returns the ScreenView wrapper around the panel at the given index, or
+     * null if it has not been instantiated yet (panels are wrapped lazily on
+     * first activation).
+     */
+    public ScreenView getPanelWrapper(int index) {
+        if (panelWrappers == null || index < 0 || index >= panelWrappers.length) {
+            return null;
+        }
+        return panelWrappers[index];
     }
 
     /**
@@ -304,11 +397,31 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
      * @param panels the array of Panel objects
      */
     public void setPanels(Panel[] panels) {
+        // Detach previous wrappers if any
+        if (panelWrappers != null) {
+            for (ScreenView w : panelWrappers) {
+                if (w != null && w.getParent() == this) {
+                    super.removeView(w);
+                }
+            }
+        }
+
         this.panels = panels;
+        this.panelWrappers = panels != null ? new ScreenView[panels.length] : null;
+        this.activePanelIndex = -1;
     }
 
     /**
-     * Sets the active panel by index.
+     * Sets the active panel by index with slide animation.
+     *
+     * <p>Animation direction depends on relative position:
+     * <ul>
+     *   <li>If new index > old index: new panel slides UP from bottom, old slides UP and exits</li>
+     *   <li>If new index < old index: new panel slides DOWN from top, old slides DOWN and exits</li>
+     * </ul>
+     *
+     * <p>This matches the original Voyah implementation which uses 300ms vertical
+     * translate animations (anim_slide_bottom_in/top_out and anim_slide_top_in/bottom_out).
      *
      * @param index the index of the panel to activate
      */
@@ -318,27 +431,109 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
             return;
         }
 
-        if (activePanelIndex != index) {
-            // Remove old active panel from this ViewGroup
-            if (activePanelIndex >= 0 && activePanelIndex < panels.length) {
-                Panel oldPanel = panels[activePanelIndex];
-                if (oldPanel.getParent() == this) {
-                    removeView(oldPanel);
-                }
-            }
+        if (activePanelIndex == index) {
+            // Ensure wrapper is created and padding is fresh
+            ensurePanelWrapper(index);
+            return;
+        }
 
-            activePanelIndex = index;
+        int oldIndex = activePanelIndex;
+        ScreenView oldWrapper = (oldIndex >= 0 && panelWrappers != null
+                && oldIndex < panelWrappers.length) ? panelWrappers[oldIndex] : null;
 
-            // Add new active panel to this ViewGroup
-            Panel newPanel = panels[activePanelIndex];
-            if (newPanel.getParent() != null && newPanel.getParent() != this) {
-                ((ViewGroup) newPanel.getParent()).removeView(newPanel);
-            }
-            if (newPanel.getParent() != this) {
-                addView(newPanel);
-            }
+        // Cancel current animation if any
+        cancelPanelTransition();
 
+        // Update index IMMEDIATELY (before animation) so getActivePanel() returns new panel
+        activePanelIndex = index;
+
+        // Lazy-create and attach the new wrapper
+        ScreenView newWrapper = ensurePanelWrapper(index);
+        if (newWrapper.getParent() != this) {
+            addView(newWrapper);
+        }
+
+        // If no old wrapper (first call) - no animation
+        if (oldWrapper == null || oldWrapper.getParent() != this) {
             requestLayout();
+            return;
+        }
+
+        // Determine animation direction
+        boolean goingDown = index > oldIndex;
+
+        // Remember outgoing wrapper for onMeasure/onLayout
+        animatingOutWrapper = oldWrapper;
+
+        // Need layout before animation for correct sizes
+        requestLayout();
+
+        // Animation distance: wrapper slides by its own height
+        int wrapperHeight = compactPanel ? getMeasuredHeight() : getMeasuredHeight() - offsetY;
+        if (wrapperHeight <= 0) {
+            wrapperHeight = compactPanel ? getHeight() : getHeight() - offsetY;
+        }
+        if (wrapperHeight <= 0) {
+            super.removeView(oldWrapper);
+            animatingOutWrapper = null;
+            requestLayout();
+            return;
+        }
+
+        // --- Animate old wrapper (exits) ---
+        float oldEndY = goingDown ? -wrapperHeight : wrapperHeight;
+        ObjectAnimator oldAnim = ObjectAnimator.ofFloat(
+                oldWrapper, "translationY", 0, oldEndY);
+        oldAnim.setDuration(ScreenTheme.PANEL_TRANSITION_DURATION);
+
+        // --- Animate new wrapper (enters) ---
+        float newStartY = goingDown ? wrapperHeight : -wrapperHeight;
+        newWrapper.setTranslationY(newStartY);
+        ObjectAnimator newAnim = ObjectAnimator.ofFloat(
+                newWrapper, "translationY", newStartY, 0);
+        newAnim.setDuration(ScreenTheme.PANEL_TRANSITION_DURATION);
+
+        // --- Start both animations ---
+        final ScreenView oldRef = oldWrapper;
+        final ScreenView newRef = newWrapper;
+        currentPanelTransition = new AnimatorSet();
+        currentPanelTransition.playTogether(oldAnim, newAnim);
+        currentPanelTransition.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (oldRef.getParent() == Screen.this) {
+                    Screen.super.removeView(oldRef);
+                }
+                oldRef.setTranslationY(0);
+                newRef.setTranslationY(0);
+
+                animatingOutWrapper = null;
+                currentPanelTransition = null;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                if (oldRef.getParent() == Screen.this) {
+                    Screen.super.removeView(oldRef);
+                }
+                oldRef.setTranslationY(0);
+                newRef.setTranslationY(0);
+
+                animatingOutWrapper = null;
+                currentPanelTransition = null;
+            }
+        });
+        currentPanelTransition.start();
+    }
+
+    /**
+     * Cancels any running panel transition animation.
+     * The old panel is removed and translationY reset.
+     */
+    private void cancelPanelTransition() {
+        if (currentPanelTransition != null && currentPanelTransition.isRunning()) {
+            currentPanelTransition.cancel();
+            // onAnimationCancel will handle cleanup
         }
     }
 
@@ -405,6 +600,78 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         this.onScreenLiftListener = listener;
     }
 
+    // ============================================================
+    // TOAST MANAGEMENT
+    // ============================================================
+
+    /**
+     * Shows a toast message at the top of the screen.
+     *
+     * @param text the message text
+     * @param duration auto-dismiss duration in milliseconds (use ToastTheme.DURATION_SHORT or DURATION_LONG)
+     */
+    public void showToast(String text, long duration) {
+        // Dismiss existing toast if any
+        if (currentToast != null && currentToast.isShowing()) {
+            currentToast.dismiss();
+        }
+
+        // Create and configure toast
+        currentToast = new Toast(getContext());
+        if (currentTheme != null) {
+            currentToast.setTheme(currentTheme);
+        }
+        currentToast.setContent(text);
+        currentToast.setDuration(duration);
+        currentToast.setOnDismissListener(() -> {
+            // Remove toast view only if still attached to this Screen
+            if (currentToast != null && currentToast.getParent() == Screen.this) {
+                Screen.this.removeToastView(currentToast);
+            }
+            // Clear listener to prevent memory leak
+            if (currentToast != null) {
+                currentToast.setOnDismissListener(null);
+            }
+            currentToast = null;
+        });
+
+        // Add toast on top of other children (using super.addView to bypass internal logic)
+        super.addView(currentToast);
+        requestLayout();
+        currentToast.show();
+    }
+
+    /**
+     * Dismisses the currently shown toast, if any.
+     */
+    public void dismissToast() {
+        if (currentToast != null && currentToast.isShowing()) {
+            currentToast.dismiss();
+        }
+    }
+
+    /**
+     * Returns the currently shown toast, or null.
+     *
+     * @return the current toast, or null if no toast is showing
+     */
+    public Toast getCurrentToast() {
+        return currentToast;
+    }
+
+    /**
+     * Private helper to remove toast view after dismiss animation completes.
+     *
+     * @param toast the toast to remove
+     */
+    private void removeToastView(Toast toast) {
+        super.removeView(toast);
+    }
+
+    // ============================================================
+    // THEME & LANGUAGE PROPAGATION
+    // ============================================================
+
     /**
      * Propagates the theme to all child components recursively.
      * This method updates the theme for tabs, panels, and all nested components.
@@ -417,20 +684,23 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
             return;
         }
 
-        // Update tabs theme
+        // Update tabs theme (setTheme will propagate to children)
         if (tabs != null) {
             tabs.setTheme(theme);
-            tabs.propagateTheme(theme);
         }
 
-        // Update all panels theme
+        // Update all panels theme (setTheme will propagate to children)
         if (panels != null) {
             for (Panel panel : panels) {
                 if (panel != null) {
                     panel.setTheme(theme);
-                    panel.propagateTheme(theme);
                 }
             }
+        }
+
+        // Update toast theme
+        if (currentToast != null) {
+            currentToast.setTheme(theme);
         }
     }
 
@@ -446,18 +716,16 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
             return;
         }
 
-        // Update tabs language
+        // Update tabs language (setLanguage will propagate to children)
         if (tabs != null) {
             tabs.setLanguage(language);
-            tabs.propagateLanguage(language);
         }
 
-        // Update all panels language
+        // Update all panels language (setLanguage will propagate to children)
         if (panels != null) {
             for (Panel panel : panels) {
                 if (panel != null) {
                     panel.setLanguage(language);
-                    panel.propagateLanguage(language);
                 }
             }
         }
@@ -471,35 +739,51 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
+        int availableHeight = getAvailableHeight();
 
         // Measure Tabs with AT_MOST to allow natural height
         if (tabs != null) {
             int tabsWidthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST);
-            int tabsHeightSpec = MeasureSpec.makeMeasureSpec(height - offsetY, MeasureSpec.AT_MOST);
+            int tabsHeightSpec = MeasureSpec.makeMeasureSpec(availableHeight, MeasureSpec.AT_MOST);
             tabs.measure(tabsWidthSpec, tabsHeightSpec);
         }
 
-        // Measure ScrollView for tabs
+        // Tabs ScreenView: full available height
         if (tabsScrollView != null) {
             int scrollViewWidthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST);
-            int scrollViewHeightSpec = MeasureSpec.makeMeasureSpec(height - offsetY, MeasureSpec.EXACTLY);
+            int scrollViewHeightSpec = MeasureSpec.makeMeasureSpec(availableHeight, MeasureSpec.EXACTLY);
             tabsScrollView.measure(scrollViewWidthSpec, scrollViewHeightSpec);
         }
 
         int tabsWidth = (tabs != null) ? tabs.getMeasuredWidth() : 0;
 
-        // Get active panel
-        Panel activePanel = getActivePanel();
+        // Panel ScreenView: compact → availableHeight, wide → availableHeight - offsetY
+        int panelWidth = compactPanel ? ScreenTheme.PANEL_WIDTH : (width - offsetX - tabsWidth - gapX);
+        int wrapperHeight = compactPanel ? availableHeight : availableHeight - offsetY;
 
-        // Calculate Panel dimensions considering offsets
-        int panelWidth = width - offsetX - tabsWidth - gapX;
-        int panelHeight = height - offsetY;
+        // Measure active panel-wrapper
+        ScreenView activeWrapper = (panelWrappers != null && activePanelIndex >= 0
+                && activePanelIndex < panelWrappers.length) ? panelWrappers[activePanelIndex] : null;
+        if (activeWrapper != null) {
+            int wSpec = MeasureSpec.makeMeasureSpec(panelWidth, MeasureSpec.EXACTLY);
+            int hSpec = MeasureSpec.makeMeasureSpec(wrapperHeight, MeasureSpec.EXACTLY);
+            activeWrapper.measure(wSpec, hSpec);
+        }
 
-        // Measure active Panel with remaining width and height minus offsetY
-        if (activePanel != null) {
-            int panelWidthSpec = MeasureSpec.makeMeasureSpec(panelWidth, MeasureSpec.EXACTLY);
-            int panelHeightSpec = MeasureSpec.makeMeasureSpec(panelHeight, MeasureSpec.EXACTLY);
-            activePanel.measure(panelWidthSpec, panelHeightSpec);
+        // Measure animating-out wrapper (during transition it's still a child)
+        if (animatingOutWrapper != null && animatingOutWrapper.getParent() == this) {
+            int wSpec = MeasureSpec.makeMeasureSpec(panelWidth, MeasureSpec.EXACTLY);
+            int hSpec = MeasureSpec.makeMeasureSpec(wrapperHeight, MeasureSpec.EXACTLY);
+            animatingOutWrapper.measure(wSpec, hSpec);
+        }
+
+        // Measure toast if visible
+        if (currentToast != null && currentToast.getVisibility() == View.VISIBLE) {
+            int toastWidthSpec = MeasureSpec.makeMeasureSpec(
+                    ToastTheme.WIDTH, MeasureSpec.EXACTLY);
+            int toastHeightSpec = MeasureSpec.makeMeasureSpec(
+                    ToastTheme.HEIGHT, MeasureSpec.EXACTLY);
+            currentToast.measure(toastWidthSpec, toastHeightSpec);
         }
 
         setMeasuredDimension(width, height);
@@ -512,28 +796,187 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         int width = right - left;
-        int height = bottom - top;
+        int availableHeight = getAvailableHeight();
         int tabsWidth = 0;
 
-        // Layout ScrollView for tabs at offsetX with full height
+        // Layout ScreenView for tabs at offsetX, full available height
         if (tabsScrollView != null) {
             int scrollViewLeft = offsetX;
-            int scrollViewTop = offsetY;
             int scrollViewRight = scrollViewLeft + tabsScrollView.getMeasuredWidth();
-            int scrollViewBottom = height;
-            tabsScrollView.layout(scrollViewLeft, scrollViewTop, scrollViewRight, scrollViewBottom);
+            tabsScrollView.layout(scrollViewLeft, 0, scrollViewRight, availableHeight);
 
             tabsWidth = tabsScrollView.getMeasuredWidth();
         }
 
-        // Layout active Panel after Tabs with offsetY from top
-        Panel activePanel = getActivePanel();
-        if (activePanel != null && activePanel.getParent() == this) {
+        // Layout active panel-wrapper: compact at Y=0, wide at Y=offsetY
+        int panelTop = compactPanel ? 0 : offsetY;
+        ScreenView activeWrapper = (panelWrappers != null && activePanelIndex >= 0
+                && activePanelIndex < panelWrappers.length) ? panelWrappers[activePanelIndex] : null;
+        if (activeWrapper != null && activeWrapper.getParent() == this) {
             int panelLeft = offsetX + tabsWidth + gapX;
-            int panelTop = offsetY;
-            int panelRight = panelLeft + activePanel.getMeasuredWidth();
-            int panelBottom = panelTop + activePanel.getMeasuredHeight();
-            activePanel.layout(panelLeft, panelTop, panelRight, panelBottom);
+            int panelRight = panelLeft + activeWrapper.getMeasuredWidth();
+            activeWrapper.layout(panelLeft, panelTop, panelRight, panelTop + activeWrapper.getMeasuredHeight());
+        }
+
+        // Layout animating-out wrapper at the same position
+        if (animatingOutWrapper != null && animatingOutWrapper.getParent() == this) {
+            int panelLeft = offsetX + tabsWidth + gapX;
+            int panelRight = panelLeft + animatingOutWrapper.getMeasuredWidth();
+            animatingOutWrapper.layout(panelLeft, panelTop, panelRight, panelTop + animatingOutWrapper.getMeasuredHeight());
+        }
+
+        // Layout toast at top center if visible
+        if (currentToast != null && currentToast.getVisibility() == View.VISIBLE) {
+            int toastWidth = currentToast.getMeasuredWidth();
+            int toastHeight = currentToast.getMeasuredHeight();
+            int toastLeft = (width - toastWidth) / 2;
+            int toastTop = ToastTheme.TOP_OFFSET;
+            currentToast.layout(toastLeft, toastTop,
+                    toastLeft + toastWidth, toastTop + toastHeight);
+        }
+    }
+
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        // Draw compact panel image BEFORE children so it appears behind the ScreenView.
+        // Gaps between sections (margins) let the image show through.
+        Panel activePanel = getActivePanel();
+        if (activePanel != null && activePanel.getImage() != null) {
+            float imageRight = getWidth() - activePanel.getImageMarginRight();
+            float imageLeft = imageRight - activePanel.getImageWidth();
+            canvas.drawBitmap(activePanel.getImage(), imageLeft, 0, imagePaint);
+        }
+
+        super.dispatchDraw(canvas);
+    }
+
+    // ============================================================
+    // BUILDER API
+    // ============================================================
+
+    /**
+     * Creates a new Builder for Screen.
+     *
+     * @param context the Android context
+     * @param theme the theme to apply
+     * @return a new Builder instance
+     */
+    @NonNull
+    public static Builder create(@NonNull android.content.Context context,
+                                 @NonNull Theme theme) {
+        return new Builder(context, theme);
+    }
+
+    /**
+     * Builder for creating Screen instances with a fluent API.
+     */
+    public static class Builder {
+        private final android.content.Context context;
+        private final Theme theme;
+        private Integer backgroundColor;
+        private Tabs tabs;
+        private Panel[] panels;
+        private OnScreenLiftListener onScreenLiftListener;
+        private boolean compactPanel = false;
+
+        private Builder(android.content.Context context, Theme theme) {
+            this.context = context;
+            this.theme = theme;
+        }
+
+        /**
+         * Sets the background color for the screen.
+         *
+         * @param color the background color
+         * @return this Builder instance
+         */
+        @NonNull
+        public Builder backgroundColor(@NonNull int color) {
+            this.backgroundColor = color;
+            return this;
+        }
+
+        /**
+         * Sets the background color for the screen from hex string.
+         *
+         * @param hexColor the hex color string (e.g. "#000000")
+         * @return this Builder instance
+         */
+        @NonNull
+        public Builder backgroundColorHex(@NonNull String hexColor) {
+            this.backgroundColor = android.graphics.Color.parseColor(hexColor);
+            return this;
+        }
+
+        /**
+         * Sets the Tabs component for the screen.
+         *
+         * @param tabs the Tabs component
+         * @return this Builder instance
+         */
+        @NonNull
+        public Builder tabs(@NonNull Tabs tabs) {
+            this.tabs = tabs;
+            return this;
+        }
+
+        /**
+         * Sets the array of panels for the screen.
+         *
+         * @param panels the array of Panel objects
+         * @return this Builder instance
+         */
+        @NonNull
+        public Builder panels(@NonNull Panel[] panels) {
+            this.panels = panels;
+            return this;
+        }
+
+        /**
+         * Sets the screen lift listener.
+         *
+         * @param listener the listener to set
+         * @return this Builder instance
+         */
+        @NonNull
+        public Builder onScreenLift(@Nullable OnScreenLiftListener listener) {
+            this.onScreenLiftListener = listener;
+            return this;
+        }
+
+        @NonNull
+        public Builder compactPanel(boolean compactPanel) {
+            this.compactPanel = compactPanel;
+            return this;
+        }
+
+        /**
+         * Builds and returns the Screen instance.
+         *
+         * @return a new Screen instance
+         */
+        @NonNull
+        public Screen build() {
+            Screen screen = new Screen(context);
+            screen.setTheme(theme);
+            if (backgroundColor != null) {
+                screen.setBackgroundColor(backgroundColor);
+            }
+            // Set panels BEFORE tabs so setActivePanel() can find them
+            if (panels != null) {
+                screen.setPanels(panels);
+            }
+            if (tabs != null) {
+                screen.setTabs(tabs);
+            }
+            if (onScreenLiftListener != null) {
+                screen.setOnScreenLiftListener(onScreenLiftListener);
+            }
+            if (compactPanel) {
+                screen.setCompactPanel(true);
+            }
+            return screen;
         }
     }
 }
+
