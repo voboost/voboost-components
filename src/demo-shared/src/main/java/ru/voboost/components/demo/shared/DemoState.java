@@ -15,12 +15,20 @@ import java.util.Map;
  * - Screen lift state
  */
 public class DemoState {
+    /**
+     * Demo state management for UI components.
+     *
+     * <p>This class is designed for single-threaded use on the main thread.
+     * All state mutations should occur on the main/UI thread.
+     *
+     * <p>Thread-safe concurrent access is NOT supported.
+     */
 
     // Default values
     private static final String DEFAULT_LANGUAGE = "en";
     private static final String DEFAULT_THEME = "dark";
     private static final String DEFAULT_CAR_TYPE = "free";
-    private static final String DEFAULT_SELECTED_TAB = "language";
+    private static final String DEFAULT_SELECTED_TAB = "settings";
     private static final int DEFAULT_SCREEN_LIFT_STATE = 2; // SCREEN_RAISED
 
     // State fields
@@ -50,13 +58,18 @@ public class DemoState {
      * Initializes default values for all tabs.
      */
     private void initializeDefaultTabValues() {
+        // Store values for language, theme, car_type for settings panel
         tabValues.put("language", DemoContent.getDefaultValue("language"));
         tabValues.put("theme", DemoContent.getDefaultValue("theme"));
         tabValues.put("car_type", DemoContent.getDefaultValue("car_type"));
-        tabValues.put("climate", DemoContent.getDefaultValue("climate"));
-        tabValues.put("audio", DemoContent.getDefaultValue("audio"));
-        tabValues.put("display", DemoContent.getDefaultValue("display"));
-        tabValues.put("system", DemoContent.getDefaultValue("system"));
+        // New tabs don't have radio values
+        tabValues.put("button", "");
+        tabValues.put("buttons", "");
+        tabValues.put("checkbox", "");
+        tabValues.put("radio", "");
+        tabValues.put("select", "");
+        tabValues.put("dialog", "");
+        tabValues.put("toast", "");
     }
 
     // Getters and setters

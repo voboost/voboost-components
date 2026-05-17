@@ -315,7 +315,8 @@ public class DemoHelpers {
                 || tabValue.equals("climate")
                 || tabValue.equals("audio")
                 || tabValue.equals("display")
-                || tabValue.equals("system");
+                || tabValue.equals("system")
+                || tabValue.equals("components");
     }
 
     /**
