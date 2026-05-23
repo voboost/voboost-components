@@ -23,6 +23,7 @@ object DemoTabs {
         "climate",
         "audio",
         "display",
-        "system"
+        "system",
+        "components"
     )
 }
