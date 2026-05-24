@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
-    id("io.github.takahirom.roborazzi") version "1.48.0"
+    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.roborazzi)
 }
 
 android {
@@ -10,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "ru.voboost.components.demo.java"
         minSdk = 28 // Android 9 for automotive compatibility
-        targetSdk = 34
+        targetSdk = 30
         versionCode = 1
         versionName = "1.0"
 
@@ -36,7 +37,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -101,42 +101,19 @@ configurations {
 }
 
 dependencies {
-    // Main voboost-components library
-    implementation(project(":")) {
-        // Exclude Kotlin stdlib — this demo is pure Java
-        exclude(group = "org.jetbrains.kotlin")
-        exclude(group = "org.jetbrains.kotlinx")
-    }
+    implementation(project(":"))
+    implementation(project(":demo-shared"))
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.constraintlayout)
 
-    // Demo shared module
-    implementation(project(":demo-shared")) {
-        // Exclude Kotlin stdlib — this demo is pure Java
-        exclude(group = "org.jetbrains.kotlin")
-        exclude(group = "org.jetbrains.kotlinx")
-    }
-
-    // Android Core
-    implementation("androidx.core:core:1.12.0")
-    implementation("androidx.annotation:annotation:1.7.1")
-
-    // Testing dependencies
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.48.0")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:1.48.0")
-    testImplementation("org.robolectric:robolectric:4.14.1")
-    testImplementation("androidx.test:core:1.5.0")
-    testImplementation("androidx.test.ext:junit:1.1.5")
-
-    // Kotlin stdlib for Roborazzi (required for Kotlin-based testing library)
-    testImplementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
-
-    // Compose UI test dependencies (required for Roborazzi even in pure Java projects)
-    // NOTE: Roborazzi's captureRoboImage() internally uses Compose UI test classes
-    // (androidx.compose.ui.test.SemanticsNodeInteraction) even when capturing
-    // regular Android Views. This is a known limitation of the Roborazzi library.
-    // These dependencies are test-only and do NOT affect release APK size.
-    testImplementation("androidx.compose.ui:ui-test:1.6.8")
-    testImplementation("androidx.compose.ui:ui-test-junit4:1.6.8")
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.test.espresso)
 }
 
 // Configure Roborazzi for automotive resolution screenshots

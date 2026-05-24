@@ -74,7 +74,9 @@ public class MainActivityTestVisual {
 
     // Helper method to capture screenshot with proper layout
     private void captureScreenshot(MainActivity activity, String screenshotName) {
-        View rootView = ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+        // Use Screen directly via getter instead of findViewById
+        View rootView = activity.getScreen();
+        assertNotNull("Screen should not be null", rootView);
 
         // Measure and layout the view
         rootView.measure(
@@ -423,7 +425,7 @@ public class MainActivityTestVisual {
         assertNotNull("Tabs ScrollView should exist", tabsScrollView);
 
         // First measure and layout so scroll range is calculable
-        View rootView = ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+        View rootView = activity.getScreen();
         rootView.measure(
                 View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY));
@@ -466,7 +468,7 @@ public class MainActivityTestVisual {
         setSelectedTab(activity, "climate");
 
         // First measure and layout so scroll range is calculable
-        View rootView = ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+        View rootView = activity.getScreen();
         rootView.measure(
                 View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY));

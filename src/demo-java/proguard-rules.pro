@@ -18,13 +18,10 @@
     public static ** valueOf(java.lang.String);
 }
 
-# Suppress warnings for Compose (not used in demo-java but may be referenced)
+# Suppress warnings only for libraries explicitly excluded from demo-java
+# These are compileOnly dependencies in the main library that demo-java doesn't use
 -dontwarn androidx.compose.**
 -dontwarn androidx.activity.compose.**
--dontwarn androidx.appcompat.**
--dontwarn com.google.android.material.**
--dontwarn androidx.fragment.**
--dontwarn androidx.lifecycle.**
 
 # Aggressive optimizations
 -optimizationpasses 5

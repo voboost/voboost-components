@@ -1,6 +1,8 @@
 package ru.voboost.components.demo.java;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -8,14 +10,21 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import ru.voboost.components.button.Button;
+import ru.voboost.components.button.ButtonStyle;
+import ru.voboost.components.buttons.ButtonConfig;
+import ru.voboost.components.buttons.Buttons;
+import ru.voboost.components.checkbox.Checkbox;
 import ru.voboost.components.demo.shared.DemoContent;
 import ru.voboost.components.demo.shared.DemoState;
 import ru.voboost.components.i18n.Language;
@@ -23,10 +32,13 @@ import ru.voboost.components.panel.Panel;
 import ru.voboost.components.radio.Radio;
 import ru.voboost.components.radio.RadioButton;
 import ru.voboost.components.screen.Screen;
+import ru.voboost.components.screen.ScreenView;
 import ru.voboost.components.section.Section;
+import ru.voboost.components.select.Select;
 import ru.voboost.components.tabs.TabItem;
 import ru.voboost.components.tabs.Tabs;
 import ru.voboost.components.theme.Theme;
+import ru.voboost.components.toast.ToastTheme;
 
 /**
  * Demo Java Activity showcasing voboost-components proper component hierarchy in pure Java projects.
@@ -166,13 +178,14 @@ public class MainActivity extends Activity {
      */
     private Panel[] createAllPanels() {
         return new Panel[] {
-            createPanelForTab("language"),
-            createPanelForTab("theme"),
-            createPanelForTab("car_type"),
-            createPanelForTab("climate"),
-            createPanelForTab("audio"),
-            createPanelForTab("display"),
-            createPanelForTab("system")
+            createPanelForTab("settings"),
+            createPanelForTab("button"),
+            createPanelForTab("buttons"),
+            createPanelForTab("checkbox"),
+            createPanelForTab("radio"),
+            createPanelForTab("select"),
+            createPanelForTab("dialog"),
+            createPanelForTab("toast")
         };
     }
 
@@ -180,117 +193,40 @@ public class MainActivity extends Activity {
      * Creates a panel for a specific tab
      */
     private Panel createPanelForTab(String tabValue) {
-        if ("climate".equals(tabValue)) {
-            return createClimatePanelWithMultipleRadios();
+        Theme theme = Theme.fromValue(demoState.getCombinedTheme());
+        Language language = Language.fromCode(demoState.getCurrentLanguage());
+
+        // Handle settings tab specially - contains 3 Radio components
+        if ("settings".equals(tabValue)) {
+            return createSettingsPanel(theme, language);
         }
 
-        // Create Panel
+        // Handle component-specific tabs
+        if ("button".equals(tabValue)) {
+            return createButtonPanel(theme, language);
+        }
+        if ("buttons".equals(tabValue)) {
+            return createButtonsPanel(theme, language);
+        }
+        if ("checkbox".equals(tabValue)) {
+            return createCheckboxPanel(theme, language);
+        }
+        if ("radio".equals(tabValue)) {
+            return createRadioPanel(theme, language);
+        }
+        if ("select".equals(tabValue)) {
+            return createSelectPanel(theme, language);
+        }
+        if ("dialog".equals(tabValue)) {
+            return createDialogPanel(theme, language);
+        }
+        if ("toast".equals(tabValue)) {
+            return createToastPanel(theme, language);
+        }
+
+        // Fallback
         Panel panel = new Panel(this);
-
-        // Create Section
-        Section section = new Section(this);
-        section.setTitle(DemoContent.getSectionTitle(tabValue));
-
-        // Create Radio with options for this tab
-        List<RadioButton> radioButtons = DemoContent.getRadioButtons(tabValue);
-        Radio radio = new Radio(this);
-        radio.setButtons(radioButtons);
-        radio.setSelectedValue(demoState.getSelectedValueForTab(tabValue));
-        radio.setOnValueChangeListener(
-                newValue -> {
-                    Log.d(TAG, "Tab " + tabValue + " value changed to: " + newValue);
-                    demoState.setSelectedValueForTab(tabValue, newValue);
-
-                    // Special handling for language, theme, and car type tabs
-                    if ("language".equals(tabValue)) {
-                        demoState.setCurrentLanguage(newValue);
-                    } else if ("theme".equals(tabValue)) {
-                        demoState.setCurrentTheme(newValue);
-                    } else if ("car_type".equals(tabValue)) {
-                        demoState.setCurrentCarType(newValue);
-                    }
-
-                    updateAllComponents();
-                });
-
-        // Add Radio as child of Section (Section is now a ViewGroup)
-        section.addView(radio);
-
-        // Add Section to Panel
-        panel.addView(section);
-
         return panel;
-    }
-
-    /**
-     * Creates the climate panel with multiple sections and radio groups.
-     * Demonstrates multiple Radio components stacked vertically with scrolling.
-     * 5 sections × ~283px each = ~1415px total, overflowing the ~670px panel.
-     */
-    private Panel createClimatePanelWithMultipleRadios() {
-        Panel panel = new Panel(this);
-
-        // Create a ScrollView to hold multiple sections
-        ScrollView scrollView = new ScrollView(this);
-        scrollView.setVerticalScrollBarEnabled(false);
-        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-
-        // Create a LinearLayout inside ScrollView (ScrollView can only have one child)
-        LinearLayout contentLayout = new LinearLayout(this);
-        contentLayout.setOrientation(LinearLayout.VERTICAL);
-
-        int sectionCount = DemoContent.getClimateSectionCount();
-
-        for (int i = 0; i < sectionCount; i++) {
-            // Create Section with title
-            Section section = new Section(this);
-            section.setTitle(DemoContent.getClimateSectionTitle(i));
-
-            // Create Radio with options for this sub-section
-            List<RadioButton> radioButtons = DemoContent.getClimateSubRadioButtons(i);
-            Radio radio = new Radio(this);
-            radio.setButtons(radioButtons);
-            radio.setSelectedValue(DemoContent.getClimateSubDefaultValue(i));
-
-            final int sectionIndex = i;
-            radio.setOnValueChangeListener(
-                    newValue -> {
-                        Log.d(
-                                TAG,
-                                "Climate section "
-                                        + sectionIndex
-                                        + " value changed to: "
-                                        + newValue);
-                    });
-
-            // Add Radio as child of Section
-            section.addView(radio);
-
-            // Add Section to LinearLayout
-            contentLayout.addView(section);
-        }
-
-        scrollView.addView(contentLayout);
-        panel.addView(scrollView);
-
-        return panel;
-    }
-
-    /**
-     * Updates a single Section and its child Radio components.
-     */
-    private void updateSection(Section section, String combinedTheme) {
-        section.setLanguage(Language.fromCode(demoState.getCurrentLanguage()));
-        section.setTheme(Theme.fromValue(combinedTheme));
-
-        for (int j = 0; j < section.getChildCount(); j++) {
-            View sectionChild = section.getChildAt(j);
-            if (sectionChild instanceof Radio) {
-                Radio radio = (Radio) sectionChild;
-                radio.setLanguage(Language.fromCode(demoState.getCurrentLanguage()));
-                radio.setTheme(Theme.fromValue(combinedTheme));
-            }
-        }
     }
 
     /**
@@ -299,6 +235,7 @@ public class MainActivity extends Activity {
      */
     private void updateAllComponents() {
         String combinedTheme = demoState.getCombinedTheme();
+        Language language = Language.fromCode(demoState.getCurrentLanguage());
 
         Log.d(
                 TAG,
@@ -312,48 +249,10 @@ public class MainActivity extends Activity {
         // Update background color based on theme
         updateBackgroundColor(combinedTheme);
 
-        // Update Screen component
+        // Propagate to entire tree via Screen
         if (screen != null) {
             screen.setTheme(Theme.fromValue(combinedTheme));
-        }
-
-        // Update Tabs component
-        if (tabs != null) {
-            tabs.setLanguage(Language.fromCode(demoState.getCurrentLanguage()));
-            tabs.setTheme(Theme.fromValue(combinedTheme));
-        }
-
-        // Update all panels
-        Panel[] panels = getPanelsFromScreen();
-        if (panels != null) {
-            for (Panel panel : panels) {
-                if (panel != null) {
-                    panel.setTheme(Theme.fromValue(combinedTheme));
-
-                    // Update child views in panel (handles both direct Section children
-                    // and ScrollView → LinearLayout → Section hierarchy)
-                    for (int i = 0; i < panel.getChildCount(); i++) {
-                        View child = panel.getChildAt(i);
-                        if (child instanceof Section) {
-                            updateSection((Section) child, combinedTheme);
-                        } else if (child instanceof ScrollView) {
-                            ScrollView scrollView = (ScrollView) child;
-                            if (scrollView.getChildCount() > 0) {
-                                View scrollChild = scrollView.getChildAt(0);
-                                if (scrollChild instanceof LinearLayout) {
-                                    LinearLayout layout = (LinearLayout) scrollChild;
-                                    for (int j = 0; j < layout.getChildCount(); j++) {
-                                        View layoutChild = layout.getChildAt(j);
-                                        if (layoutChild instanceof Section) {
-                                            updateSection((Section) layoutChild, combinedTheme);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            screen.setLanguage(language);
         }
     }
 
@@ -394,31 +293,48 @@ public class MainActivity extends Activity {
 
     public Section getCurrentSection() {
         // Get the current panel based on selected tab
-        String selectedTab = demoState.getSelectedTab();
-        Panel[] panels = getPanelsFromScreen();
-        int tabIndex = getTabIndex(selectedTab);
+        Panel panel = getPanel();
 
         // Get the section from the current panel
-        if (panels != null && tabIndex < panels.length) {
-            Panel panel = panels[tabIndex];
-            if (panel.getChildCount() > 0) {
-                View firstChild = panel.getChildAt(0);
-                return firstChild instanceof Section ? (Section) firstChild : null;
+        if (panel != null) {
+            return findSection(panel);
+        }
+        return null;
+    }
+
+    private Section findSection(ViewGroup viewGroup) {
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View child = viewGroup.getChildAt(i);
+            if (child instanceof Section) {
+                return (Section) child;
+            } else if (child instanceof ViewGroup) {
+                Section found = findSection((ViewGroup) child);
+                if (found != null) {
+                    return found;
+                }
             }
         }
         return null;
     }
 
     public Radio getCurrentRadio() {
-        // Get the current section first
-        Section section = getCurrentSection();
-        if (section == null) return null;
+        // Search directly from the current panel
+        Panel panel = getPanel();
+        if (panel == null) return null;
 
-        // Radio is now a child of Section
-        for (int i = 0; i < section.getChildCount(); i++) {
-            View child = section.getChildAt(i);
+        return findRadio(panel);
+    }
+
+    private Radio findRadio(ViewGroup viewGroup) {
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View child = viewGroup.getChildAt(i);
             if (child instanceof Radio) {
                 return (Radio) child;
+            } else if (child instanceof ViewGroup) {
+                Radio found = findRadio((ViewGroup) child);
+                if (found != null) {
+                    return found;
+                }
             }
         }
         return null;
@@ -442,32 +358,30 @@ public class MainActivity extends Activity {
         Panel[] panels = getPanelsFromScreen();
         if (panels == null || panels.length <= 3) return null;
 
-        Panel climatePanel = panels[3]; // climate is index 3
-        for (int i = 0; i < climatePanel.getChildCount(); i++) {
-            View child = climatePanel.getChildAt(i);
-            if (child instanceof ScrollView) {
-                return (ScrollView) child;
-            }
-        }
-        return null;
+        // Ensure the climate panel (index 3) wrapper is created
+        screen.setActivePanel(3);
+        ScreenView wrapper = screen.getPanelWrapper(3);
+        return wrapper;
     }
 
     private int getTabIndex(String tabValue) {
         switch (tabValue) {
-            case "language":
+            case "settings":
                 return 0;
-            case "theme":
+            case "button":
                 return 1;
-            case "car_type":
+            case "buttons":
                 return 2;
-            case "climate":
+            case "checkbox":
                 return 3;
-            case "audio":
+            case "radio":
                 return 4;
-            case "display":
+            case "select":
                 return 5;
-            case "system":
+            case "dialog":
                 return 6;
+            case "toast":
+                return 7;
             default:
                 return 0;
         }
@@ -489,5 +403,328 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "MainActivity destroyed");
+    }
+
+    // ============================================================
+    // Panel creators for each tab
+    // ============================================================
+
+    private Panel createSettingsPanel(Theme theme, Language language) {
+        Panel panel = new Panel(this);
+
+        Section section = new Section(this);
+        section.setTitle(DemoContent.getSectionTitle("settings"));
+        section.setTheme(theme);
+        section.setLanguage(language);
+
+        // Language Radio
+        Radio languageRadio = new Radio(this);
+        languageRadio.setButtons(DemoContent.getRadioButtons("language"));
+        languageRadio.setSelectedValue(demoState.getCurrentLanguage());
+        languageRadio.setTheme(theme);
+        languageRadio.setLanguage(language);
+        languageRadio.setOnValueChangeListener(newValue -> {
+            demoState.setCurrentLanguage(newValue);
+            updateAllComponents();
+        });
+        section.addView(languageRadio);
+
+        // Theme Radio
+        Radio themeRadio = new Radio(this);
+        themeRadio.setButtons(DemoContent.getRadioButtons("theme"));
+        themeRadio.setSelectedValue(demoState.getCurrentTheme());
+        themeRadio.setTheme(theme);
+        themeRadio.setLanguage(language);
+        themeRadio.setOnValueChangeListener(newValue -> {
+            demoState.setCurrentTheme(newValue);
+            updateAllComponents();
+        });
+        section.addView(themeRadio);
+
+        // Car Type Radio
+        Radio carTypeRadio = new Radio(this);
+        carTypeRadio.setButtons(DemoContent.getRadioButtons("car_type"));
+        carTypeRadio.setSelectedValue(demoState.getCurrentCarType());
+        carTypeRadio.setTheme(theme);
+        carTypeRadio.setLanguage(language);
+        carTypeRadio.setOnValueChangeListener(newValue -> {
+            demoState.setCurrentCarType(newValue);
+            updateAllComponents();
+        });
+        section.addView(carTypeRadio);
+
+        panel.addView(section);
+        return panel;
+    }
+
+    private Panel createButtonPanel(Theme theme, Language language) {
+        Panel panel = new Panel(this);
+
+        int sectionCount = DemoContent.getButtonSectionCount();
+        for (int i = 0; i < sectionCount; i++) {
+            Section section = new Section(this);
+            section.setTitle(DemoContent.getButtonSectionTitle(i));
+            section.setTheme(theme);
+            section.setLanguage(language);
+
+            if (i == 0) {
+                LinearLayout buttonRow = new LinearLayout(this);
+                buttonRow.setOrientation(LinearLayout.HORIZONTAL);
+                buttonRow.setPadding(0, 10, 0, 10);
+
+                Button primaryBtn = new Button(this);
+                primaryBtn.setTheme(theme);
+                primaryBtn.setStyle(ButtonStyle.PRIMARY);
+                primaryBtn.setText("Primary");
+                primaryBtn.setLayoutParams(new LinearLayout.LayoutParams(0, 80, 1f));
+
+                Button secondaryBtn = new Button(this);
+                secondaryBtn.setTheme(theme);
+                secondaryBtn.setStyle(ButtonStyle.SECONDARY);
+                secondaryBtn.setText("Secondary");
+                LinearLayout.LayoutParams secParams = new LinearLayout.LayoutParams(0, 80, 1f);
+                secParams.leftMargin = 20;
+                secondaryBtn.setLayoutParams(secParams);
+
+                buttonRow.addView(primaryBtn);
+                buttonRow.addView(secondaryBtn);
+                section.addView(buttonRow);
+            } else {
+                Button button = new Button(this);
+                button.setTheme(theme);
+                button.setStyle(ButtonStyle.PRIMARY);
+                button.setText("Calibrate");
+
+                Map<String, String> desc = new HashMap<>();
+                desc.put("en", "Run camera calibration.\nDrive straight for 2 minutes.");
+                desc.put("ru", "Запустить калибровку камеры.\nДвигайтесь прямо 2 минуты.");
+                button.setDescription(desc);
+
+                section.addView(button);
+            }
+
+            panel.addView(section);
+        }
+
+        return panel;
+    }
+
+    private Panel createButtonsPanel(Theme theme, Language language) {
+        Panel panel = new Panel(this);
+
+        int sectionCount = DemoContent.getButtonsSectionCount();
+        for (int i = 0; i < sectionCount; i++) {
+            Section section = new Section(this);
+            section.setTitle(DemoContent.getButtonsSectionTitle(i));
+            section.setTheme(theme);
+            section.setLanguage(language);
+
+            Buttons buttons = new Buttons(this);
+            buttons.setTheme(theme);
+            buttons.setLanguage(language);
+            buttons.setButtons(DemoContent.getButtonsConfig(i));
+            buttons.setSelectedValue(DemoContent.getButtonsDefaultValue(i));
+
+            if (i == 2) {
+                Map<String, String> rightText = new HashMap<>();
+                rightText.put("en", "Auto headlamp");
+                rightText.put("ru", "Авто фары");
+                buttons.setRightText(rightText);
+            }
+
+            section.addView(buttons);
+            panel.addView(section);
+        }
+
+        return panel;
+    }
+
+    private Panel createCheckboxPanel(Theme theme, Language language) {
+        Panel panel = new Panel(this);
+
+        int sectionCount = DemoContent.getCheckboxSectionCount();
+        for (int i = 0; i < sectionCount; i++) {
+            Section section = new Section(this);
+            section.setTitle(DemoContent.getCheckboxSectionTitle(i));
+            section.setTheme(theme);
+            section.setLanguage(language);
+
+            if (i == 0) {
+                Map<String, String> label = new HashMap<>();
+                label.put("en", "Auto-fold mirrors");
+                label.put("ru", "Автоскладывание зеркал");
+                section.addCheckbox(Checkbox.create(this, theme, language, true).label(label).build());
+            } else if (i == 1) {
+                Map<String, String> label = new HashMap<>();
+                label.put("en", "Tow mode");
+                label.put("ru", "Режим буксировки");
+
+                Map<String, String> desc = new HashMap<>();
+                desc.put("en", "Maintain N gear when vehicle is rescued");
+                desc.put("ru", "Поддерживать нейтраль при буксировке");
+
+                section.addCheckbox(Checkbox.create(this, theme, language, false).label(label).description(desc).build());
+            } else {
+                Map<String, String> label1 = new HashMap<>();
+                label1.put("en", "Welcome lamp");
+                label1.put("ru", "Приветственная подсветка");
+                section.addCheckbox(Checkbox.create(this, theme, language, true).label(label1).build());
+
+                Map<String, String> label2 = new HashMap<>();
+                label2.put("en", "Auto-tilt mirrors");
+                label2.put("ru", "Автонаклон зеркал");
+                section.addCheckbox(Checkbox.create(this, theme, language, false).label(label2).build());
+            }
+
+            panel.addView(section);
+        }
+
+        return panel;
+    }
+
+    private Panel createRadioPanel(Theme theme, Language language) {
+        Panel panel = new Panel(this);
+
+        int sectionCount = DemoContent.getRadioSectionCount();
+        for (int i = 0; i < sectionCount; i++) {
+            Section section = new Section(this);
+            section.setTitle(DemoContent.getRadioSectionTitle(i));
+            section.setTheme(theme);
+            section.setLanguage(language);
+
+            Radio radio = new Radio(this);
+            radio.setTheme(theme);
+            radio.setLanguage(language);
+            radio.setButtons(DemoContent.getRadioSubRadioButtons(i));
+            radio.setSelectedValue(DemoContent.getRadioSubDefaultValue(i));
+
+            if (i == 1) {
+                Map<String, String> title = new HashMap<>();
+                title.put("en", "Energy recovery");
+                title.put("ru", "Рекуперация энергии");
+                radio.setTitle(title);
+
+                Map<String, String> descAbove = new HashMap<>();
+                descAbove.put("en", "Adjusts braking energy recovery level");
+                descAbove.put("ru", "Регулирует уровень рекуперации торможения");
+                radio.setDescriptionAbove(descAbove);
+            } else if (i == 2) {
+                Map<String, String> title = new HashMap<>();
+                title.put("en", "Come home lights");
+                title.put("ru", "Подсветка дороги домой");
+                radio.setTitle(title);
+
+                Map<String, String> descBelow = new HashMap<>();
+                descBelow.put("en", "Headlights stay on after locking");
+                descBelow.put("ru", "Фары остаются включёнными после блокировки");
+                radio.setDescription(descBelow);
+            } else {
+                Map<String, String> title = new HashMap<>();
+                title.put("en", "Anti-theft alarm");
+                title.put("ru", "Противоугонная сигнализация");
+                radio.setTitle(title);
+            }
+
+            section.addView(radio);
+            panel.addView(section);
+        }
+
+        return panel;
+    }
+
+    private Panel createSelectPanel(Theme theme, Language language) {
+        Panel panel = new Panel(this);
+
+        Section section = new Section(this);
+        section.setTitle(DemoContent.getSelectSectionTitle());
+        section.setTheme(theme);
+        section.setLanguage(language);
+
+        Select select = new Select(this);
+        select.setTheme(theme);
+        select.setLanguage(language);
+        select.setOptions(DemoContent.getSelectOptions());
+        select.setSelectedValue("auto");
+
+        section.addView(select);
+        panel.addView(section);
+
+        return panel;
+    }
+
+    private Panel createDialogPanel(Theme theme, Language language) {
+        Panel panel = new Panel(this);
+
+        Section section = new Section(this);
+        section.setTitle(DemoContent.getDialogSectionTitle());
+        section.setTheme(theme);
+        section.setLanguage(language);
+
+        Button dialogTrigger = new Button(this);
+        dialogTrigger.setTheme(theme);
+        dialogTrigger.setStyle(ButtonStyle.PRIMARY);
+
+        Map<String, Map<String, String>> dialogContent = DemoContent.getDialogContent();
+        String lang = demoState.getCurrentLanguage();
+        dialogTrigger.setText(dialogContent.get("title").getOrDefault(lang, "Show Dialog"));
+
+        dialogTrigger.setOnClickListener(v -> {
+            ru.voboost.components.dialog.Dialog dialog = new ru.voboost.components.dialog.Dialog(this);
+            dialog.setTheme(Theme.fromValue(demoState.getCombinedTheme()));
+            dialog.setTitle(dialogContent.get("title").getOrDefault(demoState.getCurrentLanguage(), "Reset"));
+            dialog.setMessage(dialogContent.get("message").getOrDefault(demoState.getCurrentLanguage(), "Are you sure?"));
+            dialog.setConfirmButton(
+                    dialogContent.get("confirm").getOrDefault(demoState.getCurrentLanguage(), "OK"),
+                    () -> Log.d(TAG, "Dialog confirmed"));
+            dialog.setCancelButton(
+                    dialogContent.get("cancel").getOrDefault(demoState.getCurrentLanguage(), "Cancel"),
+                    () -> Log.d(TAG, "Dialog cancelled"));
+            dialog.show();
+        });
+
+        section.addView(dialogTrigger);
+        panel.addView(section);
+
+        return panel;
+    }
+
+    private Panel createToastPanel(Theme theme, Language language) {
+        Panel panel = new Panel(this);
+
+        int sectionCount = DemoContent.getToastSectionCount();
+        for (int i = 0; i < sectionCount; i++) {
+            Section section = new Section(this);
+            section.setTitle(DemoContent.getToastSectionTitle(i));
+            section.setTheme(theme);
+            section.setLanguage(language);
+
+            Button toastButton = new Button(this);
+            toastButton.setTheme(theme);
+            toastButton.setStyle(ButtonStyle.SECONDARY);
+
+            Map<String, String> buttonText = DemoContent.getToastButtonText(i);
+            String lang = demoState.getCurrentLanguage();
+            toastButton.setText(buttonText.getOrDefault(lang, buttonText.values().iterator().next()));
+
+            final long duration = (i == 0) ? ToastTheme.DURATION_SHORT : ToastTheme.DURATION_LONG;
+            final int sectionIndex = i;  // Create effectively final copy for lambda
+
+            toastButton.setOnClickListener(v -> {
+                Map<String, String> message = new HashMap<>();
+                if (sectionIndex == 0) {
+                    message.put("en", "Settings saved");
+                    message.put("ru", "Настройки сохранены");
+                } else {
+                    message.put("en", "Your settings have been successfully saved");
+                    message.put("ru", "Ваши настройки успешно сохранены");
+                }
+                screen.showToast(message.get(demoState.getCurrentLanguage()), duration);
+            });
+
+            section.addView(toastButton);
+            panel.addView(section);
+        }
+
+        return panel;
     }
 }
