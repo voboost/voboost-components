@@ -78,8 +78,9 @@ class MainActivityTestVisual {
      * @param screenshotName The name for the screenshot file (without extension)
      */
     private fun captureScreenshot(activity: MainActivity, screenshotName: String) {
-        val contentView = activity.findViewById<ViewGroup>(android.R.id.content)
-        val rootView = contentView.getChildAt(0)
+        // Use Screen directly via getter instead of findViewById
+        val rootView = activity.getScreen()
+        assertNotNull("Screen should not be null", rootView)
 
         // Measure and layout the view
         rootView.measure(
@@ -403,8 +404,8 @@ class MainActivityTestVisual {
         assertNotNull("Tabs ScrollView should exist", tabsScrollView)
 
         // First measure and layout so scroll range is calculable
-        val contentView = activity.findViewById<ViewGroup>(android.R.id.content)
-        val rootView = contentView.getChildAt(0)
+        val rootView = activity.getScreen()
+        assertNotNull("Screen should not be null", rootView)
         rootView.measure(
             View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY)
@@ -446,8 +447,8 @@ class MainActivityTestVisual {
         setSelectedTab(activity, "climate")
 
         // First measure and layout so scroll range is calculable
-        val contentView = activity.findViewById<ViewGroup>(android.R.id.content)
-        val rootView = contentView.getChildAt(0)
+        val rootView = activity.getScreen()
+        assertNotNull("Screen should not be null", rootView)
         rootView.measure(
             View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY)

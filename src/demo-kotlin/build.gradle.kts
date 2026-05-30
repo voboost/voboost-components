@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("io.github.takahirom.roborazzi") version "1.48.0"
+    alias(libs.plugins.roborazzi)
 }
 
 android {
@@ -11,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "ru.voboost.components.demo.kotlin"
         minSdk = 28 // Android 9 for automotive compatibility
-        targetSdk = 34
+        targetSdk = 30
         versionCode = 1
         versionName = "1.0"
 
@@ -37,7 +37,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -108,24 +107,19 @@ configurations {
 }
 
 dependencies {
-    // Main voboost-components library
     implementation(project(":"))
-
-    // Demo shared module
     implementation(project(":demo-shared"))
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.constraintlayout)
 
-    // Android Core
-    implementation("androidx.core:core-ktx:1.12.0")
-
-    // Testing dependencies
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.48.0")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:1.48.0")
-    testImplementation("org.robolectric:robolectric:4.14.1")
-    testImplementation("androidx.test:core:1.5.0")
-    testImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.test.espresso)
 }
 
 // Configure Roborazzi for automotive resolution screenshots
