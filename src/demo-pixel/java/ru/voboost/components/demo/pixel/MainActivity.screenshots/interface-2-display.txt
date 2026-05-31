@@ -1,7 +1,7 @@
 Pixel Comparison Report
 =======================
 
-PixelComparison: 99.08% match (1178359/1189250 pixels, 10891 different)
+PixelComparison: 96.37% match (1146041/1189250 pixels, 43209 different)
 
 Compare area: x=[145..1920], y=[50..720]
 Tolerance: 5 per channel
@@ -9,9 +9,14 @@ Tolerance: 5 per channel
 Files:
   interface-2-display_1original.png  - original reference
   interface-2-display_2actual.png    - our rendering
-  interface-2-display_3diff.png      - diff (magenta = different)
+  interface-2-display_3diff.png      - diff (semi-transparent magenta overlay)
+  interface-2-display_4magenta.png   - diff (pure magenta channel with transparent bg)
 
 How to read the diff:
   Magenta pixels = our rendering differs from reference
   Dimmed pixels  = our rendering matches the reference
   Dark area      = system UI zone, excluded from comparison
+
+=== BASELINE COMPARISON ===
+Diff comparison for interface-2-display:
+  PASS: Match IMPROVED! Was 90.35%, now 96.37% (6.02% change, 71590 fewer diff pixels)

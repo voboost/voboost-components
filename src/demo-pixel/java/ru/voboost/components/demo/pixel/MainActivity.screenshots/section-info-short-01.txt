@@ -1,0 +1,77 @@
+Pixel Comparison Report
+=======================
+
+Test: section-info-short-01 (theme variants)
+Compare area: x=[145..1190], y=[50..720]
+Tolerance: 5 per channel
+
+=== VARIANT: free-dark ===
+PixelComparison: 95.82% match (670893/700150 pixels, 29257 different)
+
+Files:
+  section-info-short-01-free-dark_1original.png  - original reference
+  section-info-short-01-free-dark_2actual.png    - our rendering
+  section-info-short-01-free-dark_3diff.png      - diff (semi-transparent magenta overlay)
+  section-info-short-01-free-dark_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+=== BASELINE COMPARISON ===
+No baseline (first run - saving current as baseline)
+
+=== VARIANT: free-light ===
+PixelComparison: 98.35% match (688629/700150 pixels, 11521 different)
+
+Files:
+  section-info-short-01-free-light_1original.png  - original reference
+  section-info-short-01-free-light_2actual.png    - our rendering
+  section-info-short-01-free-light_3diff.png      - diff (semi-transparent magenta overlay)
+  section-info-short-01-free-light_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+=== BASELINE COMPARISON ===
+No baseline (first run - saving current as baseline)
+
+=== VARIANT: dreamer-dark ===
+Reference image not found: section-info-short-01-dreamer-dark_1original.png
+Place reference image at: /Users/vitaly/Yandex.Disk.localized/1voboost/voboost-components/src/demo-pixel/java/ru/voboost/components/demo/pixel/MainActivity.screenshots/section-info-short-01-dreamer-dark_1original.png
+Actual rendering saved as: section-info-short-01-dreamer-dark_2actual.png
+
+=== VARIANT: dreamer-light ===
+Reference image not found: section-info-short-01-dreamer-light_1original.png
+Place reference image at: /Users/vitaly/Yandex.Disk.localized/1voboost/voboost-components/src/demo-pixel/java/ru/voboost/components/demo/pixel/MainActivity.screenshots/section-info-short-01-dreamer-light_1original.png
+Actual rendering saved as: section-info-short-01-dreamer-light_2actual.png
+
+=== VARIANT: free-dark ===
+PixelComparison: 95.82% match (670893/700150 pixels, 29257 different)
+
+Files:
+  section-info-short-01-free-dark_1original.png  - original reference
+  section-info-short-01-free-dark_2actual.png    - our rendering
+  section-info-short-01-free-dark_3diff.png      - diff (semi-transparent magenta overlay)
+  section-info-short-01-free-dark_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+=== BASELINE COMPARISON ===
+Diff comparison for section-info-short-01-free-dark:
+  PASS: Match unchanged at 95.82% (29257 diff pixels)
+
+=== VARIANT: free-light ===
+PixelComparison: 98.35% match (688629/700150 pixels, 11521 different)
+
+Files:
+  section-info-short-01-free-light_1original.png  - original reference
+  section-info-short-01-free-light_2actual.png    - our rendering
+  section-info-short-01-free-light_3diff.png      - diff (semi-transparent magenta overlay)
+  section-info-short-01-free-light_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+=== BASELINE COMPARISON ===
+Diff comparison for section-info-short-01-free-light:
+  PASS: Match unchanged at 98.35% (11521 diff pixels)
+
+=== VARIANT: dreamer-dark ===
+Reference image not found: section-info-short-01-dreamer-dark_1original.png
+Place reference image at: /Users/vitaly/Yandex.Disk.localized/1voboost/voboost-components/src/demo-pixel/java/ru/voboost/components/demo/pixel/MainActivity.screenshots/section-info-short-01-dreamer-dark_1original.png
+Actual rendering saved as: section-info-short-01-dreamer-dark_2actual.png
+
+=== VARIANT: dreamer-light ===
+Reference image not found: section-info-short-01-dreamer-light_1original.png
+Place reference image at: /Users/vitaly/Yandex.Disk.localized/1voboost/voboost-components/src/demo-pixel/java/ru/voboost/components/demo/pixel/MainActivity.screenshots/section-info-short-01-dreamer-light_1original.png
+Actual rendering saved as: section-info-short-01-dreamer-light_2actual.png
+

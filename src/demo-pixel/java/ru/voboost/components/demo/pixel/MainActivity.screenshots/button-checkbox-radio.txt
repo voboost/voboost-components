@@ -1,0 +1,22 @@
+Pixel Comparison Report
+=======================
+
+PixelComparison: 99.20% match (1179791/1189250 pixels, 9459 different)
+
+Compare area: x=[145..1920], y=[50..720]
+Tolerance: 5 per channel
+
+Files:
+  button-checkbox-radio_1original.png  - original reference
+  button-checkbox-radio_2actual.png    - our rendering
+  button-checkbox-radio_3diff.png      - diff (semi-transparent magenta overlay)
+  button-checkbox-radio_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+How to read the diff:
+  Magenta pixels = our rendering differs from reference
+  Dimmed pixels  = our rendering matches the reference
+  Dark area      = system UI zone, excluded from comparison
+
+=== BASELINE COMPARISON ===
+Diff comparison for button-checkbox-radio:
+  PASS: Match IMPROVED! Was 95.62%, now 99.20% (3.58% change, 42651 fewer diff pixels)

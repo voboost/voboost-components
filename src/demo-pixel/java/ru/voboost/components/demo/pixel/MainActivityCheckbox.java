@@ -11,6 +11,7 @@ import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
 
+import ru.voboost.components.checkbox.Checkbox;
 import ru.voboost.components.i18n.Language;
 import ru.voboost.components.panel.Panel;
 import ru.voboost.components.radio.Radio;
@@ -21,23 +22,21 @@ import ru.voboost.components.tabs.Tabs;
 import ru.voboost.components.theme.Theme;
 
 /**
- * Pixel demo that replicates the reference screenshot (interface-2-display.png).
+ * Pixel demo that replicates reference screenshots.
  *
  * Component hierarchy:
- *   Screen (root, offsetX=145, offsetY=50)
- *   +-- Tabs (5 tabs, "Display" selected)
- *   +-- Panel[] (5 panels, one per tab)
- *       +-- Panel "display":
- *           +-- Section "Language" + Radio
- *           +-- Section "Language" + Radio
- *           +-- Section "Language" + Radio
+ * Screen (root)
+ * +-- Tabs (5 tabs)
+ * +-- Panel[] (5 panels, one per tab)
+ * +-- Panel "mobile":
+ * +-- Section "Mobile" + Checkbox[]
  *
  * Theme: FREE_DARK
  * Language: EN
  */
-public class MainActivity extends Activity {
+public class MainActivityCheckbox extends Activity {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "MainActivityCheckbox";
 
     // Fixed settings matching the reference screenshot
     private static final Theme THEME = Theme.FREE_DARK;
@@ -98,11 +97,11 @@ public class MainActivity extends Activity {
      */
     private Panel[] createAllPanels() {
         return new Panel[] {
-            createNetworkPanel(),
-            createDisplayPanel(),
-            createVoicePanel(),
-            createSoundPanel(),
-            createReminderPanel()
+                createNetworkPanel(),
+                createDisplayPanel(),
+                createVoicePanel(),
+                createSoundPanel(),
+                createReminderPanel()
         };
     }
 
@@ -123,26 +122,50 @@ public class MainActivity extends Activity {
         Panel panel = new Panel(this);
         panel.setTheme(THEME);
 
-        for (int i = 0; i < PixelContent.getSectionCount(); i++) {
-            Section section = new Section(this);
-            section.setTitle(PixelContent.getLanguageSectionTitle());
-            section.setTheme(THEME);
-            section.setLanguage(LANGUAGE);
+        Section section = new Section(this);
+        section.setTitle(createMap("Mobile"));
+        section.setTheme(THEME);
+        section.setLanguage(LANGUAGE);
 
-            section.addRadio(
-                Radio.create(
-                    this,
-                    THEME,
-                    LANGUAGE,
-                    PixelContent.getLanguageRadioButtons(),
-                    PixelContent.getSelectedLanguage()
-                ).build()
-            );
+        section.addCheckbox(
+            Checkbox.create(this, THEME, LANGUAGE, false)
+                .label(createMap("Enable 5G"))
+                .description(createMap("When enabled, 5G will be automatically used in the 5G mobile network environment."))
+                .build()
+        );
 
-            panel.addView(section);
-        }
+        Checkbox cb2 = section.addCheckbox(
+            Checkbox.create(this, THEME, LANGUAGE, false)
+                .label(createMap("System key t"))
+                .build()
+        );
+        cb2.setPrimitiveAlpha(0.5f);
+
+        Checkbox cb3 = section.addCheckbox(
+            Checkbox.create(this, THEME, LANGUAGE, true)
+                .label(createMap("Reduce media volume during navigation br"))
+                .description(createMap("If too high during navigation br"))
+                .build()
+        );
+        cb3.setTransitionState(1.0f, 0.45f);
+
+        section.addCheckbox(
+            Checkbox.create(this, THEME, LANGUAGE, true)
+                .label(createMap("Speed compensated volume"))
+                .description(createMap("The volume increases or decr\nvolume frequently"))
+                .build()
+        );
+
+        panel.addView(section);
 
         return panel;
+    }
+
+    private java.util.Map<String, String> createMap(String text) {
+        java.util.Map<String, String> map = new java.util.HashMap<>();
+        map.put("en", text);
+        map.put("ru", text);
+        return map;
     }
 
     /**

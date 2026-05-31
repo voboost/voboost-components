@@ -1,6 +1,6 @@
 plugins {
     id("com.android.application")
-    id("io.github.takahirom.roborazzi") version "1.48.0"
+    alias(libs.plugins.roborazzi)
 }
 
 android {
@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId = "ru.voboost.components.demo.pixel"
         minSdk = 28
-        targetSdk = 34
+        targetSdk = 30
         versionCode = 1
         versionName = "1.0"
 
@@ -68,7 +68,8 @@ android {
             }
             manifest.srcFile("AndroidManifest.xml")
             // Add assets from main library for font access (BEM structure: fonts in src/main/java)
-            assets.srcDir("../../main/java")
+            // ONLY include the font directory — not the entire source tree
+            assets.srcDir("../../main/java/ru/voboost/components/font")
         }
         getByName("test") {
             // BEM co-located tests: tests live alongside main code
@@ -80,7 +81,8 @@ android {
                 srcDir("java/ru/voboost/components/demo/pixel/MainActivity.resources")
             }
             // Add assets from main library for font access in tests (BEM structure: fonts in src/main/java)
-            assets.srcDir("../../main/java")
+            // ONLY include the font directory — not the entire source tree
+            assets.srcDir("../../main/java/ru/voboost/components/font")
         }
     }
 }
@@ -92,6 +94,10 @@ tasks.withType<JavaCompile>().configureEach {
         exclude("**/*.tests/**")
         // Exclude test files that start with Test (not utility classes like FontTest)
         exclude("**/Test*.java")
+    } else {
+        doFirst {
+            println("Test sources for task $name:\n" + source.files.joinToString("\n"))
+        }
     }
 }
 
@@ -109,47 +115,70 @@ configurations {
 }
 
 dependencies {
-    // Main voboost-components library
-    implementation(project(":")) {
-        // Exclude Kotlin stdlib — this demo is pure Java
-        exclude(group = "org.jetbrains.kotlin")
-        exclude(group = "org.jetbrains.kotlinx")
-    }
+    implementation(project(":"))
+    implementation(project(":demo-shared"))
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core)
 
-    // Android Core
-    implementation("androidx.core:core:1.12.0")
-    implementation("androidx.annotation:annotation:1.7.1")
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+}
 
-    // Testing dependencies
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.48.0")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:1.48.0")
-    testImplementation("org.robolectric:robolectric:4.14.1")
-    testImplementation("androidx.test:core:1.5.0")
-    testImplementation("androidx.test.ext:junit:1.1.5")
-
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+// Robolectric visual tests read/write files inside src/.../MainActivity.screenshots/
+// which Gradle does not track as task inputs/outputs. Without this override the
+// test task is reported UP-TO-DATE and new steps (e.g. section-info-short step 02)
+// never produce *_2actual.png / *.txt artefacts.
+tasks.withType<Test>().configureEach {
+    outputs.upToDateWhen { false }
 }
 
 roborazzi {
     outputDir = file("java/ru/voboost/components/demo/pixel/MainActivity.screenshots")
 }
 
-tasks.register("testDemoPixel") {
+// Custom clear task that ONLY deletes generated files (_2actual, _3diff, _4magenta)
+// NEVER deletes _1original.png reference images from real vehicle hardware
+tasks.register("clearRoborazziSafe") {
+    group = "verification"
+    description = "Clear only generated roborazzi files, preserving _1original.png references"
+    doFirst {
+        val screenshotsDir = file("java/ru/voboost/components/demo/pixel/MainActivity.screenshots")
+        if (screenshotsDir.exists()) {
+            val deleted = screenshotsDir.listFiles { _, name ->
+                name.endsWith("_2actual.png") ||
+                name.endsWith("_3diff.png") ||
+                name.endsWith("_4magenta.png")
+            }
+            deleted?.forEach { it.delete() }
+            val count = deleted?.size ?: 0
+            println("Cleared $count generated roborazzi files (_1original.png preserved)")
+        }
+    }
+}
+
+tasks.register("save") {
     group = "demo"
-    description = "Run all tests for pixel demo application"
+    description = "Generate screenshots and comparison reports"
     dependsOn("testDebugUnitTest")
 }
 
-tasks.register("testPixelVisualSave") {
-    group = null // internal — use recordDemos from root
-    description = "Record and save pixel demo visual test screenshots"
-    dependsOn("recordRoborazziDebug")
-}
-
-tasks.register("testPixelVisualCompare") {
-    group = null // internal — use verifyDemos from root
-    description = "Compare pixel demo visual test screenshots"
-    dependsOn("compareRoborazziDebug")
+tasks.register("verify") {
+    group = "demo"
+    description = "Run tests and validate (runs save first, then checks reports)"
+    dependsOn("save")
+    doLast {
+        val screenshotsDir = file("java/ru/voboost/components/demo/pixel/MainActivity.screenshots")
+        val reports = screenshotsDir.listFiles { _, name -> name.endsWith(".txt") } ?: emptyArray()
+        val failed = reports.mapNotNull { report ->
+            val content = report.readText()
+            val matchRegex = """(\d+\.\d+)%\s+match""".toRegex()
+            val match = matchRegex.find(content)?.groupValues?.get(1)?.toDoubleOrNull()
+            if (match == null || match < 95.0) {
+                "${report.name}: ${match?.let { "$it% match" } ?: "no match data"}"
+            } else null
+        }
+        if (failed.isNotEmpty()) {
+            throw GradleException("Tests failed:\n  ${failed.joinToString("\n  ")}")
+        }
+    }
 }

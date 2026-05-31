@@ -25,24 +25,26 @@ import org.robolectric.annotation.GraphicsMode;
  * This test:
  * 1. Launches MainActivity via Robolectric in native graphics mode
  * 2. Renders the Screen component to a 1920x720 bitmap
- * 3. Loads the reference screenshot (interface-2-display_1original.png)
+ * 3. Loads the reference screenshot
+ * (interface-2-display-checkbox_1original.png)
  * 4. Compares pixel-by-pixel (excluding system UI area)
  * 5. Generates a diff image highlighting differences in MAGENTA
  * 6. Saves everything to MainActivity.screenshots/
  *
  * RUN:
- * ./gradlew :demo-pixel:testDebugUnitTest --tests="*MainActivityTestVisual*"
+ * ./gradlew :demo-pixel:testDebugUnitTest
+ * --tests="*MainActivityCheckboxTestVisual*"
  *
  * OUTPUT (in src/demo-pixel/java/.../pixel/MainActivity.screenshots/):
- * interface-2-display_1original.png - original reference screenshot
- * interface-2-display_2actual.png - what our components rendered
- * interface-2-display_3diff.png - diff (matching=dimmed, different=magenta)
- * interface-2-display.txt - text report with match percentage
+ * interface-2-display-checkbox_1original.png - original reference screenshot
+ * interface-2-display-checkbox_2actual.png - what our components rendered
+ * interface-2-display-checkbox_3diff.png - diff (matching=dimmed,
+ * different=magenta)
  */
 @RunWith(RobolectricTestRunner.class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = { 33 }, qualifiers = "w1920dp-h720dp-land-mdpi")
-public class MainActivityTestVisual {
+public class Checkbox02TestVisual {
 
     // Automotive display dimensions
     private static final int SCREEN_WIDTH = 1920;
@@ -63,12 +65,12 @@ public class MainActivityTestVisual {
     // from there
     private static final String OUTPUT_DIR = "java/ru/voboost/components/demo/pixel/MainActivity.screenshots";
 
-    private ActivityController<MainActivity> controller;
-    private MainActivity activity;
+    private ActivityController<Checkbox02> controller;
+    private Checkbox02 activity;
 
     @Before
     public void setUp() {
-        controller = Robolectric.buildActivity(MainActivity.class);
+        controller = Robolectric.buildActivity(Checkbox02.class);
         controller.create().start().resume();
         activity = controller.get();
     }
@@ -84,7 +86,7 @@ public class MainActivityTestVisual {
         assertNotNull("Failed to render screen to bitmap", actual);
 
         // Save our rendering with variant suffix
-        File actualFile = new File(OUTPUT_DIR, "interface-2-display_2actual" + suffix + ".png");
+        File actualFile = new File(OUTPUT_DIR, "checkbox-02_2actual" + suffix + ".png");
         PixelComparator.savePng(actual, actualFile);
         System.out.println("Saved actual rendering: " + actualFile.getAbsolutePath());
         System.out.println("Actual size: " + actual.getWidth() + "x" + actual.getHeight());
@@ -94,12 +96,12 @@ public class MainActivityTestVisual {
         if (reference == null) {
             System.out.println("");
             System.out.println("=== WARNING: Reference image not found ===");
-            System.out.println("Looked for: /interface-2-display_1original.png");
+            System.out.println("Looked for: /checkbox-02_1original.png");
             System.out.println("");
             System.out.println("Place your reference image at:");
             System.out.println(
                     "  src/demo-pixel/java/ru/voboost/components/demo/pixel/"
-                            + "MainActivity.resources/interface-2-display_1original.png");
+                            + "MainActivity.screenshots/checkbox-02_1original.png");
             System.out.println("");
             System.out.println("Skipping comparison. Actual rendering saved for inspection.");
             return;
@@ -118,9 +120,9 @@ public class MainActivityTestVisual {
                 DemoRenderUtils.PIXEL_TOLERANCE);
 
         // ---- Step 4: Save diff images ----
-        File diffFile = new File(OUTPUT_DIR, "interface-2-display_3diff" + suffix + ".png");
+        File diffFile = new File(OUTPUT_DIR, "checkbox-02_3diff" + suffix + ".png");
         PixelComparator.savePng(result.diffBitmap, diffFile);
-        File magentaFile = new File(OUTPUT_DIR, "interface-2-display_4magenta" + suffix + ".png");
+        File magentaFile = new File(OUTPUT_DIR, "checkbox-02_4magenta" + suffix + ".png");
         PixelComparator.savePng(result.magentaBitmap, magentaFile);
 
         // ---- Step 5: Print and save report ----
@@ -142,7 +144,7 @@ public class MainActivityTestVisual {
         System.out.println("Tolerance: " + DemoRenderUtils.PIXEL_TOLERANCE + " per channel");
 
         // Compare with baseline
-        String testName = "interface-2-display";
+        String testName = "checkbox-02";
         PixelComparator.ExpectedDiff expected = PixelComparator.ExpectedDiff.load(testName);
         String comparisonMsg = "";
         boolean needsSave = (expected == null);
@@ -165,7 +167,7 @@ public class MainActivityTestVisual {
         System.out.println("");
 
         // Save text report (always, even on error)
-        File reportFile = new File(OUTPUT_DIR, "interface-2-display" + suffix + ".txt");
+        File reportFile = new File(OUTPUT_DIR, "checkbox-02" + suffix + ".txt");
         try (FileWriter writer = new FileWriter(reportFile)) {
             writer.write("Pixel Comparison Report\n");
             writer.write("=======================\n\n");
@@ -182,10 +184,11 @@ public class MainActivityTestVisual {
                             + "]\n");
             writer.write("Tolerance: " + DemoRenderUtils.PIXEL_TOLERANCE + " per channel\n\n");
             writer.write("Files:\n");
-            writer.write("  interface-2-display_1original.png  - original reference\n");
-            writer.write("  interface-2-display_2actual.png    - our rendering\n");
-            writer.write("  interface-2-display_3diff.png      - diff (semi-transparent magenta overlay)\n");
-            writer.write("  interface-2-display_4magenta.png   - diff (pure magenta channel with transparent bg)\n\n");
+            writer.write("  checkbox-02_1original.png  - original reference\n");
+            writer.write("  checkbox-02_2actual.png    - our rendering\n");
+            writer.write("  checkbox-02_3diff.png      - diff (semi-transparent magenta overlay)\n");
+            writer.write(
+                    "  checkbox-02_4magenta.png   - diff (pure magenta channel with transparent bg)\n\n");
             writer.write("How to read the diff:\n");
             writer.write("  Magenta pixels = our rendering differs from reference\n");
             writer.write("  Dimmed pixels  = our rendering matches the reference\n");
@@ -213,22 +216,8 @@ public class MainActivityTestVisual {
      * Renders the Screen component to a 1920x720 bitmap.
      */
     private Bitmap renderScreenToBitmap() {
-        View screen = activity.getScreen();
-        if (screen == null)
-            return null;
-
-        // Force measure at automotive resolution
-        int widthSpec = View.MeasureSpec.makeMeasureSpec(SCREEN_WIDTH, View.MeasureSpec.EXACTLY);
-        int heightSpec = View.MeasureSpec.makeMeasureSpec(SCREEN_HEIGHT, View.MeasureSpec.EXACTLY);
-        screen.measure(widthSpec, heightSpec);
-        screen.layout(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-        // Draw to bitmap
-        Bitmap bitmap = Bitmap.createBitmap(SCREEN_WIDTH, SCREEN_HEIGHT, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        screen.draw(canvas);
-
-        return bitmap;
+        return DemoRenderUtils.renderScreen(activity.getScreen(), SCREEN_WIDTH, SCREEN_HEIGHT,
+                DemoRenderUtils.SCROLL_END, 0);
     }
 
     /**
@@ -236,9 +225,11 @@ public class MainActivityTestVisual {
      * Only PNG format is supported.
      */
     private Bitmap loadReferenceImage() {
-        File referenceFile = new File(OUTPUT_DIR, "interface-2-display_1original.png");
-        org.junit.Assume.assumeTrue("Reference image not found: " + referenceFile.getAbsolutePath() + ". Skipping test.", referenceFile.exists());
         try {
+            File referenceFile = new File(OUTPUT_DIR, "checkbox-02_1original.png");
+            if (!referenceFile.exists()) {
+                return null;
+            }
             Bitmap bitmap = BitmapFactory.decodeFile(referenceFile.getAbsolutePath());
             return bitmap;
         } catch (Exception e) {

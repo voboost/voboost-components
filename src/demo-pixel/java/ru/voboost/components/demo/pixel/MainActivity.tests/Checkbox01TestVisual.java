@@ -20,86 +20,55 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 
 /**
- * Pixel comparison test for the pixel demo.
- *
- * This test:
- * 1. Launches MainActivity via Robolectric in native graphics mode
- * 2. Renders the Screen component to a 1920x720 bitmap
- * 3. Loads the reference screenshot (interface-2-display_1original.png)
- * 4. Compares pixel-by-pixel (excluding system UI area)
- * 5. Generates a diff image highlighting differences in MAGENTA
- * 6. Saves everything to MainActivity.screenshots/
+ * Pixel comparison test for checkbox-01 screenshot.
  *
  * RUN:
- * ./gradlew :demo-pixel:testDebugUnitTest --tests="*MainActivityTestVisual*"
- *
- * OUTPUT (in src/demo-pixel/java/.../pixel/MainActivity.screenshots/):
- * interface-2-display_1original.png - original reference screenshot
- * interface-2-display_2actual.png - what our components rendered
- * interface-2-display_3diff.png - diff (matching=dimmed, different=magenta)
- * interface-2-display.txt - text report with match percentage
+ * ./gradlew :demo-pixel:testDebugUnitTest --tests="*Checkbox01TestVisual*"
  */
 @RunWith(RobolectricTestRunner.class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = { 33 }, qualifiers = "w1920dp-h720dp-land-mdpi")
-public class MainActivityTestVisual {
+public class Checkbox01TestVisual {
 
-    // Automotive display dimensions
     private static final int SCREEN_WIDTH = 1920;
     private static final int SCREEN_HEIGHT = 720;
-
-    // System UI boundaries (excluded from pixel comparison)
-    // Left 145px = system launcher sidebar
-    // Top 50px = status bar
-    private static final int COMPARE_START_X = 145;
+    private static final int COMPARE_START_X = 485;
     private static final int COMPARE_START_Y = 50;
-
-    // Per-channel pixel tolerance
-    // 0 = exact match only
-    // 5 = allow +-5 difference per R/G/B/A channel (for anti-aliasing)
-
-    // Output directory (BEM co-located screenshots)
-    // Path is relative to module root (src/demo-pixel/) since Gradle runs tests
-    // from there
     private static final String OUTPUT_DIR = "java/ru/voboost/components/demo/pixel/MainActivity.screenshots";
 
-    private ActivityController<MainActivity> controller;
-    private MainActivity activity;
+    private ActivityController<Checkbox01> controller;
+    private Checkbox01 activity;
 
     @Before
     public void setUp() {
-        controller = Robolectric.buildActivity(MainActivity.class);
+        controller = Robolectric.buildActivity(Checkbox01.class);
         controller.create().start().resume();
         activity = controller.get();
     }
 
     @Test
     public void compareWithReferenceScreenshot() throws Exception {
-        // Get variant name from system property (e.g., "v1", "v2", etc.)
         String variant = System.getProperty("variant", "");
         String suffix = variant.isEmpty() ? "" : "_" + variant;
 
-        // ---- Step 1: Render our components to bitmap ----
         Bitmap actual = renderScreenToBitmap();
         assertNotNull("Failed to render screen to bitmap", actual);
 
-        // Save our rendering with variant suffix
-        File actualFile = new File(OUTPUT_DIR, "interface-2-display_2actual" + suffix + ".png");
+        File actualFile = new File(OUTPUT_DIR, "checkbox-01_2actual" + suffix + ".png");
         PixelComparator.savePng(actual, actualFile);
         System.out.println("Saved actual rendering: " + actualFile.getAbsolutePath());
         System.out.println("Actual size: " + actual.getWidth() + "x" + actual.getHeight());
 
-        // ---- Step 2: Load reference image ----
         Bitmap reference = loadReferenceImage();
         if (reference == null) {
             System.out.println("");
             System.out.println("=== WARNING: Reference image not found ===");
-            System.out.println("Looked for: /interface-2-display_1original.png");
+            System.out.println("Looked for: /checkbox-01_1original.png");
             System.out.println("");
             System.out.println("Place your reference image at:");
             System.out.println(
                     "  src/demo-pixel/java/ru/voboost/components/demo/pixel/"
-                            + "MainActivity.resources/interface-2-display_1original.png");
+                            + "MainActivity.screenshots/checkbox-01_1original.png");
             System.out.println("");
             System.out.println("Skipping comparison. Actual rendering saved for inspection.");
             return;
@@ -107,7 +76,6 @@ public class MainActivityTestVisual {
 
         System.out.println("Reference size: " + reference.getWidth() + "x" + reference.getHeight());
 
-        // ---- Step 3: Compare pixels ----
         PixelComparator.ComparisonResult result = PixelComparator.compare(
                 actual,
                 reference,
@@ -117,13 +85,11 @@ public class MainActivityTestVisual {
                 SCREEN_HEIGHT,
                 DemoRenderUtils.PIXEL_TOLERANCE);
 
-        // ---- Step 4: Save diff images ----
-        File diffFile = new File(OUTPUT_DIR, "interface-2-display_3diff" + suffix + ".png");
+        File diffFile = new File(OUTPUT_DIR, "checkbox-01_3diff" + suffix + ".png");
         PixelComparator.savePng(result.diffBitmap, diffFile);
-        File magentaFile = new File(OUTPUT_DIR, "interface-2-display_4magenta" + suffix + ".png");
+        File magentaFile = new File(OUTPUT_DIR, "checkbox-01_4magenta" + suffix + ".png");
         PixelComparator.savePng(result.magentaBitmap, magentaFile);
 
-        // ---- Step 5: Print and save report ----
         System.out.println("");
         System.out.println("=== PIXEL COMPARISON REPORT ===");
         System.out.println(result.toString());
@@ -142,7 +108,7 @@ public class MainActivityTestVisual {
         System.out.println("Tolerance: " + DemoRenderUtils.PIXEL_TOLERANCE + " per channel");
 
         // Compare with baseline
-        String testName = "interface-2-display";
+        String testName = "checkbox-01";
         PixelComparator.ExpectedDiff expected = PixelComparator.ExpectedDiff.load(testName);
         String comparisonMsg = "";
         boolean needsSave = (expected == null);
@@ -165,7 +131,7 @@ public class MainActivityTestVisual {
         System.out.println("");
 
         // Save text report (always, even on error)
-        File reportFile = new File(OUTPUT_DIR, "interface-2-display" + suffix + ".txt");
+        File reportFile = new File(OUTPUT_DIR, "checkbox-01" + suffix + ".txt");
         try (FileWriter writer = new FileWriter(reportFile)) {
             writer.write("Pixel Comparison Report\n");
             writer.write("=======================\n\n");
@@ -182,10 +148,11 @@ public class MainActivityTestVisual {
                             + "]\n");
             writer.write("Tolerance: " + DemoRenderUtils.PIXEL_TOLERANCE + " per channel\n\n");
             writer.write("Files:\n");
-            writer.write("  interface-2-display_1original.png  - original reference\n");
-            writer.write("  interface-2-display_2actual.png    - our rendering\n");
-            writer.write("  interface-2-display_3diff.png      - diff (semi-transparent magenta overlay)\n");
-            writer.write("  interface-2-display_4magenta.png   - diff (pure magenta channel with transparent bg)\n\n");
+            writer.write("  checkbox-01_1original.png  - original reference\n");
+            writer.write("  checkbox-01_2actual.png    - our rendering\n");
+            writer.write("  checkbox-01_3diff.png      - diff (semi-transparent magenta overlay)\n");
+            writer.write(
+                    "  checkbox-01_4magenta.png   - diff (pure magenta channel with transparent bg)\n\n");
             writer.write("How to read the diff:\n");
             writer.write("  Magenta pixels = our rendering differs from reference\n");
             writer.write("  Dimmed pixels  = our rendering matches the reference\n");
@@ -209,21 +176,16 @@ public class MainActivityTestVisual {
         }
     }
 
-    /**
-     * Renders the Screen component to a 1920x720 bitmap.
-     */
     private Bitmap renderScreenToBitmap() {
         View screen = activity.getScreen();
         if (screen == null)
             return null;
 
-        // Force measure at automotive resolution
         int widthSpec = View.MeasureSpec.makeMeasureSpec(SCREEN_WIDTH, View.MeasureSpec.EXACTLY);
         int heightSpec = View.MeasureSpec.makeMeasureSpec(SCREEN_HEIGHT, View.MeasureSpec.EXACTLY);
         screen.measure(widthSpec, heightSpec);
         screen.layout(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // Draw to bitmap
         Bitmap bitmap = Bitmap.createBitmap(SCREEN_WIDTH, SCREEN_HEIGHT, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         screen.draw(canvas);
@@ -231,14 +193,12 @@ public class MainActivityTestVisual {
         return bitmap;
     }
 
-    /**
-     * Loads the reference image from the screenshots directory.
-     * Only PNG format is supported.
-     */
     private Bitmap loadReferenceImage() {
-        File referenceFile = new File(OUTPUT_DIR, "interface-2-display_1original.png");
-        org.junit.Assume.assumeTrue("Reference image not found: " + referenceFile.getAbsolutePath() + ". Skipping test.", referenceFile.exists());
         try {
+            File referenceFile = new File(OUTPUT_DIR, "checkbox-01_1original.png");
+            if (!referenceFile.exists()) {
+                return null;
+            }
             Bitmap bitmap = BitmapFactory.decodeFile(referenceFile.getAbsolutePath());
             return bitmap;
         } catch (Exception e) {

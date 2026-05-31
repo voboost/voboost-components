@@ -1,0 +1,1 @@
+PixelComparison: 98.80% match (1174982/1189250 pixels, 14268 different)

@@ -11,9 +11,9 @@ import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
 
+import ru.voboost.components.checkbox.Checkbox;
 import ru.voboost.components.i18n.Language;
 import ru.voboost.components.panel.Panel;
-import ru.voboost.components.radio.Radio;
 import ru.voboost.components.screen.Screen;
 import ru.voboost.components.section.Section;
 import ru.voboost.components.tabs.TabItem;
@@ -21,23 +21,22 @@ import ru.voboost.components.tabs.Tabs;
 import ru.voboost.components.theme.Theme;
 
 /**
- * Pixel demo that replicates the reference screenshot (interface-2-display.png).
+ * Checkbox demo that replicates reference screenshot (checkbox-01_1original.png).
  *
  * Component hierarchy:
- *   Screen (root, offsetX=145, offsetY=50)
- *   +-- Tabs (5 tabs, "Display" selected)
- *   +-- Panel[] (5 panels, one per tab)
- *       +-- Panel "display":
- *           +-- Section "Language" + Radio
- *           +-- Section "Language" + Radio
- *           +-- Section "Language" + Radio
+ * Screen (root)
+ * +-- Tabs (5 tabs)
+ * +-- Panel[] (5 panels, one per tab)
+ * +-- Panel "mobile":
+ * +-- Section "Mobile data network" + Radio
+ * +-- Section "Mobile data network" + Checkbox[]
  *
  * Theme: FREE_DARK
  * Language: EN
  */
-public class MainActivity extends Activity {
+public class Checkbox01 extends Activity {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "Checkbox01";
 
     // Fixed settings matching the reference screenshot
     private static final Theme THEME = Theme.FREE_DARK;
@@ -54,7 +53,7 @@ public class MainActivity extends Activity {
         setupFullScreenMode();
         setupComponentHierarchy();
 
-        Log.d(TAG, "Pixel demo created successfully");
+        Log.d(TAG, "Checkbox01 demo created successfully");
     }
 
     /**
@@ -81,16 +80,23 @@ public class MainActivity extends Activity {
      * Builds the full component hierarchy matching the reference screenshot.
      */
     private void setupComponentHierarchy() {
-        List<TabItem> tabItems = PixelContent.getTabItems();
+        List<TabItem> tabItems = new java.util.ArrayList<>();
+        tabItems.add(TabItem.create("network", createMap("Network")).build());
+        tabItems.add(TabItem.create("display", createMap("Display")).build());
+        tabItems.add(TabItem.create("voice", createMap("Voice")).build());
+        tabItems.add(TabItem.create("sound", createMap("Sound")).build());
+        tabItems.add(TabItem.create("reminder", createMap("Reminder")).build());
+
+        Panel[] panels = createAllPanels();
 
         screen = Screen.create(this, THEME)
             .backgroundColorHex("#000000")
             .tabs(Tabs.create(this, THEME, LANGUAGE, tabItems).build())
-            .panels(createAllPanels())
+            .panels(panels)
             .build();
         setContentView(screen);
 
-        screen.getTabs().setSelectedValue(PixelContent.getSelectedTab(), false);
+        screen.getTabs().setSelectedValue("network", false);
     }
 
     /**
@@ -98,78 +104,65 @@ public class MainActivity extends Activity {
      */
     private Panel[] createAllPanels() {
         return new Panel[] {
-            createNetworkPanel(),
-            createDisplayPanel(),
-            createVoicePanel(),
-            createSoundPanel(),
-            createReminderPanel()
+                createNetworkPanel(),
+                new Panel(this),
+                new Panel(this),
+                new Panel(this),
+                new Panel(this),
         };
     }
 
     /**
-     * Creates the Network panel (empty in the reference screenshot).
+     * Creates the Network panel with radio and checkboxes.
      */
     private Panel createNetworkPanel() {
         Panel panel = new Panel(this);
         panel.setTheme(THEME);
+
+        // Section 1: Mobile data network + Checkbox (Enable 5G)
+        Section section1 = new Section(this);
+        section1.setTitle(createMap("Mobile data network"));
+        section1.setTheme(THEME);
+        section1.setLanguage(LANGUAGE);
+
+        section1.addCheckbox(
+            Checkbox.create(this, THEME, LANGUAGE, false)
+                .label(createMap("Enable 5G"))
+                .description(createMap("When enabled, 5G will be automatically used in the 5G mobile network environment."))
+                .build()
+        );
+        panel.addView(section1);
+
+        // Section 2: Mobile data network + Checkboxes
+        Section section2 = new Section(this);
+        section2.setTitle(createMap("Mobile data network"));
+        section2.setTheme(THEME);
+        section2.setLanguage(LANGUAGE);
+
+        section2.addCheckbox(
+            Checkbox.create(this, THEME, LANGUAGE, false)
+                .label(createMap("Reduce media volume during navigation broadcast"))
+                .description(createMap("If too high during navigation broadcast, media volume will be automatically lowered."))
+                .build()
+        );
+
+        section2.addCheckbox(
+            Checkbox.create(this, THEME, LANGUAGE, true)
+                .label(createMap("Speed compensated volume"))
+                .description(createMap("The volume increases or decreases as the vehicle goes faster or slower. You no longer have to adjust the\nvolume frequently, thus able to focus on driving."))
+                .build()
+        );
+
+        panel.addView(section2);
+
         return panel;
     }
 
-    /**
-     * Creates the Display panel with 3 Language sections.
-     * This is the active panel in the reference screenshot.
-     */
-    private Panel createDisplayPanel() {
-        Panel panel = new Panel(this);
-        panel.setTheme(THEME);
-
-        for (int i = 0; i < PixelContent.getSectionCount(); i++) {
-            Section section = new Section(this);
-            section.setTitle(PixelContent.getLanguageSectionTitle());
-            section.setTheme(THEME);
-            section.setLanguage(LANGUAGE);
-
-            section.addRadio(
-                Radio.create(
-                    this,
-                    THEME,
-                    LANGUAGE,
-                    PixelContent.getLanguageRadioButtons(),
-                    PixelContent.getSelectedLanguage()
-                ).build()
-            );
-
-            panel.addView(section);
-        }
-
-        return panel;
-    }
-
-    /**
-     * Creates the Voice panel (empty in the reference screenshot).
-     */
-    private Panel createVoicePanel() {
-        Panel panel = new Panel(this);
-        panel.setTheme(THEME);
-        return panel;
-    }
-
-    /**
-     * Creates the Sound panel (empty in the reference screenshot).
-     */
-    private Panel createSoundPanel() {
-        Panel panel = new Panel(this);
-        panel.setTheme(THEME);
-        return panel;
-    }
-
-    /**
-     * Creates the Reminder panel (empty in the reference screenshot).
-     */
-    private Panel createReminderPanel() {
-        Panel panel = new Panel(this);
-        panel.setTheme(THEME);
-        return panel;
+    private java.util.Map<String, String> createMap(String text) {
+        java.util.Map<String, String> map = new java.util.HashMap<>();
+        map.put("en", text);
+        map.put("ru", text);
+        return map;
     }
 
     // ================================================================

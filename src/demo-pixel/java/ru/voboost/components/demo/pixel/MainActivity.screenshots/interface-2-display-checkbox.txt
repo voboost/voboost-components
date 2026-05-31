@@ -1,0 +1,22 @@
+Pixel Comparison Report
+=======================
+
+PixelComparison: 100.00% match (961450/961450 pixels, 0 different)
+
+Compare area: x=[485..1920], y=[50..720]
+Tolerance: 5 per channel
+
+Files:
+  interface-2-display-checkbox_1original.png  - original reference
+  interface-2-display-checkbox_2actual.png    - our rendering
+  interface-2-display-checkbox_3diff.png      - diff (semi-transparent magenta overlay)
+  interface-2-display-checkbox_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+How to read the diff:
+  Magenta pixels = our rendering differs from reference
+  Dimmed pixels  = our rendering matches the reference
+  Dark area      = system UI zone, excluded from comparison
+
+=== BASELINE COMPARISON ===
+Diff comparison for interface-2-display-checkbox:
+  PASS: Match unchanged at 100.00% (0 diff pixels)
