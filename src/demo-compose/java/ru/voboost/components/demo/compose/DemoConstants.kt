@@ -12,18 +12,17 @@ object DemoColors {
 }
 
 /**
- * Tab configuration constants.
- * Defined to avoid recreation on recomposition.
+ * Tab configuration constants (single source of truth for the tab order).
  */
 object DemoTabs {
     val TAB_VALUES = listOf(
-        "language",
-        "theme",
-        "car_type",
-        "climate",
-        "audio",
-        "display",
-        "system",
-        "components"
+        "settings",
+        "button",
+        "buttons",
+        "checkbox",
+        "radio",
+        "select",
+        "dialog",
+        "toast",
     )
 }

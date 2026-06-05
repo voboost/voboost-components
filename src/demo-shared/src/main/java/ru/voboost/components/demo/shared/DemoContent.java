@@ -1,36 +1,27 @@
 package ru.voboost.components.demo.shared;
 
-import android.content.Context;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ru.voboost.components.i18n.Language;
 import ru.voboost.components.radio.RadioButton;
 import ru.voboost.components.select.SelectOption;
 import ru.voboost.components.tabs.TabItem;
-import ru.voboost.components.theme.Theme;
 
 /**
  * Shared content provider for demo applications.
  *
- * <p>This class provides pre-configured content for all demo applications:
- * - Tab items for the Tabs component
- * - Section titles for each tab
- * - Radio buttons for each tab's content
- * - Default values for each tab
+ * <p>This class is the single source of truth for all localized demo content:
+ * tab items, section titles, radio/checkbox/button labels, dialog and toast text.
+ * All three demos (Java, Kotlin, Compose) render from these getters, which keeps
+ * them functionally identical.
  */
 public class DemoContent {
 
     private DemoContent() {
         // Prevent instantiation
     }
-
-    // ============================================================
-    // Helper method for creating localized maps
-    // ============================================================
 
     private static Map<String, String> mapOf(String... keyValuePairs) {
         Map<String, String> map = new HashMap<>();
@@ -44,231 +35,78 @@ public class DemoContent {
     // Tab items
     // ============================================================
 
-    /**
-     * Returns the list of TabItem objects for all 8 tabs.
-     *
-     * @return List of TabItem objects
-     */
     public static List<TabItem> getTabItems() {
         List<TabItem> tabItems = new ArrayList<>();
-
-        tabItems.add(new TabItem("settings", createSettingsTabLabel()));
-        tabItems.add(new TabItem("button", createButtonTabLabel()));
-        tabItems.add(new TabItem("buttons", createButtonsTabLabel()));
-        tabItems.add(new TabItem("checkbox", createCheckboxTabLabel()));
-        tabItems.add(new TabItem("radio", createRadioTabLabel()));
-        tabItems.add(new TabItem("select", createSelectTabLabel()));
-        tabItems.add(new TabItem("dialog", createDialogTabLabel()));
-        tabItems.add(new TabItem("toast", createToastTabLabel()));
-
+        tabItems.add(new TabItem("settings", mapOf("en", "Settings", "ru", "Настройки")));
+        tabItems.add(new TabItem("button", mapOf("en", "Button", "ru", "Кнопка")));
+        tabItems.add(new TabItem("buttons", mapOf("en", "Buttons", "ru", "Кнопки")));
+        tabItems.add(new TabItem("checkbox", mapOf("en", "Checkbox", "ru", "Переключатель")));
+        tabItems.add(new TabItem("radio", mapOf("en", "Radio", "ru", "Радио")));
+        tabItems.add(new TabItem("select", mapOf("en", "Select", "ru", "Выбор")));
+        tabItems.add(new TabItem("dialog", mapOf("en", "Dialog", "ru", "Диалог")));
+        tabItems.add(new TabItem("toast", mapOf("en", "Toast", "ru", "Уведомление")));
         return tabItems;
-    }
-
-    // Tab label creation methods
-    private static Map<String, String> createSettingsTabLabel() {
-        Map<String, String> label = new HashMap<>();
-        label.put("en", "Settings");
-        label.put("ru", "Настройки");
-        return label;
-    }
-
-    private static Map<String, String> createButtonTabLabel() {
-        Map<String, String> label = new HashMap<>();
-        label.put("en", "Button");
-        label.put("ru", "Кнопка");
-        return label;
-    }
-
-    private static Map<String, String> createButtonsTabLabel() {
-        Map<String, String> label = new HashMap<>();
-        label.put("en", "Buttons");
-        label.put("ru", "Кнопки");
-        return label;
-    }
-
-    private static Map<String, String> createCheckboxTabLabel() {
-        Map<String, String> label = new HashMap<>();
-        label.put("en", "Checkbox");
-        label.put("ru", "Переключатель");
-        return label;
-    }
-
-    private static Map<String, String> createRadioTabLabel() {
-        Map<String, String> label = new HashMap<>();
-        label.put("en", "Radio");
-        label.put("ru", "Радио");
-        return label;
-    }
-
-    private static Map<String, String> createSelectTabLabel() {
-        Map<String, String> label = new HashMap<>();
-        label.put("en", "Select");
-        label.put("ru", "Выбор");
-        return label;
-    }
-
-    private static Map<String, String> createDialogTabLabel() {
-        Map<String, String> label = new HashMap<>();
-        label.put("en", "Dialog");
-        label.put("ru", "Диалог");
-        return label;
-    }
-
-    private static Map<String, String> createToastTabLabel() {
-        Map<String, String> label = new HashMap<>();
-        label.put("en", "Toast");
-        label.put("ru", "Уведомление");
-        return label;
     }
 
     // ============================================================
     // Section titles
     // ============================================================
 
-    /**
-     * Returns the section title for the specified tab.
-     *
-     * @param tabValue the tab value (e.g., "settings", "button")
-     * @return Map of language code to title text
-     */
     public static Map<String, String> getSectionTitle(String tabValue) {
         switch (tabValue) {
             case "settings":
-                return createSettingsSectionTitle();
+                return mapOf("en", "Settings", "ru", "Настройки");
             case "button":
-                return createButtonSectionTitle();
+                return mapOf("en", "Button Component", "ru", "Компонент Кнопка");
             case "buttons":
-                return createButtonsSectionTitle();
+                return mapOf("en", "Buttons Component", "ru", "Компонент Кнопки");
             case "checkbox":
-                return createCheckboxSectionTitle();
+                return mapOf("en", "Checkbox Component", "ru", "Компонент Переключатель");
             case "radio":
-                return createRadioSectionTitle();
+                return mapOf("en", "Radio Component", "ru", "Компонент Радио");
             case "select":
-                return createSelectSectionTitle();
+                return mapOf("en", "Select Component", "ru", "Компонент Выбор");
             case "dialog":
-                return createDialogSectionTitle();
+                return mapOf("en", "Dialog Component", "ru", "Компонент Диалог");
             case "toast":
-                return createToastSectionTitle();
+                return mapOf("en", "Toast Component", "ru", "Компонент Уведомление");
             default:
-                return createDefaultSectionTitle();
+                return mapOf("en", "Settings", "ru", "Настройки");
         }
     }
 
-    private static Map<String, String> createSettingsSectionTitle() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Settings");
-        title.put("ru", "Настройки");
-        return title;
-    }
-
-    private static Map<String, String> createButtonSectionTitle() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Button Component");
-        title.put("ru", "Компонент Кнопка");
-        return title;
-    }
-
-    private static Map<String, String> createButtonsSectionTitle() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Buttons Component");
-        title.put("ru", "Компонент Кнопки");
-        return title;
-    }
-
-    private static Map<String, String> createCheckboxSectionTitle() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Checkbox Component");
-        title.put("ru", "Компонент Переключатель");
-        return title;
-    }
-
-    private static Map<String, String> createRadioSectionTitle() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Radio Component");
-        title.put("ru", "Компонент Радио");
-        return title;
-    }
-
-    private static Map<String, String> createSelectSectionTitle() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Select Component");
-        title.put("ru", "Компонент Выбор");
-        return title;
-    }
-
-    private static Map<String, String> createDialogSectionTitle() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Dialog Component");
-        title.put("ru", "Компонент Диалог");
-        return title;
-    }
-
-    private static Map<String, String> createToastSectionTitle() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Toast Component");
-        title.put("ru", "Компонент Уведомление");
-        return title;
-    }
-
-    private static Map<String, String> createDefaultSectionTitle() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Settings");
-        title.put("ru", "Настройки");
-        return title;
-    }
-
-    // ============================================================
-    // Public getters for specific section titles (convenience methods)
-    // ============================================================
-
-    /**
-     * Returns the section title for the Select tab.
-     *
-     * @return Map of language code to title text
-     */
     public static Map<String, String> getSelectSectionTitle() {
         return getSectionTitle("select");
     }
 
-    /**
-     * Returns the section title for the Dialog tab.
-     *
-     * @return Map of language code to title text
-     */
     public static Map<String, String> getDialogSectionTitle() {
         return getSectionTitle("dialog");
     }
 
     // ============================================================
-    // Radio buttons for Settings tab (language/theme/car_type)
+    // Settings tab: language/theme/car_type radios
     // ============================================================
 
-    /**
-     * Returns the radio buttons for the specified settings sub-section.
-     * Used for language, theme, and car_type within the Settings tab.
-     *
-     * @param tabValue the sub-section value (e.g., "language", "theme", "car_type")
-     * @return List of RadioButton objects
-     */
     public static List<RadioButton> getRadioButtons(String tabValue) {
         switch (tabValue) {
             case "language":
-                return createLanguageRadioButtons();
+                return java.util.Arrays.asList(
+                    new RadioButton("en", mapOf("en", "English", "ru", "English")),
+                    new RadioButton("ru", mapOf("en", "Русский", "ru", "Русский")));
             case "theme":
-                return createThemeRadioButtons();
+                return java.util.Arrays.asList(
+                    new RadioButton("light", mapOf("en", "Light", "ru", "Светлая")),
+                    new RadioButton("dark", mapOf("en", "Dark", "ru", "Тёмная")));
             case "car_type":
-                return createCarTypeRadioButtons();
+                return java.util.Arrays.asList(
+                    new RadioButton("free", mapOf("en", "Free", "ru", "Фри")),
+                    new RadioButton("dreamer", mapOf("en", "Dreamer", "ru", "Дример")));
             default:
-                return createDefaultRadioButtons();
+                return java.util.Arrays.asList(
+                    new RadioButton("default", mapOf("en", "Default", "ru", "По умолчанию")));
         }
     }
 
-    /**
-     * Returns the default value for the specified tab.
-     *
-     * @param tabValue the tab value (e.g., "language", "theme")
-     * @return the default value
-     */
     public static String getDefaultValue(String tabValue) {
         switch (tabValue) {
             case "language":
@@ -282,33 +120,6 @@ public class DemoContent {
         }
     }
 
-    private static List<RadioButton> createLanguageRadioButtons() {
-        List<RadioButton> buttons = new ArrayList<>();
-        buttons.add(new RadioButton("en", mapOf("en", "English", "ru", "English")));
-        buttons.add(new RadioButton("ru", mapOf("en", "Русский", "ru", "Русский")));
-        return buttons;
-    }
-
-    private static List<RadioButton> createThemeRadioButtons() {
-        List<RadioButton> buttons = new ArrayList<>();
-        buttons.add(new RadioButton("light", mapOf("en", "Light", "ru", "Светлая")));
-        buttons.add(new RadioButton("dark", mapOf("en", "Dark", "ru", "Тёмная")));
-        return buttons;
-    }
-
-    private static List<RadioButton> createCarTypeRadioButtons() {
-        List<RadioButton> buttons = new ArrayList<>();
-        buttons.add(new RadioButton("free", mapOf("en", "Free", "ru", "Фри")));
-        buttons.add(new RadioButton("dreamer", mapOf("en", "Dreamer", "ru", "Дример")));
-        return buttons;
-    }
-
-    private static List<RadioButton> createDefaultRadioButtons() {
-        List<RadioButton> buttons = new ArrayList<>();
-        buttons.add(new RadioButton("default", mapOf("en", "Default", "ru", "По умолчанию")));
-        return buttons;
-    }
-
     // ============================================================
     // Button tab content
     // ============================================================
@@ -318,22 +129,32 @@ public class DemoContent {
     }
 
     public static Map<String, String> getButtonSectionTitle(int sectionIndex) {
-        Map<String, String> title = new HashMap<>();
         switch (sectionIndex) {
             case 0:
-                title.put("en", "Button Styles");
-                title.put("ru", "Стили кнопок");
-                break;
+                return mapOf("en", "Button Styles", "ru", "Стили кнопок");
             case 1:
-                title.put("en", "Button with Description");
-                title.put("ru", "Кнопка с описанием");
-                break;
+                return mapOf("en", "Button with Description", "ru", "Кнопка с описанием");
             default:
-                title.put("en", "Button");
-                title.put("ru", "Кнопка");
-                break;
+                return mapOf("en", "Button", "ru", "Кнопка");
         }
-        return title;
+    }
+
+    public static String getButtonPrimaryText() {
+        return "Primary";
+    }
+
+    public static String getButtonSecondaryText() {
+        return "Secondary";
+    }
+
+    public static String getButtonWithDescriptionText() {
+        return "Calibrate";
+    }
+
+    public static Map<String, String> getButtonWithDescriptionDescription() {
+        return mapOf(
+            "en", "Run camera calibration.\nDrive straight for 2 minutes.",
+            "ru", "Запустить калибровку камеры.\nДвигайтесь прямо 2 минуты.");
     }
 
     // ============================================================
@@ -345,26 +166,16 @@ public class DemoContent {
     }
 
     public static Map<String, String> getButtonsSectionTitle(int sectionIndex) {
-        Map<String, String> title = new HashMap<>();
         switch (sectionIndex) {
             case 0:
-                title.put("en", "Two Buttons");
-                title.put("ru", "Две кнопки");
-                break;
+                return mapOf("en", "Two Buttons", "ru", "Две кнопки");
             case 1:
-                title.put("en", "Three Buttons");
-                title.put("ru", "Три кнопки");
-                break;
+                return mapOf("en", "Three Buttons", "ru", "Три кнопки");
             case 2:
-                title.put("en", "Buttons with Right Text");
-                title.put("ru", "Кнопки с текстом справа");
-                break;
+                return mapOf("en", "Buttons with Right Text", "ru", "Кнопки с текстом справа");
             default:
-                title.put("en", "Buttons");
-                title.put("ru", "Кнопки");
-                break;
+                return mapOf("en", "Buttons", "ru", "Кнопки");
         }
-        return title;
     }
 
     public static List<ru.voboost.components.buttons.ButtonConfig> getButtonsConfig(int sectionIndex) {
@@ -390,11 +201,22 @@ public class DemoContent {
 
     public static String getButtonsDefaultValue(int sectionIndex) {
         switch (sectionIndex) {
-            case 0: return "restore";
-            case 1: return "comfort";
-            case 2: return "on";
-            default: return "ok";
+            case 0:
+                return "restore";
+            case 1:
+                return "comfort";
+            case 2:
+                return "on";
+            default:
+                return "ok";
         }
+    }
+
+    public static Map<String, String> getButtonsRightText(int sectionIndex) {
+        if (sectionIndex == 2) {
+            return mapOf("en", "Auto headlamp", "ru", "Авто фары");
+        }
+        return new HashMap<>();
     }
 
     // ============================================================
@@ -406,26 +228,59 @@ public class DemoContent {
     }
 
     public static Map<String, String> getCheckboxSectionTitle(int sectionIndex) {
-        Map<String, String> title = new HashMap<>();
         switch (sectionIndex) {
             case 0:
-                title.put("en", "Checkbox with Label");
-                title.put("ru", "Переключатель с меткой");
-                break;
+                return mapOf("en", "Checkbox with Label", "ru", "Переключатель с меткой");
             case 1:
-                title.put("en", "Checkbox with Label and Description");
-                title.put("ru", "Переключатель с меткой и описанием");
-                break;
+                return mapOf(
+                    "en", "Checkbox with Label and Description",
+                    "ru", "Переключатель с меткой и описанием");
             case 2:
-                title.put("en", "Multiple Checkboxes");
-                title.put("ru", "Несколько переключателей");
-                break;
+                return mapOf("en", "Multiple Checkboxes", "ru", "Несколько переключателей");
             default:
-                title.put("en", "Checkbox");
-                title.put("ru", "Переключатель");
-                break;
+                return mapOf("en", "Checkbox", "ru", "Переключатель");
         }
-        return title;
+    }
+
+    public static Map<String, String> getCheckboxLabel(int sectionIndex) {
+        switch (sectionIndex) {
+            case 0:
+                return mapOf("en", "Auto-fold mirrors", "ru", "Автоскладывание зеркал");
+            case 1:
+                return mapOf("en", "Tow mode", "ru", "Режим буксировки");
+            case 2:
+                return mapOf("en", "Welcome lamp", "ru", "Приветственная подсветка");
+            default:
+                return mapOf("en", "Checkbox", "ru", "Переключатель");
+        }
+    }
+
+    public static Map<String, String> getCheckboxDescription(int sectionIndex) {
+        if (sectionIndex == 1) {
+            return mapOf(
+                "en", "Maintain N gear when vehicle is rescued",
+                "ru", "Поддерживать нейтраль при буксировке");
+        }
+        return new HashMap<>();
+    }
+
+    public static boolean getCheckboxChecked(int sectionIndex) {
+        switch (sectionIndex) {
+            case 0:
+                return true;
+            case 2:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static Map<String, String> getCheckboxExtraLabel() {
+        return mapOf("en", "Auto-tilt mirrors", "ru", "Автонаклон зеркал");
+    }
+
+    public static boolean getCheckboxExtraChecked() {
+        return false;
     }
 
     // ============================================================
@@ -437,26 +292,20 @@ public class DemoContent {
     }
 
     public static Map<String, String> getRadioSectionTitle(int sectionIndex) {
-        Map<String, String> title = new HashMap<>();
         switch (sectionIndex) {
             case 0:
-                title.put("en", "Radio with Title");
-                title.put("ru", "Радио с заголовком");
-                break;
+                return mapOf("en", "Radio with Title", "ru", "Радио с заголовком");
             case 1:
-                title.put("en", "Radio with Title and Description Above");
-                title.put("ru", "Радио с заголовком и описанием сверху");
-                break;
+                return mapOf(
+                    "en", "Radio with Title and Description Above",
+                    "ru", "Радио с заголовком и описанием сверху");
             case 2:
-                title.put("en", "Radio with Title and Description Below");
-                title.put("ru", "Радио с заголовком и описанием снизу");
-                break;
+                return mapOf(
+                    "en", "Radio with Title and Description Below",
+                    "ru", "Радио с заголовком и описанием снизу");
             default:
-                title.put("en", "Radio");
-                title.put("ru", "Радио");
-                break;
+                return mapOf("en", "Radio", "ru", "Радио");
         }
-        return title;
     }
 
     public static List<RadioButton> getRadioSubRadioButtons(int sectionIndex) {
@@ -484,236 +333,119 @@ public class DemoContent {
 
     public static String getRadioSubDefaultValue(int sectionIndex) {
         switch (sectionIndex) {
-            case 0: return "light";
-            case 1: return "med";
-            case 2: return "30";
-            default: return "default";
+            case 0:
+                return "light";
+            case 1:
+                return "med";
+            case 2:
+                return "30";
+            default:
+                return "default";
         }
     }
 
+    public static Map<String, String> getRadioSubTitle(int sectionIndex) {
+        switch (sectionIndex) {
+            case 0:
+                return mapOf("en", "Anti-theft alarm", "ru", "Противоугонная сигнализация");
+            case 1:
+                return mapOf("en", "Energy recovery", "ru", "Рекуперация энергии");
+            case 2:
+                return mapOf("en", "Come home lights", "ru", "Подсветка дороги домой");
+            default:
+                return mapOf("en", "Radio", "ru", "Радио");
+        }
+    }
+
+    public static Map<String, String> getRadioSubDescriptionAbove(int sectionIndex) {
+        if (sectionIndex == 1) {
+            return mapOf(
+                "en", "Adjusts braking energy recovery level",
+                "ru", "Регулирует уровень рекуперации торможения");
+        }
+        return new HashMap<>();
+    }
+
+    public static Map<String, String> getRadioSubDescriptionBelow(int sectionIndex) {
+        if (sectionIndex == 2) {
+            return mapOf(
+                "en", "Headlights stay on after locking",
+                "ru", "Фары остаются включёнными после блокировки");
+        }
+        return new HashMap<>();
+    }
+
     // ============================================================
-    // Select/Dialog/Toast tab content
+    // Select tab content
     // ============================================================
 
-    /**
-     * Returns SelectOption items for the Select demo.
-     *
-     * @return List of SelectOption objects
-     */
     public static List<SelectOption> getSelectOptions() {
         List<SelectOption> options = new ArrayList<>();
-
-        Map<String, String> autoLabels = new HashMap<>();
-        autoLabels.put("en", "Automatic");
-        autoLabels.put("ru", "Автоматический");
-        options.add(new SelectOption("auto", autoLabels));
-
-        Map<String, String> manualLabels = new HashMap<>();
-        manualLabels.put("en", "Manual");
-        manualLabels.put("ru", "Ручной");
-        options.add(new SelectOption("manual", manualLabels));
-
-        Map<String, String> ecoLabels = new HashMap<>();
-        ecoLabels.put("en", "Eco Mode");
-        ecoLabels.put("ru", "Эко режим");
-        options.add(new SelectOption("eco", ecoLabels));
-
-        Map<String, String> sportLabels = new HashMap<>();
-        sportLabels.put("en", "Sport Mode");
-        sportLabels.put("ru", "Спорт режим");
-        options.add(new SelectOption("sport", sportLabels));
-
-        Map<String, String> comfortLabels = new HashMap<>();
-        comfortLabels.put("en", "Comfort");
-        comfortLabels.put("ru", "Комфорт");
-        options.add(new SelectOption("comfort", comfortLabels));
-
+        options.add(new SelectOption("auto", mapOf("en", "Automatic", "ru", "Автоматический")));
+        options.add(new SelectOption("manual", mapOf("en", "Manual", "ru", "Ручной")));
+        options.add(new SelectOption("eco", mapOf("en", "Eco Mode", "ru", "Эко режим")));
+        options.add(new SelectOption("sport", mapOf("en", "Sport Mode", "ru", "Спорт режим")));
+        options.add(new SelectOption("comfort", mapOf("en", "Comfort", "ru", "Комфорт")));
         return options;
     }
+
+    // ============================================================
+    // Dialog tab content
+    // ============================================================
+
+    public static Map<String, Map<String, String>> getDialogContent() {
+        Map<String, Map<String, String>> content = new HashMap<>();
+        content.put("title", mapOf("en", "Reset Settings", "ru", "Сброс настроек"));
+        content.put(
+            "message",
+            mapOf(
+                "en", "Are you sure you want to reset all settings?",
+                "ru", "Вы уверены, что хотите сбросить все настройки?"));
+        content.put("confirm", mapOf("en", "Reset", "ru", "Сброс"));
+        content.put("cancel", mapOf("en", "Cancel", "ru", "Отмена"));
+        return content;
+    }
+
+    // ============================================================
+    // Toast tab content
+    // ============================================================
 
     public static int getToastSectionCount() {
         return 2;
     }
 
     public static Map<String, String> getToastSectionTitle(int sectionIndex) {
-        Map<String, String> title = new HashMap<>();
         switch (sectionIndex) {
             case 0:
-                title.put("en", "Short Toast");
-                title.put("ru", "Короткое уведомление");
-                break;
+                return mapOf("en", "Short Toast", "ru", "Короткое уведомление");
             case 1:
-                title.put("en", "Long Toast");
-                title.put("ru", "Длинное уведомление");
-                break;
+                return mapOf("en", "Long Toast", "ru", "Длинное уведомление");
             default:
-                title.put("en", "Toast");
-                title.put("ru", "Уведомление");
-                break;
+                return mapOf("en", "Toast", "ru", "Уведомление");
         }
-        return title;
     }
 
     public static Map<String, String> getToastButtonText(int sectionIndex) {
-        Map<String, String> text = new HashMap<>();
         switch (sectionIndex) {
             case 0:
-                text.put("en", "Show Short Toast");
-                text.put("ru", "Короткое уведомление");
-                break;
+                return mapOf("en", "Show Short Toast", "ru", "Короткое уведомление");
             case 1:
-                text.put("en", "Show Long Toast");
-                text.put("ru", "Длинное уведомление");
-                break;
+                return mapOf("en", "Show Long Toast", "ru", "Длинное уведомление");
             default:
-                text.put("en", "Show Toast");
-                text.put("ru", "Показать уведомление");
-                break;
+                return mapOf("en", "Show Toast", "ru", "Показать уведомление");
         }
-        return text;
     }
 
-    /**
-     * Returns localized button labels for the Dialog demo.
-     *
-     * @return Map with keys "title", "message", "confirm", "cancel" and values for language codes
-     */
-    public static Map<String, Map<String, String>> getDialogContent() {
-        Map<String, Map<String, String>> content = new HashMap<>();
-
-        Map<String, String> titleLabels = new HashMap<>();
-        titleLabels.put("en", "Reset Settings");
-        titleLabels.put("ru", "Сброс настроек");
-        content.put("title", titleLabels);
-
-        Map<String, String> messageLabels = new HashMap<>();
-        messageLabels.put("en", "Are you sure you want to reset all settings?");
-        messageLabels.put("ru", "Вы уверены, что хотите сбросить все настройки?");
-        content.put("message", messageLabels);
-
-        Map<String, String> confirmLabels = new HashMap<>();
-        confirmLabels.put("en", "Reset");
-        confirmLabels.put("ru", "Сброс");
-        content.put("confirm", confirmLabels);
-
-        Map<String, String> cancelLabels = new HashMap<>();
-        cancelLabels.put("en", "Cancel");
-        cancelLabels.put("ru", "Отмена");
-        content.put("cancel", cancelLabels);
-
-        return content;
-    }
-
-    /**
-     * Creates a Select component with standard configuration.
-     * This ensures consistent setup across all demos.
-     *
-     * @param context Android context
-     * @param options list of select options
-     * @param selectedValue initially selected value
-     * @param theme theme to apply
-     * @param language language to apply
-     * @param onValueChange callback for value changes
-     * @return configured Select component
-     */
-    public static ru.voboost.components.select.Select createSelect(
-            Context context,
-            List<ru.voboost.components.select.SelectOption> options,
-            String selectedValue,
-            Theme theme,
-            Language language,
-            ru.voboost.components.select.Select.OnValueChangeListener onValueChange) {
-        ru.voboost.components.select.Select select = new ru.voboost.components.select.Select(context);
-        select.setTheme(theme);
-        select.setLanguage(language);
-        select.setOptions(options);
-        select.setSelectedValue(selectedValue);
-        if (onValueChange != null) {
-            select.setOnValueChangeListener(onValueChange);
-        }
-        return select;
-    }
-
-    // ============================================================
-    // Climate tab content (for demo-kotlin scroll testing)
-    // ============================================================
-
-    public static int getClimateSectionCount() {
-        return 5;
-    }
-
-    public static Map<String, String> getClimateSectionTitle(int sectionIndex) {
-        Map<String, String> title = new HashMap<>();
+    public static Map<String, String> getToastMessage(int sectionIndex) {
         switch (sectionIndex) {
             case 0:
-                title.put("en", "Temperature");
-                title.put("ru", "Температура");
-                break;
+                return mapOf("en", "Settings saved", "ru", "Настройки сохранены");
             case 1:
-                title.put("en", "Fan Speed");
-                title.put("ru", "Скорость вентилятора");
-                break;
-            case 2:
-                title.put("en", "Air Direction");
-                title.put("ru", "Направление воздуха");
-                break;
-            case 3:
-                title.put("en", "AC Mode");
-                title.put("ru", "Режим кондиционера");
-                break;
-            case 4:
-                title.put("en", "Recirculation");
-                title.put("ru", "Рециркуляция");
-                break;
+                return mapOf(
+                    "en", "Your settings have been successfully saved",
+                    "ru", "Ваши настройки успешно сохранены");
             default:
-                title.put("en", "Climate");
-                title.put("ru", "Климат");
-                break;
-        }
-        return title;
-    }
-
-    public static List<RadioButton> getClimateSubRadioButtons(int sectionIndex) {
-        switch (sectionIndex) {
-            case 0:
-                return java.util.Arrays.asList(
-                    new RadioButton("low", mapOf("en", "Low", "ru", "Низ")),
-                    new RadioButton("med", mapOf("en", "Med", "ru", "Сред")),
-                    new RadioButton("high", mapOf("en", "High", "ru", "Выс")));
-            case 1:
-                return java.util.Arrays.asList(
-                    new RadioButton("auto", mapOf("en", "Auto", "ru", "Авто")),
-                    new RadioButton("1", mapOf("en", "1", "ru", "1")),
-                    new RadioButton("2", mapOf("en", "2", "ru", "2")),
-                    new RadioButton("3", mapOf("en", "3", "ru", "3")));
-            case 2:
-                return java.util.Arrays.asList(
-                    new RadioButton("face", mapOf("en", "Face", "ru", "Лицо")),
-                    new RadioButton("feet", mapOf("en", "Feet", "ru", "Ноги")),
-                    new RadioButton("both", mapOf("en", "Both", "ru", "Оба")));
-            case 3:
-                return java.util.Arrays.asList(
-                    new RadioButton("off", mapOf("en", "Off", "ru", "Выкл")),
-                    new RadioButton("on", mapOf("en", "On", "ru", "Вкл")),
-                    new RadioButton("auto", mapOf("en", "Auto", "ru", "Авто")));
-            case 4:
-                return java.util.Arrays.asList(
-                    new RadioButton("fresh", mapOf("en", "Fresh", "ru", "Свежий")),
-                    new RadioButton("recirc", mapOf("en", "Recirc", "ru", "Рециркуля")));
-            default:
-                return java.util.Arrays.asList(
-                    new RadioButton("default", mapOf("en", "Default", "ru", "По умолчанию")));
-        }
-    }
-
-    public static String getClimateSubDefaultValue(int sectionIndex) {
-        switch (sectionIndex) {
-            case 0: return "med";
-            case 1: return "auto";
-            case 2: return "both";
-            case 3: return "auto";
-            case 4: return "fresh";
-            default: return "default";
+                return mapOf("en", "Settings saved", "ru", "Настройки сохранены");
         }
     }
 }

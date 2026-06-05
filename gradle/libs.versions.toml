@@ -23,6 +23,7 @@ compose-material = { group = "androidx.compose.material", name = "material" }
 compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 compose-activity = { group = "androidx.activity", name = "activity-compose" }
 compose-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose" }
+lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose", version.ref = "roborazzi" }
 roborazzi-junit-rule = { group = "io.github.takahirom.roborazzi", name = "roborazzi-junit-rule", version.ref = "roborazzi" }

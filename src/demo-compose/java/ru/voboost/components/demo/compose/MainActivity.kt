@@ -66,11 +66,9 @@ class MainActivity : ComponentActivity() {
 
             // Keep screen on for automotive use
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        } catch (e: Exception) {
-            // Log exceptions for debugging in development
-            if (BuildConfig.DEBUG) {
-                Log.w("MainActivity", "Window setup failed", e)
-            }
+        } catch (e: NullPointerException) {
+            // DecorView is not fully initialized in Robolectric unit tests
+            Log.d("MainActivity", "Ignoring NullPointerException in setupFullScreenMode (Robolectric)", e)
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.viewinterop.AndroidView
+import ru.voboost.components.i18n.Language
 import ru.voboost.components.panel.Panel
 import ru.voboost.components.tabs.TabItem
 import ru.voboost.components.tabs.Tabs
@@ -21,12 +22,15 @@ import ru.voboost.components.theme.Theme
  * @param panels Array of Panel components for each tab
  * @param selectedTab Currently selected tab value
  * @param onTabSelected Callback when tab selection changes
+ * @param theme Theme enum value
+ * @param language Language enum value, propagated to the whole component tree
  * @param offsetX Horizontal offset in pixels (default: 175)
  * @param offsetY Vertical offset in pixels (default: 50)
  * @param gapX Horizontal gap between tabs and panels in pixels (default: 0)
  * @param screenLiftState Screen lift state (1=lowered, 2=raised, default: 2)
- * @param theme Theme enum value
  * @param onScreenLift Callback when screen lift state changes
+ * @param onScreenReady Callback invoked once with the underlying Screen view,
+ *   allowing imperative interop actions such as showToast
  */
 @Composable
 fun Screen(
@@ -35,11 +39,13 @@ fun Screen(
     selectedTab: String,
     onTabSelected: (String) -> Unit,
     theme: Theme,
+    language: Language,
     offsetX: Int = 175,
     offsetY: Int = 50,
     gapX: Int = 0,
     screenLiftState: Int = 2,
     onScreenLift: ((Int) -> Unit)? = null,
+    onScreenReady: ((ru.voboost.components.screen.Screen) -> Unit)? = null,
 ) {
     // Track last selected tab to avoid redundant updates
     var lastSelectedTab by remember { mutableStateOf(selectedTab) }
@@ -56,6 +62,7 @@ fun Screen(
                 val tabsView =
                     Tabs(context).apply {
                         setTheme(theme)
+                        setLanguage(language)
                         setItems(tabs)
                         setSelectedValue(selectedTab, false)
                         setOnValueChangeListener { newValue ->
@@ -68,15 +75,22 @@ fun Screen(
                 // Set panels
                 setPanels(panels)
 
+                // Propagate language to the whole tree
+                setLanguage(language)
+
                 // Configure screen lift
                 onScreenLift(screenLiftState)
                 if (onScreenLift != null) {
                     setOnScreenLiftListener { onScreenLift(it) }
                 }
+
+                // Expose the underlying view for imperative interop (e.g. toasts)
+                onScreenReady?.invoke(this)
             }
         },
         update = { screenView ->
             screenView.setTheme(theme)
+            screenView.setLanguage(language)
             screenView.setOffsetX(offsetX)
             screenView.setOffsetY(offsetY)
             screenView.setGapX(gapX)
@@ -84,6 +98,7 @@ fun Screen(
             // Update tabs
             screenView.getTabs()?.apply {
                 setTheme(theme)
+                setLanguage(language)
                 setItems(tabs)
 
                 if (selectedTab != lastSelectedTab) {

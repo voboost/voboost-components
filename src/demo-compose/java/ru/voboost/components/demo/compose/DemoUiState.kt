@@ -14,7 +14,7 @@ package ru.voboost.components.demo.compose
  * @property screenLiftState Current screen lift state (1 for lowered, 2 for raised)
  */
 data class DemoUiState(
-    val selectedTab: String = "language",
+    val selectedTab: String = "settings",
     val currentLanguage: String = "en",
     val currentTheme: String = "dark",
     val currentCarType: String = "free",

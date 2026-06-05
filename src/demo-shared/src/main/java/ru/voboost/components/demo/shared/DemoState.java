@@ -62,14 +62,6 @@ public class DemoState {
         tabValues.put("language", DemoContent.getDefaultValue("language"));
         tabValues.put("theme", DemoContent.getDefaultValue("theme"));
         tabValues.put("car_type", DemoContent.getDefaultValue("car_type"));
-        // New tabs don't have radio values
-        tabValues.put("button", "");
-        tabValues.put("buttons", "");
-        tabValues.put("checkbox", "");
-        tabValues.put("radio", "");
-        tabValues.put("select", "");
-        tabValues.put("dialog", "");
-        tabValues.put("toast", "");
     }
 
     // Getters and setters

@@ -26,7 +26,7 @@ class DemoViewModelTest {
     fun testInitialState() {
         val uiState = viewModel.uiState.value
 
-        assertEquals("language", uiState.selectedTab)
+        assertEquals("settings", uiState.selectedTab)
         assertEquals("en", uiState.currentLanguage)
         assertEquals("dark", uiState.currentTheme)
         assertEquals("free", uiState.currentCarType)
@@ -60,14 +60,14 @@ class DemoViewModelTest {
      */
     @Test
     fun testTabSelection() {
-        viewModel.onTabSelected("theme")
-        assertEquals("theme", viewModel.uiState.value.selectedTab)
+        viewModel.onTabSelected("button")
+        assertEquals("button", viewModel.uiState.value.selectedTab)
 
-        viewModel.onTabSelected("car_type")
-        assertEquals("car_type", viewModel.uiState.value.selectedTab)
+        viewModel.onTabSelected("checkbox")
+        assertEquals("checkbox", viewModel.uiState.value.selectedTab)
 
-        viewModel.onTabSelected("language")
-        assertEquals("language", viewModel.uiState.value.selectedTab)
+        viewModel.onTabSelected("settings")
+        assertEquals("settings", viewModel.uiState.value.selectedTab)
     }
 
     /**
@@ -132,8 +132,8 @@ class DemoViewModelTest {
         viewModel.onValueChange("car_type", "dreamer")
         assertEquals("dreamer", viewModel.uiState.value.currentCarType)
 
-        // Verify other tabs don't affect state
-        viewModel.onValueChange("climate", "manual")
+        // Verify component tabs don't affect state
+        viewModel.onValueChange("button", "ignored")
         assertEquals("dreamer", viewModel.uiState.value.currentCarType)
     }
 
@@ -164,10 +164,10 @@ class DemoViewModelTest {
         viewModel.onLanguageChanged("ru")
         viewModel.onThemeChanged("dark")
         viewModel.onCarTypeChanged("dreamer")
-        viewModel.onTabSelected("theme")
+        viewModel.onTabSelected("button")
 
         val uiState = viewModel.uiState.value
-        assertEquals("theme", uiState.selectedTab)
+        assertEquals("button", uiState.selectedTab)
         assertEquals("ru", uiState.currentLanguage)
         assertEquals("dark", uiState.currentTheme)
         assertEquals("dreamer", uiState.currentCarType)

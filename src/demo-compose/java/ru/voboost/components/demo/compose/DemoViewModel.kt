@@ -82,8 +82,7 @@ class DemoViewModel : ViewModel() {
             "language" -> onLanguageChanged(newValue)
             "theme" -> onThemeChanged(newValue)
             "car_type" -> onCarTypeChanged(newValue)
-            // Other tabs (climate, audio, display, system) don't update state
-            // but could be logged or tracked if needed
+            // Component tabs (button, buttons, checkbox, ...) do not change app state
         }
     }
 }
