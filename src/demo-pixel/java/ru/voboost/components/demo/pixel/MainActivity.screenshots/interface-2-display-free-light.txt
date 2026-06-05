@@ -1,0 +1,6 @@
+Pixel Comparison Report
+=======================
+
+Reference image not found: interface-2-display-free-light_1original.png
+Place reference image at: /Users/vitaly/Yandex.Disk.localized/1voboost/voboost-components/src/demo-pixel/java/ru/voboost/components/demo/pixel/MainActivity.screenshots/interface-2-display-free-light_1original.png
+Actual rendering saved as: interface-2-display-free-light_2actual.png

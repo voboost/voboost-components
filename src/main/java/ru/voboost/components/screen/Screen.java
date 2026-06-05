@@ -57,8 +57,8 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
     private int offsetY = ScreenTheme.DEFAULT_OFFSET_Y;
     private int gapX = ScreenTheme.DEFAULT_GAP_X;
 
-    // Compact panel mode: full height, narrow width, side image
-    private boolean compactPanel = false;
+    // Animations (panel transition + tab indicator); disabled in pixel tests
+    private boolean animationsEnabled = true;
 
     // Screen lift state
     private int screenLiftState = SCREEN_RAISED;
@@ -272,18 +272,6 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         return gapX;
     }
 
-    public void setCompactPanel(boolean compactPanel) {
-        this.compactPanel = compactPanel;
-        if (panels != null) {
-            for (Panel p : panels) {
-                if (p != null) {
-                    p.setCompact(compactPanel);
-                }
-            }
-        }
-        requestLayout();
-    }
-
     private ScreenView ensurePanelWrapper(int index) {
         if (panelWrappers == null || index < 0 || index >= panelWrappers.length) {
             return null;
@@ -295,13 +283,29 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
             w.addView(panels[index]);
             panelWrappers[index] = w;
         }
-        panels[index].setCompact(compactPanel);
-
         return w;
     }
 
-    public boolean isCompactPanel() {
-        return compactPanel;
+    /**
+     * Enables/disables panel transition and tab indicator animations.
+     * Disabled in pixel tests so a single rendered frame is deterministic.
+     */
+    public void setAnimationsEnabled(boolean enabled) {
+        this.animationsEnabled = enabled;
+        if (tabs != null) {
+            tabs.setAnimationsEnabled(enabled);
+        }
+    }
+
+    /** Returns whether panel/tab animations are enabled. */
+    public boolean isAnimationsEnabled() {
+        return animationsEnabled;
+    }
+
+    /** Compact mode is a per-panel property; the Screen follows the active panel. */
+    private boolean isActiveCompact() {
+        Panel active = getActivePanel();
+        return active != null && active.isCompact();
     }
 
     /**
@@ -346,6 +350,7 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
             Tabs.OnTabChangeListener newListener = newIndex -> setActivePanel(newIndex);
             previousTabChangeListener = newListener;
             tabs.setOnTabChangeListener(newListener);
+            tabs.setAnimationsEnabled(animationsEnabled);
         } else {
             previousTabChangeListener = null;
         }
@@ -459,6 +464,13 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
             return;
         }
 
+        // Animations disabled (e.g. pixel tests): swap instantly
+        if (!animationsEnabled) {
+            super.removeView(oldWrapper);
+            requestLayout();
+            return;
+        }
+
         // Determine animation direction
         boolean goingDown = index > oldIndex;
 
@@ -469,9 +481,10 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         requestLayout();
 
         // Animation distance: wrapper slides by its own height
-        int wrapperHeight = compactPanel ? getMeasuredHeight() : getMeasuredHeight() - offsetY;
+        boolean activeCompact = isActiveCompact();
+        int wrapperHeight = activeCompact ? getMeasuredHeight() : getMeasuredHeight() - offsetY;
         if (wrapperHeight <= 0) {
-            wrapperHeight = compactPanel ? getHeight() : getHeight() - offsetY;
+            wrapperHeight = activeCompact ? getHeight() : getHeight() - offsetY;
         }
         if (wrapperHeight <= 0) {
             super.removeView(oldWrapper);
@@ -758,8 +771,9 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         int tabsWidth = (tabs != null) ? tabs.getMeasuredWidth() : 0;
 
         // Panel ScreenView: compact → availableHeight, wide → availableHeight - offsetY
-        int panelWidth = compactPanel ? ScreenTheme.PANEL_WIDTH : (width - offsetX - tabsWidth - gapX);
-        int wrapperHeight = compactPanel ? availableHeight : availableHeight - offsetY;
+        boolean activeCompact = isActiveCompact();
+        int panelWidth = activeCompact ? ScreenTheme.PANEL_WIDTH : (width - offsetX - tabsWidth - gapX);
+        int wrapperHeight = activeCompact ? availableHeight : availableHeight - offsetY;
 
         // Measure active panel-wrapper
         ScreenView activeWrapper = (panelWrappers != null && activePanelIndex >= 0
@@ -809,7 +823,7 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         }
 
         // Layout active panel-wrapper: compact at Y=0, wide at Y=offsetY
-        int panelTop = compactPanel ? 0 : offsetY;
+        int panelTop = isActiveCompact() ? 0 : offsetY;
         ScreenView activeWrapper = (panelWrappers != null && activePanelIndex >= 0
                 && activePanelIndex < panelWrappers.length) ? panelWrappers[activePanelIndex] : null;
         if (activeWrapper != null && activeWrapper.getParent() == this) {
@@ -877,7 +891,6 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
         private Tabs tabs;
         private Panel[] panels;
         private OnScreenLiftListener onScreenLiftListener;
-        private boolean compactPanel = false;
 
         private Builder(android.content.Context context, Theme theme) {
             this.context = context;
@@ -944,12 +957,6 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
             return this;
         }
 
-        @NonNull
-        public Builder compactPanel(boolean compactPanel) {
-            this.compactPanel = compactPanel;
-            return this;
-        }
-
         /**
          * Builds and returns the Screen instance.
          *
@@ -971,9 +978,6 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
             }
             if (onScreenLiftListener != null) {
                 screen.setOnScreenLiftListener(onScreenLiftListener);
-            }
-            if (compactPanel) {
-                screen.setCompactPanel(true);
             }
             return screen;
         }

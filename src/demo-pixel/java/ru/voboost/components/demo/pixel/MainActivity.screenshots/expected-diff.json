@@ -1,52 +1,52 @@
 {
-  "button-01": {
-    "matchPercent": 69.9,
+  "interface-2-display-free-dark": {
+    "matchPercent": 96.36670170275384,
     "totalPixels": 1189250,
-    "differentPixels": 357951
+    "differentPixels": 43209
   },
-  "button-checkbox-radio": {
-    "matchPercent": 95.62,
+  "button-01-free-dark": {
+    "matchPercent": 98.80025225982762,
     "totalPixels": 1189250,
-    "differentPixels": 52110
+    "differentPixels": 14268
   },
-  "checkbox-01": {
-    "matchPercent": 98.26491237193822,
-    "totalPixels": 961450,
-    "differentPixels": 16682
-  },
-  "checkbox-02": {
-    "matchPercent": 91.3948723282542,
-    "totalPixels": 961450,
-    "differentPixels": 82734
-  },
-  "interface-2-display-checkbox": {
+  "interface-2-display-checkbox-free-dark": {
     "matchPercent": 100,
     "totalPixels": 961450,
     "differentPixels": 0
   },
-  "interface-2-display": {
-    "matchPercent": 90.35,
-    "totalPixels": 1189250,
-    "differentPixels": 114799
+  "checkbox-01-free-dark": {
+    "matchPercent": 98.26491237193822,
+    "totalPixels": 961450,
+    "differentPixels": 16682
+  },
+  "checkbox-02-free-dark": {
+    "matchPercent": 98.62676166207291,
+    "totalPixels": 961450,
+    "differentPixels": 13203
+  },
+  "button-checkbox-radio-free-dark": {
+    "matchPercent": 99.37219824223828,
+    "totalPixels": 961450,
+    "differentPixels": 6036
   },
   "section-info-short-01-free-dark": {
-    "matchPercent": 95.82132400199957,
-    "totalPixels": 700150,
-    "differentPixels": 29257
+    "matchPercent": 94.54260611834445,
+    "totalPixels": 472350,
+    "differentPixels": 25778
   },
   "section-info-short-02-free-dark": {
-    "matchPercent": 95.7056882821388,
-    "totalPixels": 879000,
-    "differentPixels": 37747
+    "matchPercent": 95.20371794871795,
+    "totalPixels": 780000,
+    "differentPixels": 37411
   },
   "section-info-short-01-free-light": {
-    "matchPercent": 98.35449546525744,
-    "totalPixels": 700150,
-    "differentPixels": 11521
+    "matchPercent": 97.83931406795809,
+    "totalPixels": 472350,
+    "differentPixels": 10206
   },
   "section-info-short-02-free-light": {
-    "matchPercent": 97.99260523321956,
-    "totalPixels": 879000,
-    "differentPixels": 17645
+    "matchPercent": 97.77884615384616,
+    "totalPixels": 780000,
+    "differentPixels": 17325
   }
 }

@@ -1,0 +1,17 @@
+Pixel Comparison Report
+=======================
+
+PixelComparison: 94.54% match (446572/472350 pixels, 25778 different)
+
+Compare area: x=[485..1190], y=[50..720]
+Tolerance: 5 per channel
+
+Files:
+  section-info-short-01-free-dark_1original.png  - original reference
+  section-info-short-01-free-dark_2actual.png    - our rendering
+  section-info-short-01-free-dark_3diff.png      - diff (semi-transparent magenta overlay)
+  section-info-short-01-free-dark_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+=== BASELINE COMPARISON ===
+Diff comparison for section-info-short-01-free-dark:
+  PASS: Match unchanged at 94.54% (25778 diff pixels)

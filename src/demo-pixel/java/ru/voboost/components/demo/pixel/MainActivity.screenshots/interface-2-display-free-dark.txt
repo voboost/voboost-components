@@ -1,0 +1,17 @@
+Pixel Comparison Report
+=======================
+
+PixelComparison: 96.37% match (1146041/1189250 pixels, 43209 different)
+
+Compare area: x=[145..1920], y=[50..720]
+Tolerance: 5 per channel
+
+Files:
+  interface-2-display-free-dark_1original.png  - original reference
+  interface-2-display-free-dark_2actual.png    - our rendering
+  interface-2-display-free-dark_3diff.png      - diff (semi-transparent magenta overlay)
+  interface-2-display-free-dark_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+=== BASELINE COMPARISON ===
+Diff comparison for interface-2-display-free-dark:
+  PASS: Match unchanged at 96.37% (43209 diff pixels)

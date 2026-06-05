@@ -4,246 +4,228 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.view.View;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.ParameterizedRobolectricTestRunner;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 
+import ru.voboost.components.theme.Theme;
+
 /**
- * Pixel comparison test for the pixel demo.
+ * Single parameterized pixel test for the consolidated MainActivity.
  *
- * This test:
- * 1. Launches MainActivity via Robolectric in native graphics mode
- * 2. Renders the Screen component to a 1920x720 bitmap
- * 3. Loads the reference screenshot (interface-2-display_1original.png)
- * 4. Compares pixel-by-pixel (excluding system UI area)
- * 5. Generates a diff image highlighting differences in MAGENTA
- * 6. Saves everything to MainActivity.screenshots/
- *
- * RUN:
- * ./gradlew :demo-pixel:testDebugUnitTest --tests="*MainActivityTestVisual*"
- *
- * OUTPUT (in src/demo-pixel/java/.../pixel/MainActivity.screenshots/):
- * interface-2-display_1original.png - original reference screenshot
- * interface-2-display_2actual.png - what our components rendered
- * interface-2-display_3diff.png - diff (matching=dimmed, different=magenta)
- * interface-2-display.txt - text report with match percentage
+ * One Screen per theme holds all demo content distributed across tabs; each shot
+ * selects a tab, scrolls and renders. Tabs are pixel-validated only for the two
+ * shots that compare from x=145 (set A: interface-2-display, set B: button-01);
+ * other shots compare from x=485. Animations are disabled for deterministic frames.
  */
-@RunWith(RobolectricTestRunner.class)
+@RunWith(ParameterizedRobolectricTestRunner.class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = { 33 }, qualifiers = "w1920dp-h720dp-land-mdpi")
 public class MainActivityTestVisual {
 
-    // Automotive display dimensions
     private static final int SCREEN_WIDTH = 1920;
     private static final int SCREEN_HEIGHT = 720;
+    private static final String OUTPUT_DIR =
+            "java/ru/voboost/components/demo/pixel/MainActivity.screenshots";
 
-    // System UI boundaries (excluded from pixel comparison)
-    // Left 145px = system launcher sidebar
-    // Top 50px = status bar
-    private static final int COMPARE_START_X = 145;
-    private static final int COMPARE_START_Y = 50;
+    private static final class Shot {
+        final String base;
+        final String tab;
+        final int tabScroll;
+        final int panelScroll;
+        final int startX;
+        final int endX;
+        final int startY;
+        final int endY;
+        final boolean popup;
 
-    // Per-channel pixel tolerance
-    // 0 = exact match only
-    // 5 = allow +-5 difference per R/G/B/A channel (for anti-aliasing)
+        Shot(String base, String tab, int tabScroll, int panelScroll,
+             int startX, int endX, int startY, int endY, boolean popup) {
+            this.base = base;
+            this.tab = tab;
+            this.tabScroll = tabScroll;
+            this.panelScroll = panelScroll;
+            this.startX = startX;
+            this.endX = endX;
+            this.startY = startY;
+            this.endY = endY;
+            this.popup = popup;
+        }
+    }
 
-    // Output directory (BEM co-located screenshots)
-    // Path is relative to module root (src/demo-pixel/) since Gradle runs tests
-    // from there
-    private static final String OUTPUT_DIR = "java/ru/voboost/components/demo/pixel/MainActivity.screenshots";
+    private static final List<Shot> SHOTS = Arrays.asList(
+            new Shot("interface-2-display", "display",
+                    0, 0, 145, SCREEN_WIDTH, 50, SCREEN_HEIGHT, false),
+            new Shot("button-01", "system",
+                    DemoRenderUtils.SCROLL_END, DemoRenderUtils.SCROLL_END, 145, SCREEN_WIDTH, 50, SCREEN_HEIGHT, false),
+            new Shot("interface-2-display-checkbox", "voice",
+                    0, 0, 485, SCREEN_WIDTH, 50, SCREEN_HEIGHT, false),
+            new Shot("checkbox-01", "network",
+                    0, 0, 485, SCREEN_WIDTH, 50, SCREEN_HEIGHT, false),
+            new Shot("checkbox-02", "privacy",
+                    0, 0, 485, SCREEN_WIDTH, 50, SCREEN_HEIGHT, false),
+            new Shot("button-checkbox-radio", "device",
+                    0, 0, 485, SCREEN_WIDTH, 50, SCREEN_HEIGHT, false),
+            new Shot("section-info-short-01", "sound",
+                    420, 0, 485, 1190, 50, SCREEN_HEIGHT, false),
+            new Shot("section-info-short-02", "sound",
+                    425, 0, 310, 1610, 50, 650, true)
+    );
+
+    @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
+    public static Collection<Object[]> variants() {
+        return Arrays.asList(new Object[][] {
+                { "free-dark",     Theme.FREE_DARK     },
+                { "free-light",    Theme.FREE_LIGHT    },
+                { "dreamer-dark",  Theme.DREAMER_DARK  },
+                { "dreamer-light", Theme.DREAMER_LIGHT },
+        });
+    }
+
+    private final String themeSlug;
+    private final Theme theme;
 
     private ActivityController<MainActivity> controller;
     private MainActivity activity;
 
+    public MainActivityTestVisual(String themeSlug, Theme theme) {
+        this.themeSlug = themeSlug;
+        this.theme = theme;
+    }
+
     @Before
     public void setUp() {
-        controller = Robolectric.buildActivity(MainActivity.class);
+        Intent intent = new Intent();
+        intent.putExtra(MainActivity.EXTRA_THEME, theme.getValue());
+        controller = Robolectric.buildActivity(MainActivity.class, intent);
         controller.create().start().resume();
         activity = controller.get();
+        activity.getScreen().setAnimationsEnabled(false);
     }
 
     @Test
-    public void compareWithReferenceScreenshot() throws Exception {
-        // Get variant name from system property (e.g., "v1", "v2", etc.)
-        String variant = System.getProperty("variant", "");
-        String suffix = variant.isEmpty() ? "" : "_" + variant;
+    public void compareAllShots() throws Exception {
+        List<AssertionError> failures = new ArrayList<>();
+        for (Shot shot : SHOTS) {
+            try {
+                runShot(shot);
+            } catch (AssertionError e) {
+                failures.add(e);
+            }
+        }
+        if (!failures.isEmpty()) {
+            throw failures.get(0);
+        }
+    }
 
-        // ---- Step 1: Render our components to bitmap ----
-        Bitmap actual = renderScreenToBitmap();
+    private void runShot(Shot shot) throws Exception {
+        activity.getScreen().getTabs().setSelectedValue(shot.tab, false);
+
+        Bitmap actual;
+        if (shot.popup) {
+            activity.getSection2().showPopup();
+            View overlay = activity.getSection2().getPopupOverlayView();
+            actual = DemoRenderUtils.renderScreenWithPopupOverlay(
+                    activity.getScreen(), overlay, SCREEN_WIDTH, SCREEN_HEIGHT,
+                    shot.tabScroll, shot.panelScroll);
+        } else {
+            actual = DemoRenderUtils.renderScreen(
+                    activity.getScreen(), SCREEN_WIDTH, SCREEN_HEIGHT,
+                    shot.tabScroll, shot.panelScroll);
+        }
         assertNotNull("Failed to render screen to bitmap", actual);
 
-        // Save our rendering with variant suffix
-        File actualFile = new File(OUTPUT_DIR, "interface-2-display_2actual" + suffix + ".png");
+        String variantBase = shot.base + "-" + themeSlug;
+        File actualFile = new File(OUTPUT_DIR, variantBase + "_2actual.png");
         PixelComparator.savePng(actual, actualFile);
-        System.out.println("Saved actual rendering: " + actualFile.getAbsolutePath());
-        System.out.println("Actual size: " + actual.getWidth() + "x" + actual.getHeight());
 
-        // ---- Step 2: Load reference image ----
-        Bitmap reference = loadReferenceImage();
-        if (reference == null) {
-            System.out.println("");
-            System.out.println("=== WARNING: Reference image not found ===");
-            System.out.println("Looked for: /interface-2-display_1original.png");
-            System.out.println("");
-            System.out.println("Place your reference image at:");
-            System.out.println(
-                    "  src/demo-pixel/java/ru/voboost/components/demo/pixel/"
-                            + "MainActivity.resources/interface-2-display_1original.png");
-            System.out.println("");
-            System.out.println("Skipping comparison. Actual rendering saved for inspection.");
+        File reportFile = new File(OUTPUT_DIR, variantBase + ".txt");
+        File referenceFile = new File(OUTPUT_DIR, variantBase + "_1original.png");
+        if (!referenceFile.exists()) {
+            writeMissingReference(reportFile, variantBase, referenceFile);
             return;
         }
+        Bitmap reference = BitmapFactory.decodeFile(referenceFile.getAbsolutePath());
 
-        System.out.println("Reference size: " + reference.getWidth() + "x" + reference.getHeight());
-
-        // ---- Step 3: Compare pixels ----
         PixelComparator.ComparisonResult result = PixelComparator.compare(
-                actual,
-                reference,
-                COMPARE_START_X,
-                COMPARE_START_Y,
-                SCREEN_WIDTH,
-                SCREEN_HEIGHT,
+                actual, reference, shot.startX, shot.startY, shot.endX, shot.endY,
                 DemoRenderUtils.PIXEL_TOLERANCE);
 
-        // ---- Step 4: Save diff images ----
-        File diffFile = new File(OUTPUT_DIR, "interface-2-display_3diff" + suffix + ".png");
-        PixelComparator.savePng(result.diffBitmap, diffFile);
-        File magentaFile = new File(OUTPUT_DIR, "interface-2-display_4magenta" + suffix + ".png");
-        PixelComparator.savePng(result.magentaBitmap, magentaFile);
+        PixelComparator.savePng(result.diffBitmap, new File(OUTPUT_DIR, variantBase + "_3diff.png"));
+        PixelComparator.savePng(result.magentaBitmap, new File(OUTPUT_DIR, variantBase + "_4magenta.png"));
 
-        // ---- Step 5: Print and save report ----
-        System.out.println("");
-        System.out.println("=== PIXEL COMPARISON REPORT ===");
-        System.out.println(result.toString());
-        System.out.println("Diff image: " + diffFile.getAbsolutePath());
-        System.out.println("Magenta image: " + magentaFile.getAbsolutePath());
-        System.out.println(
-                "Compare area: x=["
-                        + COMPARE_START_X
-                        + ".."
-                        + SCREEN_WIDTH
-                        + "], y=["
-                        + COMPARE_START_Y
-                        + ".."
-                        + SCREEN_HEIGHT
-                        + "]");
-        System.out.println("Tolerance: " + DemoRenderUtils.PIXEL_TOLERANCE + " per channel");
-
-        // Compare with baseline
-        String testName = "interface-2-display";
-        PixelComparator.ExpectedDiff expected = PixelComparator.ExpectedDiff.load(testName);
-        String comparisonMsg = "";
+        PixelComparator.ExpectedDiff expected = PixelComparator.ExpectedDiff.load(variantBase);
+        String comparisonMsg;
         boolean needsSave = (expected == null);
         AssertionError assertionError = null;
-
         if (expected != null) {
             try {
-                comparisonMsg = expected.compareWithCurrent(testName, result);
+                comparisonMsg = expected.compareWithCurrent(variantBase, result);
             } catch (AssertionError e) {
                 comparisonMsg = e.getMessage();
                 assertionError = e;
             }
         } else {
-            comparisonMsg = "No baseline (first run - saving current as baseline)";
+            comparisonMsg = "No baseline (first run - saving current as baseline)\n";
         }
-
-        System.out.println("");
-        System.out.println("=== BASELINE COMPARISON ===");
-        System.out.print(comparisonMsg);
-        System.out.println("");
-
-        // Save text report (always, even on error)
-        File reportFile = new File(OUTPUT_DIR, "interface-2-display" + suffix + ".txt");
-        try (FileWriter writer = new FileWriter(reportFile)) {
-            writer.write("Pixel Comparison Report\n");
-            writer.write("=======================\n\n");
-            writer.write(result.toString() + "\n\n");
-            writer.write(
-                    "Compare area: x=["
-                            + COMPARE_START_X
-                            + ".."
-                            + SCREEN_WIDTH
-                            + "], y=["
-                            + COMPARE_START_Y
-                            + ".."
-                            + SCREEN_HEIGHT
-                            + "]\n");
-            writer.write("Tolerance: " + DemoRenderUtils.PIXEL_TOLERANCE + " per channel\n\n");
-            writer.write("Files:\n");
-            writer.write("  interface-2-display_1original.png  - original reference\n");
-            writer.write("  interface-2-display_2actual.png    - our rendering\n");
-            writer.write("  interface-2-display_3diff.png      - diff (semi-transparent magenta overlay)\n");
-            writer.write("  interface-2-display_4magenta.png   - diff (pure magenta channel with transparent bg)\n\n");
-            writer.write("How to read the diff:\n");
-            writer.write("  Magenta pixels = our rendering differs from reference\n");
-            writer.write("  Dimmed pixels  = our rendering matches the reference\n");
-            writer.write("  Dark area      = system UI zone, excluded from comparison\n\n");
-            writer.write("=== BASELINE COMPARISON ===\n");
-            writer.write(comparisonMsg);
-
-        }
-        System.out.println("Report saved: " + reportFile.getAbsolutePath());
-
-        // Save baseline if first run
         if (needsSave) {
-            new PixelComparator.ExpectedDiff(result.matchPercentage, result.totalPixels, result.differentPixels)
-                .save(testName);
-            System.out.println("Baseline saved for: " + testName);
+            new PixelComparator.ExpectedDiff(
+                    result.matchPercentage, result.totalPixels, result.differentPixels)
+                    .save(variantBase);
         }
 
-        // Throw exception after saving report
+        writeReport(reportFile, shot, variantBase, result, comparisonMsg);
+
         if (assertionError != null) {
             throw assertionError;
         }
     }
 
-    /**
-     * Renders the Screen component to a 1920x720 bitmap.
-     */
-    private Bitmap renderScreenToBitmap() {
-        View screen = activity.getScreen();
-        if (screen == null)
-            return null;
-
-        // Force measure at automotive resolution
-        int widthSpec = View.MeasureSpec.makeMeasureSpec(SCREEN_WIDTH, View.MeasureSpec.EXACTLY);
-        int heightSpec = View.MeasureSpec.makeMeasureSpec(SCREEN_HEIGHT, View.MeasureSpec.EXACTLY);
-        screen.measure(widthSpec, heightSpec);
-        screen.layout(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-        // Draw to bitmap
-        Bitmap bitmap = Bitmap.createBitmap(SCREEN_WIDTH, SCREEN_HEIGHT, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        screen.draw(canvas);
-
-        return bitmap;
+    private void writeReport(File reportFile, Shot shot, String variantBase,
+            PixelComparator.ComparisonResult result, String comparisonMsg) throws Exception {
+        try (FileWriter writer = new FileWriter(reportFile, false)) {
+            writer.write("Pixel Comparison Report\n");
+            writer.write("=======================\n\n");
+            writer.write(result.toString() + "\n\n");
+            writer.write("Compare area: x=[" + shot.startX + ".." + shot.endX
+                    + "], y=[" + shot.startY + ".." + shot.endY + "]\n");
+            writer.write("Tolerance: " + DemoRenderUtils.PIXEL_TOLERANCE + " per channel\n\n");
+            writer.write("Files:\n");
+            writer.write("  " + variantBase + "_1original.png  - original reference\n");
+            writer.write("  " + variantBase + "_2actual.png    - our rendering\n");
+            writer.write("  " + variantBase + "_3diff.png      - diff (semi-transparent magenta overlay)\n");
+            writer.write("  " + variantBase + "_4magenta.png   - diff (pure magenta channel with transparent bg)\n\n");
+            writer.write("=== BASELINE COMPARISON ===\n");
+            writer.write(comparisonMsg);
+            if (!comparisonMsg.endsWith("\n")) {
+                writer.write("\n");
+            }
+        }
     }
 
-    /**
-     * Loads the reference image from the screenshots directory.
-     * Only PNG format is supported.
-     */
-    private Bitmap loadReferenceImage() {
-        File referenceFile = new File(OUTPUT_DIR, "interface-2-display_1original.png");
-        org.junit.Assume.assumeTrue("Reference image not found: " + referenceFile.getAbsolutePath() + ". Skipping test.", referenceFile.exists());
-        try {
-            Bitmap bitmap = BitmapFactory.decodeFile(referenceFile.getAbsolutePath());
-            return bitmap;
-        } catch (Exception e) {
-            System.out.println("Error loading reference image: " + e.getMessage());
-            return null;
+    private void writeMissingReference(File reportFile, String variantBase, File referenceFile)
+            throws Exception {
+        try (FileWriter writer = new FileWriter(reportFile, false)) {
+            writer.write("Pixel Comparison Report\n");
+            writer.write("=======================\n\n");
+            writer.write("Reference image not found: " + referenceFile.getName() + "\n");
+            writer.write("Place reference image at: " + referenceFile.getAbsolutePath() + "\n");
+            writer.write("Actual rendering saved as: " + variantBase + "_2actual.png\n");
         }
     }
 }

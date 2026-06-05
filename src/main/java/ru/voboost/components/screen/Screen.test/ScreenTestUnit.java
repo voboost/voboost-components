@@ -432,7 +432,7 @@ public class ScreenTestUnit {
     }
 
     @Test
-    public void testSetCompactPanelPropagatesToPanels() {
+    public void testCompactIsPerPanel() {
         android.content.Context ctx = androidx.test.core.app.ApplicationProvider.getApplicationContext();
         Tabs tabs = new Tabs(ctx);
         tabs.setLanguage(Language.EN);
@@ -441,35 +441,31 @@ public class ScreenTestUnit {
 
         Panel p0 = new Panel(ctx);
         Panel p1 = new Panel(ctx);
+        p1.setCompact(true);
         screen.setPanels(new Panel[]{p0, p1});
         screen.setTabs(tabs);
         tabs.setSelectedValue("tab1", false);
 
-        screen.setCompactPanel(true);
-
-        assertTrue(p0.isCompact());
+        assertFalse(p0.isCompact());
         assertTrue(p1.isCompact());
     }
 
     @Test
-    public void testSetCompactPanelFalsePropagatesToPanels() {
+    public void testSetAnimationsEnabledPropagatesToTabs() {
         android.content.Context ctx = androidx.test.core.app.ApplicationProvider.getApplicationContext();
         Tabs tabs = new Tabs(ctx);
         tabs.setLanguage(Language.EN);
         tabs.setTheme(Theme.FREE_LIGHT);
         tabs.setItems(createTestTabItems());
-
-        Panel p0 = new Panel(ctx);
-        Panel p1 = new Panel(ctx);
-        screen.setPanels(new Panel[]{p0, p1});
         screen.setTabs(tabs);
-        tabs.setSelectedValue("tab1", false);
 
-        screen.setCompactPanel(true);
-        screen.setCompactPanel(false);
+        screen.setAnimationsEnabled(false);
+        assertFalse(screen.isAnimationsEnabled());
+        assertFalse(tabs.isAnimationsEnabled());
 
-        assertFalse(p0.isCompact());
-        assertFalse(p1.isCompact());
+        screen.setAnimationsEnabled(true);
+        assertTrue(screen.isAnimationsEnabled());
+        assertTrue(tabs.isAnimationsEnabled());
     }
 }
 

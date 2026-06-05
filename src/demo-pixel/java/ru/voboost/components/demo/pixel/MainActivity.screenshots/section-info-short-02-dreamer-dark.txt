@@ -1,0 +1,6 @@
+Pixel Comparison Report
+=======================
+
+Reference image not found: section-info-short-02-dreamer-dark_1original.png
+Place reference image at: /Users/vitaly/Yandex.Disk.localized/1voboost/voboost-components/src/demo-pixel/java/ru/voboost/components/demo/pixel/MainActivity.screenshots/section-info-short-02-dreamer-dark_1original.png
+Actual rendering saved as: section-info-short-02-dreamer-dark_2actual.png

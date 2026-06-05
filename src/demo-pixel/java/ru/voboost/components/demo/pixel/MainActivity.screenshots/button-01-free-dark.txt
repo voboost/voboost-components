@@ -1,0 +1,17 @@
+Pixel Comparison Report
+=======================
+
+PixelComparison: 98.80% match (1174982/1189250 pixels, 14268 different)
+
+Compare area: x=[145..1920], y=[50..720]
+Tolerance: 5 per channel
+
+Files:
+  button-01-free-dark_1original.png  - original reference
+  button-01-free-dark_2actual.png    - our rendering
+  button-01-free-dark_3diff.png      - diff (semi-transparent magenta overlay)
+  button-01-free-dark_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+=== BASELINE COMPARISON ===
+Diff comparison for button-01-free-dark:
+  PASS: Match unchanged at 98.80% (14268 diff pixels)

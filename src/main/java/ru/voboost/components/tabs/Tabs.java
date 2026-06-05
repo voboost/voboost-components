@@ -98,6 +98,7 @@ public class Tabs extends View implements IThemable, ILocalizable {
     // Animation
     private float animatedY = 0f;
     private boolean animatedYInitialized = false;
+    private boolean animationsEnabled = true;
     private ValueAnimator selectionAnimator;
 
     // Calculated positions
@@ -277,7 +278,11 @@ public class Tabs extends View implements IThemable, ILocalizable {
                 animatedY = targetY;
                 animatedYInitialized = true;
             } else if (animatedY != targetY) {
-                animateToPosition(newIndex);
+                if (animationsEnabled) {
+                    animateToPosition(newIndex);
+                } else {
+                    animatedY = targetY;
+                }
             }
 
             if (onTabChangeListener != null) {
@@ -411,6 +416,19 @@ public class Tabs extends View implements IThemable, ILocalizable {
         calculateItemPositions();
         requestLayout();
         invalidate();
+    }
+
+    /**
+     * Enables/disables the selection indicator slide animation.
+     * Disabled in pixel tests so a single rendered frame is deterministic.
+     */
+    public void setAnimationsEnabled(boolean enabled) {
+        this.animationsEnabled = enabled;
+    }
+
+    /** Returns whether the selection indicator animation is enabled. */
+    public boolean isAnimationsEnabled() {
+        return animationsEnabled;
     }
 
     /**

@@ -1,0 +1,17 @@
+Pixel Comparison Report
+=======================
+
+PixelComparison: 99.37% match (955414/961450 pixels, 6036 different)
+
+Compare area: x=[485..1920], y=[50..720]
+Tolerance: 5 per channel
+
+Files:
+  button-checkbox-radio-free-dark_1original.png  - original reference
+  button-checkbox-radio-free-dark_2actual.png    - our rendering
+  button-checkbox-radio-free-dark_3diff.png      - diff (semi-transparent magenta overlay)
+  button-checkbox-radio-free-dark_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+=== BASELINE COMPARISON ===
+Diff comparison for button-checkbox-radio-free-dark:
+  PASS: Match unchanged at 99.37% (6036 diff pixels)

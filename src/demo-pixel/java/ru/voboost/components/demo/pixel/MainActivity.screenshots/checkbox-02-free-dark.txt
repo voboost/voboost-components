@@ -1,0 +1,17 @@
+Pixel Comparison Report
+=======================
+
+PixelComparison: 98.63% match (948247/961450 pixels, 13203 different)
+
+Compare area: x=[485..1920], y=[50..720]
+Tolerance: 5 per channel
+
+Files:
+  checkbox-02-free-dark_1original.png  - original reference
+  checkbox-02-free-dark_2actual.png    - our rendering
+  checkbox-02-free-dark_3diff.png      - diff (semi-transparent magenta overlay)
+  checkbox-02-free-dark_4magenta.png   - diff (pure magenta channel with transparent bg)
+
+=== BASELINE COMPARISON ===
+Diff comparison for checkbox-02-free-dark:
+  PASS: Match unchanged at 98.63% (13203 diff pixels)
