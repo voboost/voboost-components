@@ -236,7 +236,11 @@ public class Tabs extends View implements IThemable, ILocalizable {
             }
         }
 
-        animatedYInitialized = false;
+        // Preserve animation state if selectedValue is already set and matches an item
+        int existingIndex = getIndexForValue(selectedValue);
+        if (existingIndex < 0) {
+            animatedYInitialized = false;
+        }
         calculateItemPositions();
         requestLayout();
         invalidate();
