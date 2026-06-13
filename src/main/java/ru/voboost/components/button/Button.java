@@ -21,16 +21,19 @@ import ru.voboost.components.theme.Theme;
 import ru.voboost.components.button.ButtonContainerDimensions;
 
 /**
- * Button component — pill-shaped button with optional description text.
+ * Button component — pill-shaped button with optional title, description above, and description
+ * text to the right.
  *
- * <p>Layout (horizontal, centerVertical):
+ * <p>Layout (vertical container holding a horizontal row):
  * <pre>
- * ┌──────────┐  Description line 1
- * │  Button  │  Description line 2 (multi-line)
+ * [Title]                 (optional, 32px)
+ * [Description above]     (optional, 24px)
+ * ┌──────────┐  Description to the right (optional, multi-line)
+ * │  Button  │
  * └──────────┘
  * </pre>
  *
- * <p>When no description is set, only the button is shown.
+ * <p>When no text is set, only the pill button row is shown (70px tall).
  */
 public class Button extends LinearLayout implements IThemable, ILocalizable {
 
@@ -39,10 +42,15 @@ public class Button extends LinearLayout implements IThemable, ILocalizable {
     private ButtonDescriptionColors descColors;
 
     // Child views
+    private TextView titleView;
+    private TextView descAboveView;
+    private LinearLayout row;
     private ButtonPrimitive primitive;
     private TextView descView;
 
     // Data
+    private Map<String, String> titleData;
+    private Map<String, String> descAboveData;
     private Map<String, String> descData;
 
     // Margin (managed by parent Section)
@@ -104,24 +112,49 @@ public class Button extends LinearLayout implements IThemable, ILocalizable {
     }
 
     private void init() {
-        setOrientation(HORIZONTAL);
-        setGravity(Gravity.CENTER_VERTICAL);
+        setOrientation(VERTICAL);
 
         Context ctx = getContext();
         Typeface typeface = Font.getRegular(ctx);
 
+        // Title (optional, above)
+        titleView = new TextView(ctx);
+        titleView.setTextSize(0, 32f);
+        titleView.setTypeface(typeface);
+        titleView.setVisibility(GONE);
+        addView(titleView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        // Description above (optional, below title)
+        descAboveView = new TextView(ctx);
+        descAboveView.setTextSize(0, 24f);
+        descAboveView.setTypeface(typeface);
+        descAboveView.setVisibility(GONE);
+        LayoutParams descAboveParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        descAboveParams.topMargin = 37;
+        descAboveParams.bottomMargin = 47;
+        addView(descAboveView, descAboveParams);
+
+        // Horizontal row: ButtonPrimitive + description to the right
+        row = new LinearLayout(ctx);
+        row.setOrientation(HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+
         // ButtonPrimitive (canvas-based pill button)
         primitive = new ButtonPrimitive(ctx);
-        addView(primitive, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        row.addView(primitive, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
         // Description text (optional, to the right)
         descView = new TextView(ctx);
         descView.setTextSize(0, ButtonDescriptionDimensions.TEXT_SIZE_PX);
         descView.setTypeface(typeface);
         descView.setVisibility(GONE);
-        LayoutParams descParams = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
+        LinearLayout.LayoutParams descParams = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         descParams.leftMargin = ButtonDescriptionDimensions.BUTTON_TO_TEXT_GAP_PX;
-        addView(descView, descParams);
+        row.addView(descView, descParams);
+
+        addView(row, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         // No padding - padding is managed by parent Section
     }
@@ -146,6 +179,18 @@ public class Button extends LinearLayout implements IThemable, ILocalizable {
     /** Sets the description text to the right (localized, multi-line). */
     public void setDescription(Map<String, String> description) {
         this.descData = description;
+        updateTexts();
+    }
+
+    /** Sets the title text above the button (localized). */
+    public void setTitle(Map<String, String> title) {
+        this.titleData = title;
+        updateTexts();
+    }
+
+    /** Sets the description text above the button, below the title (localized). */
+    public void setDescriptionAbove(Map<String, String> description) {
+        this.descAboveData = description;
         updateTexts();
     }
 
@@ -214,11 +259,35 @@ public class Button extends LinearLayout implements IThemable, ILocalizable {
     // --- Internal ---
 
     private void updateColors() {
+        titleView.setTextColor(descColors.textColor);
+        descAboveView.setTextColor(descColors.textColor);
         descView.setTextColor(descColors.textColor);
     }
 
     private void updateTexts() {
         String langCode = currentLanguage != null ? currentLanguage.getCode() : "en";
+
+        if (titleData != null && !titleData.isEmpty()) {
+            titleView.setText(titleData.getOrDefault(langCode, titleData.values().iterator().next()));
+            titleView.setVisibility(VISIBLE);
+        } else {
+            titleView.setVisibility(GONE);
+        }
+
+        if (descAboveData != null && !descAboveData.isEmpty()) {
+            descAboveView.setText(descAboveData.getOrDefault(langCode, descAboveData.values().iterator().next()));
+            descAboveView.setVisibility(VISIBLE);
+        } else {
+            descAboveView.setVisibility(GONE);
+        }
+
+        // Gap from title to the button row mirrors Radio: 37px when only a title is set,
+        // 0 when a description-above is present (its own bottom margin provides the gap).
+        boolean hasTitle = titleData != null && !titleData.isEmpty();
+        boolean hasDescAbove = descAboveData != null && !descAboveData.isEmpty();
+        LinearLayout.LayoutParams rowParams = (LinearLayout.LayoutParams) row.getLayoutParams();
+        rowParams.topMargin = (hasTitle && !hasDescAbove) ? 37 : 0;
+
         if (descData != null && !descData.isEmpty()) {
             descView.setText(descData.getOrDefault(langCode, descData.values().iterator().next()));
             descView.setVisibility(VISIBLE);
@@ -246,6 +315,8 @@ public class Button extends LinearLayout implements IThemable, ILocalizable {
         private final Language language;
         private final String text;
         private final ButtonStyle style;
+        private Map<String, String> title;
+        private Map<String, String> descriptionAbove;
         private Map<String, String> description;
         private int marginTop = 0;
         private int marginBottom = 0;
@@ -266,6 +337,18 @@ public class Button extends LinearLayout implements IThemable, ILocalizable {
             this.language = language;
             this.text = text;
             this.style = style;
+        }
+
+        @NonNull
+        public Builder title(@Nullable Map<String, String> title) {
+            this.title = title;
+            return this;
+        }
+
+        @NonNull
+        public Builder descriptionAbove(@Nullable Map<String, String> descriptionAbove) {
+            this.descriptionAbove = descriptionAbove;
+            return this;
         }
 
         @NonNull
@@ -340,6 +423,12 @@ public class Button extends LinearLayout implements IThemable, ILocalizable {
             button.setStyle(style);
             button.setTheme(theme);
             button.setLanguage(language);
+            if (title != null) {
+                button.setTitle(title);
+            }
+            if (descriptionAbove != null) {
+                button.setDescriptionAbove(descriptionAbove);
+            }
             if (description != null) {
                 button.setDescription(description);
             }
