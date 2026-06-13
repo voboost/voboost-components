@@ -1,15 +1,15 @@
 package ru.voboost.components.select;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.RectF;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.View;
+import android.view.Gravity;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,19 +21,38 @@ import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
 
 /**
- * Select component — trigger button + popup with 3D WheelView.
+ * Select component — titled trigger + popup with 3D WheelView.
  *
- * <p>
- * The trigger is a canvas-based View showing the currently selected
- * value with a chevron. Tapping opens a Popup with a 3D wheel picker.
+ * <p>Layout (vertical), mirroring Radio/Button:
+ * <pre>
+ * [Title]                 (optional, 32px)
+ * [Description above]     (optional, 24px)
+ * [SelectPrimitive ▾]  [Description right]   (horizontal row; right text optional, 24px)
+ * </pre>
+ *
+ * <p>When no text is set, behaves as the bare trigger (70px tall).
  */
-public class Select extends View implements IThemable, ILocalizable {
-    // Data and state
-    private List<SelectOption> options = new ArrayList<>();
-    private Language currentLanguage = null;
+public class Select extends LinearLayout implements IThemable, ILocalizable {
+
+    /** Text size of the title (matches Radio title). */
+    private static final float TITLE_TEXT_SIZE_PX = 32f;
+    /** Text size of descriptions above and to the right (matches hint text). */
+    private static final float DESCRIPTION_TEXT_SIZE_PX = 24f;
+    /** Gap between trigger and right description. */
+    private static final int TRIGGER_TO_DESC_GAP_PX = 21;
+
     private Theme currentTheme = null;
-    private String selectedValue = "";
-    private OnValueChangeListener onValueChangeListener;
+    private Language currentLanguage = null;
+
+    private TextView titleView;
+    private TextView descAboveView;
+    private LinearLayout row;
+    private SelectPrimitive primitive;
+    private TextView descRightView;
+
+    private Map<String, String> title;
+    private Map<String, String> descriptionAbove;
+    private Map<String, String> description;
 
     // Margin (managed by parent Section)
     private int marginLeft = 0;
@@ -55,20 +74,6 @@ public class Select extends View implements IThemable, ILocalizable {
         this.marginBottom = bottom;
         this.marginSet = true;
     }
-
-    // Theme colors
-    private SelectColors colors;
-
-    // Popup
-    private SelectPopup selectPopup;
-
-    // Paint
-    private Paint backgroundPaint;
-    private Paint textPaint;
-    private Paint chevronPaint;
-
-    // Pre-allocated RectF for drawing (reduces GC pressure)
-    private final RectF drawRectF = new RectF();
 
     /**
      * Callback for value selection changes.
@@ -92,273 +97,172 @@ public class Select extends View implements IThemable, ILocalizable {
         init();
     }
 
-    public Select(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
-    }
-
     private void init() {
-        backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setTextAlign(Paint.Align.LEFT);
-        textPaint.setTextSize(SelectDimensions.TRIGGER_TEXT_SIZE_PX);
-        textPaint.setTypeface(Font.getRegular(getContext()));
-
-        chevronPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        chevronPaint.setTextAlign(Paint.Align.RIGHT);
-        chevronPaint.setTextSize(SelectDimensions.CHEVRON_SIZE_PX);
-        chevronPaint.setTypeface(Font.getRegular(getContext()));
-
+        setOrientation(VERTICAL);
         setLayerType(LAYER_TYPE_HARDWARE, null);
+
+        Context ctx = getContext();
+        Typeface typeface = Font.getRegular(ctx);
+
+        titleView = new TextView(ctx);
+        titleView.setTextSize(0, TITLE_TEXT_SIZE_PX);
+        titleView.setTypeface(typeface);
+        titleView.setVisibility(GONE);
+        addView(titleView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        descAboveView = new TextView(ctx);
+        descAboveView.setTextSize(0, DESCRIPTION_TEXT_SIZE_PX);
+        descAboveView.setTypeface(typeface);
+        descAboveView.setVisibility(GONE);
+        LayoutParams descAboveParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        descAboveParams.topMargin = 37;
+        descAboveParams.bottomMargin = 47;
+        addView(descAboveView, descAboveParams);
+
+        row = new LinearLayout(ctx);
+        row.setOrientation(HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+
+        primitive = new SelectPrimitive(ctx);
+        row.addView(primitive, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+
+        descRightView = new TextView(ctx);
+        descRightView.setTextSize(0, DESCRIPTION_TEXT_SIZE_PX);
+        descRightView.setTypeface(typeface);
+        descRightView.setVisibility(GONE);
+        LayoutParams descRightParams = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
+        descRightParams.leftMargin = TRIGGER_TO_DESC_GAP_PX;
+        row.addView(descRightView, descRightParams);
+
+        addView(row, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
     }
 
-    private void updateColors() {
-        if (currentTheme != null) {
-            colors = SelectTheme.getColors(currentTheme);
-        }
+    // --- Text API (optional) ---
+
+    /** Sets the title text (localized). */
+    public void setTitle(Map<String, String> title) {
+        this.title = title;
+        updateTexts();
     }
 
-    private boolean isInitialized() {
-        return currentTheme != null && currentLanguage != null;
+    /** Sets the description text above the trigger (localized). */
+    public void setDescriptionAbove(Map<String, String> text) {
+        this.descriptionAbove = text;
+        updateTexts();
     }
 
-    // --- Public API ---
+    /** Sets the description text to the right of the trigger (localized). */
+    public void setDescription(Map<String, String> text) {
+        this.description = text;
+        updateTexts();
+    }
 
-    /**
-     * Sets the list of select options.
-     * Null values are treated as empty list.
-     *
-     * @param options list of SelectOption items, or null to clear
-     */
+    // --- Delegated to SelectPrimitive ---
+
+    /** Sets the list of select options. Null is treated as empty list. */
     public void setOptions(List<SelectOption> options) {
-        // Equality check to avoid unnecessary work on recomposition
-        List<SelectOption> newOptions = options != null ? new ArrayList<>(options) : new ArrayList<>();
-        if (java.util.Objects.equals(this.options, newOptions)) {
-            return;
-        }
-
-        // Validate each option (defensive copy already validates in constructor)
-        this.options = newOptions;
-        requestLayout();
-        invalidate();
+        primitive.setOptions(options);
     }
 
-    /**
-     * Sets the display language.
-     */
-    public void setLanguage(Language language) {
-        if (language == null) {
-            throw new IllegalArgumentException("Language cannot be null");
-        }
-        if (!language.equals(this.currentLanguage)) {
-            this.currentLanguage = language;
-            invalidate();
-        }
+    /** Sets the selected value. Empty strings are ignored. */
+    public void setSelectedValue(String value) {
+        primitive.setSelectedValue(value);
     }
 
-    @Override
-    public Language getCurrentLanguage() {
-        return currentLanguage;
+    /** Returns the currently selected value. */
+    public String getSelectedValue() {
+        return primitive.getSelectedValue();
     }
+
+    public void setOnValueChangeListener(OnValueChangeListener listener) {
+        primitive.setOnValueChangeListener(listener);
+    }
+
+    // --- Theme & Language ---
 
     @Override
     public void setTheme(Theme theme) {
         if (theme == null) {
             throw new IllegalArgumentException("Theme cannot be null");
         }
-        if (!theme.equals(this.currentTheme)) {
-            this.currentTheme = theme;
-            updateColors();
-            invalidate();
-        }
+        this.currentTheme = theme;
+        updateColors();
+        propagateTheme(theme);
+        invalidate();
     }
 
     @Override
     public void propagateTheme(Theme theme) {
-        // Leaf component
+        primitive.setTheme(theme);
+    }
+
+    @Override
+    public void setLanguage(Language language) {
+        if (language == null) {
+            throw new IllegalArgumentException("Language cannot be null");
+        }
+        this.currentLanguage = language;
+        updateTexts();
+        propagateLanguage(language);
     }
 
     @Override
     public void propagateLanguage(Language language) {
-        // Leaf component
+        primitive.setLanguage(language);
     }
 
     public Theme getCurrentTheme() {
         return currentTheme;
     }
 
-    /**
-     * Sets the selected value.
-     * Empty strings are treated as unset (no change).
-     *
-     * @param value the value to select, or null/empty to clear selection
-     */
-    public void setSelectedValue(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            // Empty values are ignored - use explicit null if you want to clear
-            return;
-        }
-        if (!value.equals(this.selectedValue)) {
-            this.selectedValue = value;
-            invalidate();
-        }
+    public Language getCurrentLanguage() {
+        return currentLanguage;
     }
 
-    public String getSelectedValue() {
-        return selectedValue;
+    // --- Internal ---
+
+    private boolean isDark() {
+        return currentTheme != null && currentTheme.getValue() != null && currentTheme.getValue().endsWith("-dark");
     }
 
-    public void setOnValueChangeListener(OnValueChangeListener listener) {
-        this.onValueChangeListener = listener;
+    private void updateColors() {
+        int titleColor = isDark() ? Color.parseColor("#ffffff") : Color.parseColor("#1a1e28");
+        int descColor = isDark() ? Color.parseColor("#80ffffff") : Color.parseColor("#801a1e28");
+        titleView.setTextColor(titleColor);
+        descAboveView.setTextColor(descColor);
+        descRightView.setTextColor(descColor);
     }
 
-    // --- Helpers ---
+    private void updateTexts() {
+        String langCode = currentLanguage != null ? currentLanguage.getCode() : "en";
 
-    private String getSelectedDisplayText() {
-        if (options == null || currentLanguage == null) return selectedValue;
-        for (SelectOption option : options) {
-            if (option.getValue().equals(selectedValue)) {
-                return option.getText(currentLanguage.getCode());
-            }
-        }
-        return selectedValue;
-    }
-
-    private int findSelectedIndex() {
-        if (options == null) return -1;
-        for (int i = 0; i < options.size(); i++) {
-            if (options.get(i).getValue().equals(selectedValue)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private List<String> getDisplayTexts() {
-        List<String> texts = new ArrayList<>();
-        String lang = currentLanguage != null ? currentLanguage.getCode() : "en";
-        for (SelectOption option : options) {
-            texts.add(option.getText(lang));
-        }
-        return texts;
-    }
-
-    // --- Measurement ---
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        float textWidth = textPaint != null ? textPaint.measureText(getSelectedDisplayText()) : 0;
-        float desiredWidth = Math.max(
-                textWidth + 2 * SelectDimensions.TRIGGER_PADDING_HORIZONTAL_PX
-                        + SelectDimensions.CHEVRON_SIZE_PX + SelectDimensions.CHEVRON_MARGIN_PX,
-                SelectDimensions.TRIGGER_MIN_WIDTH_PX);
-        float desiredHeight = SelectDimensions.TRIGGER_HEIGHT_PX;
-
-        int width = resolveSize((int) Math.ceil(desiredWidth), widthMeasureSpec);
-        int height = resolveSize((int) Math.ceil(desiredHeight), heightMeasureSpec);
-        setMeasuredDimension(width, height);
-    }
-
-    // --- Drawing ---
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        if (!isInitialized() || colors == null) return;
-
-        float width = getWidth();
-        float height = getHeight();
-
-        // Background
-        backgroundPaint.setColor(colors.triggerBackground);
-        drawRectF.set(0, 0, width, height);
-        canvas.drawRoundRect(drawRectF,
-                SelectDimensions.TRIGGER_CORNER_RADIUS_PX,
-                SelectDimensions.TRIGGER_CORNER_RADIUS_PX,
-                backgroundPaint);
-
-        // Text
-        String displayText = getSelectedDisplayText();
-        textPaint.setColor(colors.triggerText);
-        textPaint.setTextSize(SelectDimensions.TRIGGER_TEXT_SIZE_PX);
-        float textX = SelectDimensions.TRIGGER_PADDING_HORIZONTAL_PX;
-        float textY = height / 2f - (textPaint.descent() + textPaint.ascent()) / 2f;
-        canvas.drawText(displayText, textX, textY, textPaint);
-
-        // Chevron ▾
-        chevronPaint.setColor(colors.triggerChevron);
-        chevronPaint.setTextSize(SelectDimensions.CHEVRON_SIZE_PX);
-        float chevronX = width - SelectDimensions.TRIGGER_PADDING_HORIZONTAL_PX;
-        float chevronY = height / 2f - (chevronPaint.descent() + chevronPaint.ascent()) / 2f;
-        canvas.drawText("▾", chevronX, chevronY, chevronPaint);
-    }
-
-    // --- Touch ---
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (!isInitialized()) return false;
-
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            float x = event.getX();
-            float y = event.getY();
-            if (x >= 0 && x <= getWidth() && y >= 0 && y <= getHeight()) {
-                showPopup();
-            }
-            return true;
+        if (title != null && !title.isEmpty()) {
+            titleView.setText(title.getOrDefault(langCode, title.values().iterator().next()));
+            titleView.setVisibility(VISIBLE);
+        } else {
+            titleView.setVisibility(GONE);
         }
 
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            return true;
+        if (descriptionAbove != null && !descriptionAbove.isEmpty()) {
+            descAboveView.setText(descriptionAbove.getOrDefault(langCode, descriptionAbove.values().iterator().next()));
+            descAboveView.setVisibility(VISIBLE);
+        } else {
+            descAboveView.setVisibility(GONE);
         }
 
-        return super.onTouchEvent(event);
-    }
+        // Gap from title to the trigger row mirrors Radio: 37px when only a title is set,
+        // 0 when a description-above is present (its own bottom margin provides the gap).
+        boolean hasTitle = title != null && !title.isEmpty();
+        boolean hasDescAbove = descriptionAbove != null && !descriptionAbove.isEmpty();
+        LayoutParams rowParams = (LayoutParams) row.getLayoutParams();
+        rowParams.topMargin = (hasTitle && !hasDescAbove) ? 37 : 0;
 
-    private void showPopup() {
-        if (options == null || options.isEmpty()) {
-            return; // Don't show popup if no options
+        if (description != null && !description.isEmpty()) {
+            descRightView.setText(description.getOrDefault(langCode, description.values().iterator().next()));
+            descRightView.setVisibility(VISIBLE);
+        } else {
+            descRightView.setVisibility(GONE);
         }
-
-        // Reuse existing popup or create new one
-        if (selectPopup == null) {
-            selectPopup = new SelectPopup(getContext());
-        }
-
-        selectPopup.setTheme(currentTheme);
-
-        int selectedIndex = findSelectedIndex();
-        // Default to 0 if no valid selection, otherwise use found index
-        int initialPosition = (selectedIndex >= 0) ? selectedIndex : 0;
-
-        selectPopup.setData(getDisplayTexts(), initialPosition);
-        selectPopup.setOnSelectionListener((position, displayValue) -> {
-            if (position >= 0 && position < options.size()) {
-                String newValue = options.get(position).getValue();
-                if (!newValue.equals(selectedValue)) {
-                    selectedValue = newValue;
-                    invalidate();
-                    if (onValueChangeListener != null) {
-                        onValueChangeListener.onValueChange(newValue);
-                    }
-                }
-            }
-            selectPopup.dismiss();
-            // NOTE: Don't null out selectPopup here - reuse it for next show
-        });
-
-        selectPopup.show();
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        // Cleanup popup when view is detached
-        if (selectPopup != null && selectPopup.isShowing()) {
-            selectPopup.dismiss();
-        }
-        selectPopup = null;
     }
 
     // ============================================================
@@ -380,6 +284,9 @@ public class Select extends View implements IThemable, ILocalizable {
         private final Language language;
         private final List<SelectOption> options;
         private final String selectedValue;
+        private Map<String, String> title;
+        private Map<String, String> descriptionAbove;
+        private Map<String, String> description;
         private int marginTop = 0;
         private int marginBottom = 0;
         private int marginLeft = 0;
@@ -394,6 +301,24 @@ public class Select extends View implements IThemable, ILocalizable {
             this.language = language;
             this.options = options;
             this.selectedValue = selectedValue;
+        }
+
+        @NonNull
+        public Builder title(@Nullable Map<String, String> title) {
+            this.title = title;
+            return this;
+        }
+
+        @NonNull
+        public Builder descriptionAbove(@Nullable Map<String, String> descriptionAbove) {
+            this.descriptionAbove = descriptionAbove;
+            return this;
+        }
+
+        @NonNull
+        public Builder description(@Nullable Map<String, String> description) {
+            this.description = description;
+            return this;
         }
 
         @NonNull
@@ -447,6 +372,15 @@ public class Select extends View implements IThemable, ILocalizable {
             select.setSelectedValue(selectedValue);
             select.setTheme(theme);
             select.setLanguage(language);
+            if (title != null) {
+                select.setTitle(title);
+            }
+            if (descriptionAbove != null) {
+                select.setDescriptionAbove(descriptionAbove);
+            }
+            if (description != null) {
+                select.setDescription(description);
+            }
             if (marginSet) {
                 select.setMargin(marginLeft, marginTop, marginRight, marginBottom);
             }
