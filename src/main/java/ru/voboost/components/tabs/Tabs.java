@@ -726,7 +726,11 @@ public class Tabs extends View implements IThemable, ILocalizable {
                     TabItem item = items.get(pressed);
                     if (item.isEnabled()) {
                         String newValue = item.getValue();
-                        if (!newValue.equals(selectedValue)) {
+                        if (item.hasMore()) {
+                            if (onValueChangeListener != null) {
+                                onValueChangeListener.onValueChange(newValue);
+                            }
+                        } else if (!newValue.equals(selectedValue)) {
                             setSelectedValue(newValue, true);
                         }
                     }
