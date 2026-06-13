@@ -1,9 +1,9 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
-    alias(libs.plugins.roborazzi)
+    id("io.github.takahirom.roborazzi") version "1.48.0"
     id("com.diffplug.spotless") version "6.25.0"
     id("checkstyle")
 }
@@ -178,7 +178,7 @@ dependencies {
     compileOnly("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
     // Jetpack Compose BOM
-    compileOnly(platform(libs.compose.bom))
+    compileOnly(platform("androidx.compose:compose-bom:2024.10.01"))
     compileOnly("androidx.compose.ui:ui")
     compileOnly("androidx.compose.ui:ui-graphics")
     compileOnly("androidx.compose.ui:ui-tooling")
@@ -188,21 +188,21 @@ dependencies {
     compileOnly("androidx.activity:activity-compose:1.8.2")
 
     // Testing dependencies (only for test source set)
-    testImplementation(platform(libs.compose.bom))
+    testImplementation(platform("androidx.compose:compose-bom:2024.10.01"))
     testImplementation("junit:junit:4.13.2") {
         exclude(group = "org.hamcrest", module = "hamcrest-core")
     }
     testImplementation("org.mockito:mockito-core:5.8.0")
     testImplementation("org.mockito:mockito-inline:5.2.0")
-    testImplementation(libs.roborazzi)
-    testImplementation(libs.roborazzi.compose)
-    testImplementation(libs.roborazzi.junit.rule)
+    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.48.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.48.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:1.48.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("androidx.compose.ui:ui-test-junit4")
     testImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("io.mockk:mockk-android:1.13.8")
-    testImplementation(libs.robolectric) {
+    testImplementation("org.robolectric:robolectric:4.14.1") {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
     }
     testImplementation("com.google.truth:truth:1.1.5")
@@ -212,7 +212,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test:rules:1.5.0")
-    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.10.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     // Debug dependencies
