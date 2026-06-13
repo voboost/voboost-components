@@ -37,3 +37,6 @@ project(":demo-shared").projectDir = file("src/demo-shared")
 
 include(":demo-pixel")
 project(":demo-pixel").projectDir = file("src/demo-pixel")
+
+include(":demo-cunba")
+project(":demo-cunba").projectDir = file("src/demo-cunba")

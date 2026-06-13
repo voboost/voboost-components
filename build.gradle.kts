@@ -235,6 +235,7 @@ tasks.register("buildDemos") {
         ":demo-kotlin:assembleDebug",
         ":demo-compose:assembleDebug",
         ":demo-pixel:assembleDebug",
+        ":demo-cunba:assembleDebug",
     )
 }
 
@@ -246,6 +247,7 @@ tasks.register("installDemos") {
         ":demo-kotlin:installDebug",
         ":demo-compose:installDebug",
         ":demo-pixel:installDebug",
+        ":demo-cunba:installDebug",
     )
 }
 
@@ -257,13 +259,14 @@ tasks.register("testDemos") {
         ":demo-kotlin:testDebugUnitTest",
         ":demo-compose:testDebugUnitTest",
         ":demo-pixel:testDebugUnitTest",
+        ":demo-cunba:testDebugUnitTest",
     )
 }
 
 tasks.register("cleanDemos") {
     group = "demo"
     description = "Clean all demo applications"
-    dependsOn(":demo-java:clean", ":demo-kotlin:clean", ":demo-compose:clean", ":demo-pixel:clean")
+    dependsOn(":demo-java:clean", ":demo-kotlin:clean", ":demo-compose:clean", ":demo-pixel:clean", ":demo-cunba:clean")
 }
 
 // Individual demo tasks for convenience
@@ -363,6 +366,32 @@ tasks.register<Exec>("startDemoPixel") {
         "ru.voboost.components.demo.pixel/.MainActivity",
     )
     dependsOn(":demo-pixel:installDebug")
+}
+
+tasks.register("buildDemoCunba") {
+    group = "demo"
+    description = "Build CunBA 3 demo application"
+    dependsOn(":demo-cunba:assembleDebug")
+}
+
+tasks.register("installDemoCunba") {
+    group = "demo"
+    description = "Install CunBA 3 demo application to connected device"
+    dependsOn(":demo-cunba:installDebug")
+}
+
+tasks.register<Exec>("startDemoCunba") {
+    group = "demo"
+    description = "Start CunBA 3 demo application on connected device"
+    commandLine(
+        "adb",
+        "shell",
+        "am",
+        "start",
+        "-n",
+        "ru.voboost.components.demo.cunba/.MainActivity",
+    )
+    dependsOn(":demo-cunba:installDebug")
 }
 
 // Demo validation tasks
