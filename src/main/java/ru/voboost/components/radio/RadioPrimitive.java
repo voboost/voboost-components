@@ -39,6 +39,9 @@ class RadioPrimitive extends View implements IThemable, ILocalizable {
     private Theme currentTheme = null;
     private String selectedValue = "";
     private OnValueChangeListener onValueChangeListener;
+    /** Pending value change to fire after animation completes. */
+    private String pendingChangeValue = null;
+    private Runnable pendingChangeRunnable = null;
 
     // Theme and dimensions
     private RadioColors colors;
@@ -528,6 +531,18 @@ class RadioPrimitive extends View implements IThemable, ILocalizable {
                 });
         positionAnimator.start();
 
+        // Fire value change listener after 300ms delay (during animation)
+        if (pendingChangeValue != null) {
+            removeCallbacks(pendingChangeRunnable);
+            pendingChangeRunnable = () -> {
+                if (pendingChangeValue != null && onValueChangeListener != null) {
+                    onValueChangeListener.onValueChange(pendingChangeValue);
+                }
+                pendingChangeValue = null;
+            };
+            postDelayed(pendingChangeRunnable, RadioDimensions.VALUE_CHANGE_DELAY);
+        }
+
         // Width animation
         widthAnimator = ValueAnimator.ofFloat(animatedWidth, targetWidth);
         widthAnimator.setDuration(RadioDimensions.ANIMATION_DURATION);
@@ -547,6 +562,10 @@ class RadioPrimitive extends View implements IThemable, ILocalizable {
 
         if (widthAnimator != null) {
             widthAnimator.cancel();
+        }
+
+        if (pendingChangeRunnable != null) {
+            removeCallbacks(pendingChangeRunnable);
         }
     }
 
@@ -647,12 +666,9 @@ class RadioPrimitive extends View implements IThemable, ILocalizable {
                             String newValue = button.getValue();
 
                             if (selectedValue != null && !selectedValue.equals(newValue)) {
-                                // This is a user click - animate the transition
+                                // Store value to fire listener after animation completes
+                                pendingChangeValue = newValue;
                                 setSelectedValueWithAnimation(newValue);
-
-                                if (onValueChangeListener != null) {
-                                    onValueChangeListener.onValueChange(newValue);
-                                }
                             }
                         }
 

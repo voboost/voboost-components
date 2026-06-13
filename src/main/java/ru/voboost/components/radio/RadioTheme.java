@@ -59,6 +59,7 @@ class RadioDimensions {
 
     // Animation constants
     public static final int ANIMATION_DURATION = 400;
+    public static final int VALUE_CHANGE_DELAY = 300;
     public static final float OVERSHOOT_TENSION = 1.0f;
 
 }
