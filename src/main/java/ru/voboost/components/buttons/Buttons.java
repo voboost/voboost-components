@@ -23,10 +23,13 @@ import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
 
 /**
- * Buttons — multiple Buttons in a row + optional right text + optional description below.
+ * Buttons — multiple Buttons in a row + optional title/description above + optional right text +
+ * optional description below.
  *
  * <p>Layout:
  * <pre>
+ * [Title]                 (optional, 32px)
+ * [Description above]     (optional, 24px)
  * ┌───────┐ ┌─────────┐  Right text (optional)
  * │ Btn 1 │ │ Btn 2   │
  * └───────┘ └─────────┘
@@ -41,6 +44,9 @@ public class Buttons extends LinearLayout implements IThemable, ILocalizable {
     private Language currentLanguage = null;
     private ButtonsColors colors;
 
+    // Title and description-above (optional)
+    private TextView titleView;
+    private TextView descAboveView;
     // Top row: buttons + optional right text
     private LinearLayout topRow;
     private LinearLayout buttonsContainer;
@@ -51,6 +57,8 @@ public class Buttons extends LinearLayout implements IThemable, ILocalizable {
     // Data
     private List<ButtonConfig> buttonConfigs = new ArrayList<>();
     List<Button> buttonViews = new ArrayList<>();
+    private Map<String, String> titleData;
+    private Map<String, String> descAboveData;
     private Map<String, String> rightTextData;
     private Map<String, String> descData;
     private String selectedValue = null;
@@ -103,6 +111,23 @@ public class Buttons extends LinearLayout implements IThemable, ILocalizable {
         Context ctx = getContext();
         Typeface typeface = Font.getRegular(ctx);
 
+        // Title (optional, above everything)
+        titleView = new TextView(ctx);
+        titleView.setTextSize(0, 32f);
+        titleView.setTypeface(typeface);
+        titleView.setVisibility(GONE);
+        addView(titleView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        // Description above (optional)
+        descAboveView = new TextView(ctx);
+        descAboveView.setTextSize(0, 24f);
+        descAboveView.setTypeface(typeface);
+        descAboveView.setVisibility(GONE);
+        LayoutParams descAboveParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        descAboveParams.topMargin = 37;
+        descAboveParams.bottomMargin = 47;
+        addView(descAboveView, descAboveParams);
+
         // Top row: horizontal layout for buttons + right text
         topRow = new LinearLayout(ctx);
         topRow.setOrientation(HORIZONTAL);
@@ -147,6 +172,18 @@ public class Buttons extends LinearLayout implements IThemable, ILocalizable {
 
     public void setDescription(Map<String, String> text) {
         this.descData = text;
+        updateTexts();
+    }
+
+    /** Sets the title text above the buttons (localized). */
+    public void setTitle(Map<String, String> text) {
+        this.titleData = text;
+        updateTexts();
+    }
+
+    /** Sets the description text above the buttons, below the title (localized). */
+    public void setDescriptionAbove(Map<String, String> text) {
+        this.descAboveData = text;
         updateTexts();
     }
 
@@ -262,24 +299,42 @@ public class Buttons extends LinearLayout implements IThemable, ILocalizable {
     }
 
     private void updateButtonStyles() {
+        // Buttons are independent secondary actions — there is no selected/primary state.
         for (int i = 0; i < buttonViews.size(); i++) {
-            Button btn = buttonViews.get(i);
-            String value = buttonConfigs.get(i).getValue();
-            if (java.util.Objects.equals(value, selectedValue)) {
-                btn.setStyle(ButtonStyle.PRIMARY);
-            } else {
-                btn.setStyle(ButtonStyle.SECONDARY);
-            }
+            buttonViews.get(i).setStyle(ButtonStyle.SECONDARY);
         }
     }
 
     private void updateColors() {
+        titleView.setTextColor(colors.textColor);
+        descAboveView.setTextColor(colors.textColor);
         rightTextView.setTextColor(colors.textColor);
         descView.setTextColor(colors.textColor);
     }
 
     private void updateTexts() {
         String langCode = currentLanguage != null ? currentLanguage.getCode() : "en";
+
+        if (titleData != null && !titleData.isEmpty()) {
+            titleView.setText(titleData.getOrDefault(langCode, titleData.values().iterator().next()));
+            titleView.setVisibility(VISIBLE);
+        } else {
+            titleView.setVisibility(GONE);
+        }
+
+        if (descAboveData != null && !descAboveData.isEmpty()) {
+            descAboveView.setText(descAboveData.getOrDefault(langCode, descAboveData.values().iterator().next()));
+            descAboveView.setVisibility(VISIBLE);
+        } else {
+            descAboveView.setVisibility(GONE);
+        }
+
+        // Gap from title to the buttons row mirrors Radio: 37px when only a title is set,
+        // 0 when a description-above is present (its own bottom margin provides the gap).
+        boolean hasTitle = titleData != null && !titleData.isEmpty();
+        boolean hasDescAbove = descAboveData != null && !descAboveData.isEmpty();
+        LayoutParams topRowParams = (LayoutParams) topRow.getLayoutParams();
+        topRowParams.topMargin = (hasTitle && !hasDescAbove) ? 37 : 0;
 
         if (rightTextData != null && !rightTextData.isEmpty()) {
             rightTextView.setText(rightTextData.getOrDefault(langCode, rightTextData.values().iterator().next()));
@@ -315,6 +370,8 @@ public class Buttons extends LinearLayout implements IThemable, ILocalizable {
         private final Language language;
         private final List<ButtonConfig> buttons;
         private final String selectedValue;
+        private Map<String, String> title;
+        private Map<String, String> descriptionAbove;
         private Map<String, String> rightText;
         private Map<String, String> description;
         private int marginTop = 0;
@@ -331,6 +388,18 @@ public class Buttons extends LinearLayout implements IThemable, ILocalizable {
             this.language = language;
             this.buttons = buttons;
             this.selectedValue = selectedValue;
+        }
+
+        @NonNull
+        public Builder title(@Nullable Map<String, String> title) {
+            this.title = title;
+            return this;
+        }
+
+        @NonNull
+        public Builder descriptionAbove(@Nullable Map<String, String> descriptionAbove) {
+            this.descriptionAbove = descriptionAbove;
+            return this;
         }
 
         @NonNull
@@ -396,6 +465,12 @@ public class Buttons extends LinearLayout implements IThemable, ILocalizable {
             buttonsView.setSelectedValue(selectedValue);
             buttonsView.setTheme(theme);
             buttonsView.setLanguage(language);
+            if (title != null) {
+                buttonsView.setTitle(title);
+            }
+            if (descriptionAbove != null) {
+                buttonsView.setDescriptionAbove(descriptionAbove);
+            }
             if (rightText != null) {
                 buttonsView.setRightText(rightText);
             }
