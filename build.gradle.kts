@@ -235,7 +235,8 @@ tasks.register("buildDemos") {
         ":demo-kotlin:assembleDebug",
         ":demo-compose:assembleDebug",
         ":demo-pixel:assembleDebug",
-        ":demo-cunba:assembleDebug",
+        ":demo-java-cunba:assembleDebug",
+        ":demo-kotlin-cunba:assembleDebug",
     )
 }
 
@@ -247,7 +248,8 @@ tasks.register("installDemos") {
         ":demo-kotlin:installDebug",
         ":demo-compose:installDebug",
         ":demo-pixel:installDebug",
-        ":demo-cunba:installDebug",
+        ":demo-java-cunba:installDebug",
+        ":demo-kotlin-cunba:installDebug",
     )
 }
 
@@ -259,14 +261,22 @@ tasks.register("testDemos") {
         ":demo-kotlin:testDebugUnitTest",
         ":demo-compose:testDebugUnitTest",
         ":demo-pixel:testDebugUnitTest",
-        ":demo-cunba:testDebugUnitTest",
+        ":demo-java-cunba:testDebugUnitTest",
+        ":demo-kotlin-cunba:testDebugUnitTest",
     )
 }
 
 tasks.register("cleanDemos") {
     group = "demo"
     description = "Clean all demo applications"
-    dependsOn(":demo-java:clean", ":demo-kotlin:clean", ":demo-compose:clean", ":demo-pixel:clean", ":demo-cunba:clean")
+    dependsOn(
+        ":demo-java:clean",
+        ":demo-kotlin:clean",
+        ":demo-compose:clean",
+        ":demo-pixel:clean",
+        ":demo-java-cunba:clean",
+        ":demo-kotlin-cunba:clean",
+    )
 }
 
 // Individual demo tasks for convenience
@@ -371,13 +381,13 @@ tasks.register<Exec>("startDemoPixel") {
 tasks.register("buildDemoCunba") {
     group = "demo"
     description = "Build CunBA 3 demo application"
-    dependsOn(":demo-cunba:assembleDebug")
+    dependsOn(":demo-java-cunba:assembleDebug")
 }
 
 tasks.register("installDemoCunba") {
     group = "demo"
     description = "Install CunBA 3 demo application to connected device"
-    dependsOn(":demo-cunba:installDebug")
+    dependsOn(":demo-java-cunba:installDebug")
 }
 
 tasks.register<Exec>("startDemoCunba") {
@@ -391,7 +401,7 @@ tasks.register<Exec>("startDemoCunba") {
         "-n",
         "ru.voboost.components.demo.cunba/.MainActivity",
     )
-    dependsOn(":demo-cunba:installDebug")
+    dependsOn(":demo-java-cunba:installDebug")
 }
 
 // Demo validation tasks

@@ -38,5 +38,8 @@ project(":demo-shared").projectDir = file("src/demo-shared")
 include(":demo-pixel")
 project(":demo-pixel").projectDir = file("src/demo-pixel")
 
-include(":demo-cunba")
-project(":demo-cunba").projectDir = file("src/demo-cunba")
+include(":demo-java-cunba")
+project(":demo-java-cunba").projectDir = file("src/demo-java-cunba")
+
+include(":demo-kotlin-cunba")
+project(":demo-kotlin-cunba").projectDir = file("src/demo-kotlin-cunba")
