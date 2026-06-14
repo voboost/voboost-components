@@ -50,6 +50,8 @@ public class Select extends LinearLayout implements IThemable, ILocalizable {
     private SelectPrimitive primitive;
     private TextView descRightView;
 
+    private Mode mode = Mode.CURVED;
+
     private Map<String, String> title;
     private Map<String, String> descriptionAbove;
     private Map<String, String> description;
@@ -80,6 +82,16 @@ public class Select extends LinearLayout implements IThemable, ILocalizable {
      */
     public interface OnValueChangeListener {
         void onValueChange(String newValue);
+    }
+
+    /**
+     * Wheel rendering mode for the popup picker.
+     */
+    public enum Mode {
+        /** Flat wheel (production-faithful WheelDefault: no 3D, no fade). */
+        FLAT,
+        /** Curved 3D wheel with atmospheric fade on side items. */
+        CURVED
     }
 
     public Select(Context context) {
@@ -176,6 +188,25 @@ public class Select extends LinearLayout implements IThemable, ILocalizable {
 
     public void setOnValueChangeListener(OnValueChangeListener listener) {
         primitive.setOnValueChangeListener(listener);
+    }
+
+    /** Sets the wheel rendering mode (FLAT or CURVED). Default is CURVED. */
+    public void setMode(Mode mode) {
+        if (mode == null) {
+            throw new IllegalArgumentException("Mode cannot be null");
+        }
+        this.mode = mode;
+        primitive.setMode(mode);
+    }
+
+    /** Sets the popup confirm-button text (localized). Null resets to the default. */
+    public void setConfirmText(Map<String, String> text) {
+        primitive.setConfirmText(text);
+    }
+
+    /** Sets the popup cancel-button text (localized). Null resets to the default. */
+    public void setCancelText(Map<String, String> text) {
+        primitive.setCancelText(text);
     }
 
     // --- Theme & Language ---
@@ -293,6 +324,9 @@ public class Select extends LinearLayout implements IThemable, ILocalizable {
         private int marginRight = 0;
         private boolean marginSet = false;
         private OnValueChangeListener onValueChange;
+        private Mode mode = Mode.CURVED;
+        private Map<String, String> confirmText;
+        private Map<String, String> cancelText;
 
         private Builder(android.content.Context context, Theme theme, Language language,
                        List<SelectOption> options, String selectedValue) {
@@ -366,6 +400,24 @@ public class Select extends LinearLayout implements IThemable, ILocalizable {
         }
 
         @NonNull
+        public Builder mode(@NonNull Mode mode) {
+            this.mode = mode;
+            return this;
+        }
+
+        @NonNull
+        public Builder confirmText(@Nullable Map<String, String> text) {
+            this.confirmText = text;
+            return this;
+        }
+
+        @NonNull
+        public Builder cancelText(@Nullable Map<String, String> text) {
+            this.cancelText = text;
+            return this;
+        }
+
+        @NonNull
         public Select build() {
             Select select = new Select(context);
             select.setOptions(options);
@@ -386,6 +438,13 @@ public class Select extends LinearLayout implements IThemable, ILocalizable {
             }
             if (onValueChange != null) {
                 select.setOnValueChangeListener(onValueChange);
+            }
+            select.setMode(mode);
+            if (confirmText != null) {
+                select.setConfirmText(confirmText);
+            }
+            if (cancelText != null) {
+                select.setCancelText(cancelText);
             }
             return select;
         }

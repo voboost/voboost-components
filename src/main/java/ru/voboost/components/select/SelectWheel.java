@@ -121,7 +121,7 @@ public class SelectWheel extends View implements Runnable {
     private static final int ANIMATION_FRAME_DELAY_MS = 16; // ~60fps
 
     // Drawing constants
-    private static final float CURTAIN_ALPHA = 128f; // 50% transparent
+    private static final float CURTAIN_ALPHA = 66f; // ~26% (matches select_bg #42 alpha)
     private static final float ATMOSPHERIC_ALPHA_RATIO = 1.0f; // Full alpha ratio
 
     /**

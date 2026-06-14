@@ -43,9 +43,14 @@ Select(
 )
 ```
 
-## 3D WheelView
+## Wheel (FLAT / CURVED)
 
-SelectWheel matches the original WheelView implementation:
+`Select.setMode(Mode.FLAT|CURVED)` (default CURVED). CURVED: curved 3D rotation +
+atmospheric fade — the selected item is large and bright, the side items recede
+into shadow (3 clear + 2 faded). FLAT: no curve, no fade (matches the production
+WheelDefault). The popup has explicit Confirm/Cancel buttons: scrolling only moves
+the wheel; Confirm commits the value. SelectWheel matches the original WheelView
+implementation:
 
 | Feature | Implementation |
 |---------|---------------|

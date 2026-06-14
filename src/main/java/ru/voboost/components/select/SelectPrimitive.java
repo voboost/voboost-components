@@ -1,9 +1,13 @@
 package ru.voboost.components.select;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
@@ -18,7 +22,7 @@ import ru.voboost.components.theme.IThemable;
 import ru.voboost.components.theme.Theme;
 
 /**
- * SelectPrimitive — internal canvas-based trigger (pill + text + chevron).
+ * SelectPrimitive — internal canvas-based trigger (pill + text + arrow).
  * Package-private. Use {@link Select} (container) for the public API.
  */
 class SelectPrimitive extends View implements IThemable, ILocalizable {
@@ -27,6 +31,14 @@ class SelectPrimitive extends View implements IThemable, ILocalizable {
     private Theme currentTheme = null;
     private String selectedValue = "";
     private Select.OnValueChangeListener onValueChangeListener;
+    private Select.Mode mode = Select.Mode.CURVED;
+
+    private static final java.util.Map<String, String> DEFAULT_CONFIRM_TEXT =
+            java.util.Map.of("en", "Confirm", "ru", "Подтвердить");
+    private static final java.util.Map<String, String> DEFAULT_CANCEL_TEXT =
+            java.util.Map.of("en", "Cancel", "ru", "Отмена");
+    private java.util.Map<String, String> confirmText = DEFAULT_CONFIRM_TEXT;
+    private java.util.Map<String, String> cancelText = DEFAULT_CANCEL_TEXT;
 
     private SelectColors colors;
 
@@ -34,7 +46,7 @@ class SelectPrimitive extends View implements IThemable, ILocalizable {
 
     private Paint backgroundPaint;
     private Paint textPaint;
-    private Paint chevronPaint;
+    private Bitmap arrowBitmap;
 
     private final RectF drawRectF = new RectF();
 
@@ -61,17 +73,13 @@ class SelectPrimitive extends View implements IThemable, ILocalizable {
         textPaint.setTextSize(SelectDimensions.TRIGGER_TEXT_SIZE_PX);
         textPaint.setTypeface(Font.getRegular(getContext()));
 
-        chevronPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        chevronPaint.setTextAlign(Paint.Align.RIGHT);
-        chevronPaint.setTextSize(SelectDimensions.CHEVRON_SIZE_PX);
-        chevronPaint.setTypeface(Font.getRegular(getContext()));
-
         setLayerType(LAYER_TYPE_HARDWARE, null);
     }
 
     private void updateColors() {
         if (currentTheme != null) {
             colors = SelectTheme.getColors(currentTheme);
+            arrowBitmap = null;
         }
     }
 
@@ -138,6 +146,7 @@ class SelectPrimitive extends View implements IThemable, ILocalizable {
         if (!value.equals(this.selectedValue)) {
             this.selectedValue = value;
             invalidate();
+            requestLayout();
         }
     }
 
@@ -147,6 +156,37 @@ class SelectPrimitive extends View implements IThemable, ILocalizable {
 
     public void setOnValueChangeListener(Select.OnValueChangeListener listener) {
         this.onValueChangeListener = listener;
+    }
+
+    public void setMode(Select.Mode mode) {
+        this.mode = mode;
+    }
+
+    public void setConfirmText(java.util.Map<String, String> text) {
+        this.confirmText = text != null ? text : DEFAULT_CONFIRM_TEXT;
+    }
+
+    public void setCancelText(java.util.Map<String, String> text) {
+        this.cancelText = text != null ? text : DEFAULT_CANCEL_TEXT;
+    }
+
+    private String resolveText(java.util.Map<String, String> text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+        String lang = currentLanguage != null ? currentLanguage.getCode() : "en";
+        return text.getOrDefault(lang, text.values().iterator().next());
+    }
+
+    private static Bitmap loadBitmap(String name) {
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inScaled = false;
+        try (InputStream in = SelectPrimitive.class.getResourceAsStream(name)) {
+            if (in == null) return null;
+            return BitmapFactory.decodeStream(in, null, opts);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     private String getSelectedDisplayText() {
@@ -183,7 +223,7 @@ class SelectPrimitive extends View implements IThemable, ILocalizable {
         float textWidth = textPaint != null ? textPaint.measureText(getSelectedDisplayText()) : 0;
         float desiredWidth = Math.max(
                 textWidth + 2 * SelectDimensions.TRIGGER_PADDING_HORIZONTAL_PX
-                        + SelectDimensions.CHEVRON_SIZE_PX + SelectDimensions.CHEVRON_MARGIN_PX,
+                        + SelectDimensions.ARROW_SIZE_PX + SelectDimensions.ARROW_MARGIN_PX,
                 SelectDimensions.TRIGGER_MIN_WIDTH_PX);
         float desiredHeight = SelectDimensions.TRIGGER_HEIGHT_PX;
 
@@ -214,11 +254,16 @@ class SelectPrimitive extends View implements IThemable, ILocalizable {
         float textY = height / 2f - (textPaint.descent() + textPaint.ascent()) / 2f;
         canvas.drawText(displayText, textX, textY, textPaint);
 
-        chevronPaint.setColor(colors.triggerChevron);
-        chevronPaint.setTextSize(SelectDimensions.CHEVRON_SIZE_PX);
-        float chevronX = width - SelectDimensions.TRIGGER_PADDING_HORIZONTAL_PX;
-        float chevronY = height / 2f - (chevronPaint.descent() + chevronPaint.ascent()) / 2f;
-        canvas.drawText("▾", chevronX, chevronY, chevronPaint);
+        if (arrowBitmap == null && currentTheme != null) {
+            arrowBitmap = loadBitmap("Select_arrow_" + currentTheme.getValue() + ".png");
+        }
+        if (arrowBitmap != null) {
+            float arrowSize = SelectDimensions.ARROW_SIZE_PX;
+            float arrowRight = width - SelectDimensions.TRIGGER_PADDING_HORIZONTAL_PX;
+            float arrowLeft = arrowRight - arrowSize;
+            float arrowTop = height / 2f - arrowSize / 2f;
+            canvas.drawBitmap(arrowBitmap, arrowLeft, arrowTop, null);
+        }
     }
 
     @Override
@@ -251,6 +296,9 @@ class SelectPrimitive extends View implements IThemable, ILocalizable {
         }
 
         selectPopup.setTheme(currentTheme);
+        selectPopup.setMode(mode);
+        selectPopup.setConfirmText(resolveText(confirmText));
+        selectPopup.setCancelText(resolveText(cancelText));
 
         int selectedIndex = findSelectedIndex();
         int initialPosition = (selectedIndex >= 0) ? selectedIndex : 0;
@@ -262,6 +310,7 @@ class SelectPrimitive extends View implements IThemable, ILocalizable {
                 if (!newValue.equals(selectedValue)) {
                     selectedValue = newValue;
                     invalidate();
+                    requestLayout();
                     if (onValueChangeListener != null) {
                         onValueChangeListener.onValueChange(newValue);
                     }

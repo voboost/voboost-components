@@ -138,6 +138,33 @@ public class SelectTestUnit {
     }
 
     @Test
+    public void testSetMode() {
+        select.setMode(Select.Mode.CURVED);
+        select.setMode(Select.Mode.FLAT);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetNullMode() {
+        select.setMode(null);
+    }
+
+    @Test
+    public void testSetConfirmCancelText() {
+        select.setConfirmText(Map.of("en", "OK"));
+        select.setCancelText(Map.of("en", "Close"));
+        select.setConfirmText(null);
+        select.setCancelText(null);
+    }
+
+    @Test
+    public void testPopupConfirmCancelText() {
+        SelectPopup popup = new SelectPopup(context);
+        popup.setConfirmText("Confirm");
+        popup.setCancelText("Cancel");
+        popup.setTheme(Theme.FREE_DARK);
+    }
+
+    @Test
     public void testSelectWheelInitialization() {
         SelectWheel wheel = new SelectWheel(context);
         assertNotNull("WheelView should be initialized", wheel);
