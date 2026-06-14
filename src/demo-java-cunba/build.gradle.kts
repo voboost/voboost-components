@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "ru.voboost.components.demo.cunba"
+    namespace = "ru.voboost.components.demo.java.cunba"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "ru.voboost.components.demo.cunba"
+        applicationId = "ru.voboost.components.demo.java.cunba"
         minSdk = 28
         targetSdk = 30
         versionCode = 1

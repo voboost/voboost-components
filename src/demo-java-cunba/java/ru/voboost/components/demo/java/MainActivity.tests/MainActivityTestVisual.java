@@ -1,4 +1,4 @@
-package ru.voboost.components.demo.cunba;
+package ru.voboost.components.demo.java.cunba;
 
 import static com.github.takahirom.roborazzi.RoborazziKt.captureRoboImage;
 import static org.junit.Assert.assertNotNull;
