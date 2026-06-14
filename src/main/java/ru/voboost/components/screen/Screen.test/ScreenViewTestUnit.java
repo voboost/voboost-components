@@ -16,8 +16,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.GraphicsMode;
 
 @RunWith(RobolectricTestRunner.class)
+// NATIVE graphics mode is required for testDrawClipsToOwnBounds: the legacy
+// ShadowCanvas does not paint pixels into a Bitmap-backed canvas, so drawColor
+// would be a no-op and the pixel assertions would fail.
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class ScreenViewTestUnit {
 
     private ScreenView screenView;
