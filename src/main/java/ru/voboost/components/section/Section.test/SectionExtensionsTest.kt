@@ -214,6 +214,48 @@ class SectionExtensionsTest {
     }
 
     @Test
+    fun testAddButtons_withTitle() {
+        val buttons =
+            listOf(
+                ru.voboost.components.buttons.ButtonConfig("update", "Update"),
+            )
+
+        val buttonsView =
+            section.addButtons(
+                buttons = buttons,
+                selectedValue = "update",
+                theme = Theme.FREE_LIGHT,
+                language = Language.EN,
+                title = mapOf("en" to "Update"),
+            )
+
+        assertNotNull("Buttons should be created", buttonsView)
+        assertEquals("Section should have 1 child", 1, section.childCount)
+    }
+
+    @Test
+    fun testAddSelect_withTitleAndDescriptions() {
+        val options =
+            listOf(
+                ru.voboost.components.select.SelectOption("auto", mapOf("en" to "Auto")),
+            )
+
+        val select =
+            section.addSelect(
+                options = options,
+                selectedValue = "auto",
+                theme = Theme.FREE_LIGHT,
+                language = Language.EN,
+                title = mapOf("en" to "Mode"),
+                descriptionAbove = mapOf("en" to "Above"),
+                description = mapOf("en" to "Right"),
+            )
+
+        assertNotNull("Select should be created", select)
+        assertEquals("Section should have 1 child", 1, section.childCount)
+    }
+
+    @Test
     fun testMultipleExtensions_addMultipleChildren() {
         section.addRadio(
             buttons = listOf(RadioButton("1", mapOf("en" to "One"))),
@@ -258,5 +300,87 @@ class SectionExtensionsTest {
 
         assertEquals(Theme.FREE_DARK, receivedTheme)
         assertEquals(Language.RU, receivedLanguage)
+    }
+
+    @Test
+    fun testAddRadio_defaultDoesNotSetMargin() {
+        val radio =
+            section.addRadio(
+                buttons = listOf(RadioButton("1", mapOf("en" to "One"))),
+                selectedValue = "1",
+                theme = Theme.FREE_LIGHT,
+                language = Language.EN,
+            )
+
+        assertFalse("Default radio must not have margin set", radio.isMarginSet())
+    }
+
+    @Test
+    fun testAddRadio_explicitMarginIsSet() {
+        val radio =
+            section.addRadio(
+                buttons = listOf(RadioButton("1", mapOf("en" to "One"))),
+                selectedValue = "1",
+                theme = Theme.FREE_LIGHT,
+                language = Language.EN,
+                marginBottom = 10,
+            )
+
+        assertTrue("Explicit margin must set marginSet", radio.isMarginSet())
+        assertEquals(10, radio.getMarginBottom())
+    }
+
+    @Test
+    fun testAddButton_defaultDoesNotSetMargin() {
+        val button =
+            section.addButton(
+                text = "Click Me",
+                style = ru.voboost.components.button.ButtonStyle.PRIMARY,
+                theme = Theme.FREE_LIGHT,
+                language = Language.EN,
+            )
+
+        assertFalse("Default button must not have margin set", button.isMarginSet())
+    }
+
+    @Test
+    fun testAddCheckbox_defaultDoesNotSetMargin() {
+        val checkbox =
+            section.addCheckbox(
+                checked = false,
+                theme = Theme.FREE_LIGHT,
+                language = Language.EN,
+            )
+
+        assertFalse("Default checkbox must not have margin set", checkbox.isMarginSet())
+    }
+
+    @Test
+    fun testAddSelect_defaultDoesNotSetMargin() {
+        val select =
+            section.addSelect(
+                options =
+                    listOf(
+                        ru.voboost.components.select.SelectOption("auto", mapOf("en" to "Auto")),
+                    ),
+                selectedValue = "auto",
+                theme = Theme.FREE_LIGHT,
+                language = Language.EN,
+            )
+
+        assertFalse("Default select must not have margin set", select.isMarginSet())
+    }
+
+    @Test
+    fun testAddButtons_defaultDoesNotSetMargin() {
+        val buttonsView =
+            section.addButtons(
+                buttons = listOf(ru.voboost.components.buttons.ButtonConfig("eco", "ECO")),
+                selectedValue = "eco",
+                theme = Theme.FREE_LIGHT,
+                language = Language.EN,
+            )
+
+        assertFalse("Default buttons must not have margin set", buttonsView.isMarginSet())
     }
 }

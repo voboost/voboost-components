@@ -208,10 +208,10 @@ fun ru.voboost.components.section.Section.addRadio(
     title: Map<String, String>? = null,
     descriptionAbove: Map<String, String>? = null,
     descriptionBelow: Map<String, String>? = null,
-    marginLeft: Int = 0,
-    marginTop: Int = 0,
-    marginRight: Int = 0,
-    marginBottom: Int = 0,
+    marginLeft: Int? = null,
+    marginTop: Int? = null,
+    marginRight: Int? = null,
+    marginBottom: Int? = null,
     onValueChange: ((String) -> Unit)? = null,
 ): ru.voboost.components.radio.Radio {
     val builder =
@@ -231,7 +231,9 @@ fun ru.voboost.components.section.Section.addRadio(
     if (descriptionBelow != null) {
         builder.description(descriptionBelow)
     }
-    builder.margin(marginLeft, marginTop, marginRight, marginBottom)
+    if (marginLeft != null || marginTop != null || marginRight != null || marginBottom != null) {
+        builder.margin(marginLeft ?: 0, marginTop ?: 0, marginRight ?: 0, marginBottom ?: 0)
+    }
     if (onValueChange != null) {
         builder.onValueChange { onValueChange(it) }
     }
@@ -247,10 +249,10 @@ fun ru.voboost.components.section.Section.addButton(
     theme: ru.voboost.components.theme.Theme,
     language: ru.voboost.components.i18n.Language,
     description: Map<String, String>? = null,
-    marginLeft: Int = 0,
-    marginTop: Int = 0,
-    marginRight: Int = 0,
-    marginBottom: Int = 0,
+    marginLeft: Int? = null,
+    marginTop: Int? = null,
+    marginRight: Int? = null,
+    marginBottom: Int? = null,
     onClick: (() -> Unit)? = null,
 ): ru.voboost.components.button.Button {
     val builder =
@@ -264,7 +266,9 @@ fun ru.voboost.components.section.Section.addButton(
     if (description != null) {
         builder.description(description)
     }
-    builder.margin(marginLeft, marginTop, marginRight, marginBottom)
+    if (marginLeft != null || marginTop != null || marginRight != null || marginBottom != null) {
+        builder.margin(marginLeft ?: 0, marginTop ?: 0, marginRight ?: 0, marginBottom ?: 0)
+    }
     if (onClick != null) {
         builder.onClick { onClick() }
     }
@@ -280,10 +284,10 @@ fun ru.voboost.components.section.Section.addCheckbox(
     language: ru.voboost.components.i18n.Language,
     label: Map<String, String>? = null,
     description: Map<String, String>? = null,
-    marginLeft: Int = 0,
-    marginTop: Int = 0,
-    marginRight: Int = 0,
-    marginBottom: Int = 0,
+    marginLeft: Int? = null,
+    marginTop: Int? = null,
+    marginRight: Int? = null,
+    marginBottom: Int? = null,
     onCheckedChange: ((Boolean) -> Unit)? = null,
 ): ru.voboost.components.checkbox.Checkbox {
     val builder =
@@ -299,7 +303,9 @@ fun ru.voboost.components.section.Section.addCheckbox(
     if (description != null) {
         builder.description(description)
     }
-    builder.margin(marginLeft, marginTop, marginRight, marginBottom)
+    if (marginLeft != null || marginTop != null || marginRight != null || marginBottom != null) {
+        builder.margin(marginLeft ?: 0, marginTop ?: 0, marginRight ?: 0, marginBottom ?: 0)
+    }
     if (onCheckedChange != null) {
         builder.onCheckedChange { onCheckedChange(it) }
     }
@@ -314,10 +320,13 @@ fun ru.voboost.components.section.Section.addSelect(
     selectedValue: String,
     theme: ru.voboost.components.theme.Theme,
     language: ru.voboost.components.i18n.Language,
-    marginLeft: Int = 0,
-    marginTop: Int = 0,
-    marginRight: Int = 0,
-    marginBottom: Int = 0,
+    title: Map<String, String>? = null,
+    descriptionAbove: Map<String, String>? = null,
+    description: Map<String, String>? = null,
+    marginLeft: Int? = null,
+    marginTop: Int? = null,
+    marginRight: Int? = null,
+    marginBottom: Int? = null,
     onValueChange: ((String) -> Unit)? = null,
 ): ru.voboost.components.select.Select {
     val builder =
@@ -328,7 +337,18 @@ fun ru.voboost.components.section.Section.addSelect(
             options,
             selectedValue,
         )
-    builder.margin(marginLeft, marginTop, marginRight, marginBottom)
+    if (title != null) {
+        builder.title(title)
+    }
+    if (descriptionAbove != null) {
+        builder.descriptionAbove(descriptionAbove)
+    }
+    if (description != null) {
+        builder.description(description)
+    }
+    if (marginLeft != null || marginTop != null || marginRight != null || marginBottom != null) {
+        builder.margin(marginLeft ?: 0, marginTop ?: 0, marginRight ?: 0, marginBottom ?: 0)
+    }
     if (onValueChange != null) {
         builder.onValueChange { onValueChange(it) }
     }
@@ -343,12 +363,13 @@ fun ru.voboost.components.section.Section.addButtons(
     selectedValue: String,
     theme: ru.voboost.components.theme.Theme,
     language: ru.voboost.components.i18n.Language,
+    title: Map<String, String>? = null,
     rightText: Map<String, String>? = null,
     description: Map<String, String>? = null,
-    marginLeft: Int = 0,
-    marginTop: Int = 0,
-    marginRight: Int = 0,
-    marginBottom: Int = 0,
+    marginLeft: Int? = null,
+    marginTop: Int? = null,
+    marginRight: Int? = null,
+    marginBottom: Int? = null,
     onValueChange: ((String) -> Unit)? = null,
 ): ru.voboost.components.buttons.Buttons {
     val builder =
@@ -359,13 +380,18 @@ fun ru.voboost.components.section.Section.addButtons(
             buttons,
             selectedValue,
         )
+    if (title != null) {
+        builder.title(title)
+    }
     if (rightText != null) {
         builder.rightText(rightText)
     }
     if (description != null) {
         builder.description(description)
     }
-    builder.margin(marginLeft, marginTop, marginRight, marginBottom)
+    if (marginLeft != null || marginTop != null || marginRight != null || marginBottom != null) {
+        builder.margin(marginLeft ?: 0, marginTop ?: 0, marginRight ?: 0, marginBottom ?: 0)
+    }
     if (onValueChange != null) {
         builder.onValueChange { onValueChange(it) }
     }
