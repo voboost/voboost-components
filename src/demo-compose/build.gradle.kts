@@ -24,20 +24,29 @@ android {
     }
 
     testOptions {
-            unitTests {
-                isIncludeAndroidResources = true
-                isReturnDefaultValues = true
-            }
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            isDebuggable = (project.findProperty("debuggable")?.toString() == "true")
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    applicationVariants.all {
+        outputs.forEach { output ->
+            val apk = output as com.android.build.gradle.api.ApkVariantOutput
+            apk.outputFileName = apk.outputFileName.replace("-release", "")
         }
     }
 
@@ -80,6 +89,12 @@ android {
                 srcDir("java/ru/voboost/components/demo/compose/MainActivity.tests")
             }
         }
+    }
+}
+
+androidComponents {
+    beforeVariants { variant ->
+        variant.enable = variant.buildType != "debug"
     }
 }
 
@@ -131,4 +146,23 @@ dependencies {
 // Configure Roborazzi for automotive resolution screenshots
 roborazzi {
     outputDir = file("screenshots")
+}
+
+// Demo testing tasks
+tasks.register("testDemoCompose") {
+    group = "demo"
+    description = "Run all tests for Compose demo application"
+    dependsOn("testReleaseUnitTest")
+}
+
+tasks.register("testDemoComposeVisual") {
+    group = "demo"
+    description = "Run only visual tests for Compose demo application"
+    dependsOn("verifyRoborazziRelease")
+}
+
+tasks.register("testDemoComposeVisualSave") {
+    group = "demo"
+    description = "Run visual tests and save screenshots for Compose demo application"
+    dependsOn("recordRoborazziRelease")
 }

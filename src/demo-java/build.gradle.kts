@@ -17,26 +17,35 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-            vectorDrawables {
-                useSupportLibrary = true
-            }
+        vectorDrawables {
+            useSupportLibrary = true
         }
+    }
 
-        testOptions {
-            unitTests {
-                isIncludeAndroidResources = true
-                isReturnDefaultValues = true
-            }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            isDebuggable = (project.findProperty("debuggable")?.toString() == "true")
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    applicationVariants.all {
+        outputs.forEach { output ->
+            val apk = output as com.android.build.gradle.api.ApkVariantOutput
+            apk.outputFileName = apk.outputFileName.replace("-release", "")
         }
     }
 
@@ -75,6 +84,12 @@ android {
                 srcDir("java/ru/voboost/components/demo/java/MainActivity.tests")
             }
         }
+    }
+}
+
+androidComponents {
+    beforeVariants { variant ->
+        variant.enable = variant.buildType != "debug"
     }
 }
 
@@ -125,18 +140,17 @@ roborazzi {
 tasks.register("testDemoJava") {
     group = "demo"
     description = "Run all tests for Java demo application"
-    dependsOn("testDebugUnitTest")
+    dependsOn("testReleaseUnitTest")
 }
 
 tasks.register("testDemoJavaVisual") {
     group = "demo"
     description = "Run only visual tests for Java demo application"
-    dependsOn("verifyRoborazziDebug")
+    dependsOn("verifyRoborazziRelease")
 }
 
 tasks.register("testDemoJavaVisualSave") {
     group = "demo"
     description = "Run visual tests and save screenshots for Java demo application"
-    dependsOn("recordRoborazziDebug")
+    dependsOn("recordRoborazziRelease")
 }
-

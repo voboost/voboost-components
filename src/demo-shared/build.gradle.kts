@@ -38,6 +38,12 @@ android {
     }
 }
 
+androidComponents {
+    beforeVariants { variant ->
+        variant.enable = variant.buildType != "debug"
+    }
+}
+
 // Exclude Kotlin compilation tasks (this is a pure Java project)
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     enabled = false

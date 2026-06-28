@@ -17,26 +17,35 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-            vectorDrawables {
-                useSupportLibrary = true
-            }
+        vectorDrawables {
+            useSupportLibrary = true
         }
+    }
 
-        testOptions {
-            unitTests {
-                isIncludeAndroidResources = true
-                isReturnDefaultValues = true
-            }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            isDebuggable = (project.findProperty("debuggable")?.toString() == "true")
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    applicationVariants.all {
+        outputs.forEach { output ->
+            val apk = output as com.android.build.gradle.api.ApkVariantOutput
+            apk.outputFileName = apk.outputFileName.replace("-release", "")
         }
     }
 
@@ -78,6 +87,12 @@ android {
                 srcDir("java/ru/voboost/components/demo/kotlin/MainActivity.tests")
             }
         }
+    }
+}
+
+androidComponents {
+    beforeVariants { variant ->
+        variant.enable = variant.buildType != "debug"
     }
 }
 
@@ -125,4 +140,23 @@ dependencies {
 // Configure Roborazzi for automotive resolution screenshots
 roborazzi {
     outputDir = file("screenshots")
+}
+
+// Demo testing tasks
+tasks.register("testDemoKotlin") {
+    group = "demo"
+    description = "Run all tests for Kotlin demo application"
+    dependsOn("testReleaseUnitTest")
+}
+
+tasks.register("testDemoKotlinVisual") {
+    group = "demo"
+    description = "Run only visual tests for Kotlin demo application"
+    dependsOn("verifyRoborazziRelease")
+}
+
+tasks.register("testDemoKotlinVisualSave") {
+    group = "demo"
+    description = "Run visual tests and save screenshots for Kotlin demo application"
+    dependsOn("recordRoborazziRelease")
 }

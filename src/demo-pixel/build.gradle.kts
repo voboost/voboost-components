@@ -32,10 +32,19 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            isDebuggable = (project.findProperty("debuggable")?.toString() == "true")
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    applicationVariants.all {
+        outputs.forEach { output ->
+            val apk = output as com.android.build.gradle.api.ApkVariantOutput
+            apk.outputFileName = apk.outputFileName.replace("-release", "")
         }
     }
 
@@ -84,6 +93,12 @@ android {
             // ONLY include the font directory — not the entire source tree
             assets.srcDir("../../main/java/ru/voboost/components/font")
         }
+    }
+}
+
+androidComponents {
+    beforeVariants { variant ->
+        variant.enable = variant.buildType != "debug"
     }
 }
 
@@ -159,7 +174,7 @@ tasks.register("clearRoborazziSafe") {
 tasks.register("save") {
     group = "demo"
     description = "Generate screenshots and comparison reports"
-    dependsOn("testDebugUnitTest")
+    dependsOn("testReleaseUnitTest")
 }
 
 tasks.register("verify") {

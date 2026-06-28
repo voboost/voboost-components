@@ -1,7 +1,7 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     id("io.github.takahirom.roborazzi") version "1.48.0"
     id("com.diffplug.spotless") version "6.25.0"
@@ -127,6 +127,14 @@ android {
     }
 }
 
+// Release-only: drop the debug variant entirely. `./gradlew build` produces the
+// single release variant; `-Pdebuggable=true` flips release's isDebuggable.
+androidComponents {
+    beforeVariants { variant ->
+        variant.enable = variant.buildType != "debug"
+    }
+}
+
 // Exclude test files from main compilation (BEM co-located structure)
 // Test files are in src/main/java but should only compile in test source set
 tasks.withType<JavaCompile>().configureEach {
@@ -231,12 +239,12 @@ tasks.register("buildDemos") {
     group = "demo"
     description = "Build all demo applications"
     dependsOn(
-        ":demo-java:assembleDebug",
-        ":demo-kotlin:assembleDebug",
-        ":demo-compose:assembleDebug",
-        ":demo-pixel:assembleDebug",
-        ":demo-java-cunba:assembleDebug",
-        ":demo-kotlin-cunba:assembleDebug",
+        ":demo-java:assembleRelease",
+        ":demo-kotlin:assembleRelease",
+        ":demo-compose:assembleRelease",
+        ":demo-pixel:assembleRelease",
+        ":demo-java-cunba:assembleRelease",
+        ":demo-kotlin-cunba:assembleRelease",
     )
 }
 
@@ -244,12 +252,12 @@ tasks.register("installDemos") {
     group = "demo"
     description = "Install all demo applications"
     dependsOn(
-        ":demo-java:installDebug",
-        ":demo-kotlin:installDebug",
-        ":demo-compose:installDebug",
-        ":demo-pixel:installDebug",
-        ":demo-java-cunba:installDebug",
-        ":demo-kotlin-cunba:installDebug",
+        ":demo-java:installRelease",
+        ":demo-kotlin:installRelease",
+        ":demo-compose:installRelease",
+        ":demo-pixel:installRelease",
+        ":demo-java-cunba:installRelease",
+        ":demo-kotlin-cunba:installRelease",
     )
 }
 
@@ -257,12 +265,12 @@ tasks.register("testDemos") {
     group = "demo"
     description = "Run tests for all demo applications"
     dependsOn(
-        ":demo-java:testDebugUnitTest",
-        ":demo-kotlin:testDebugUnitTest",
-        ":demo-compose:testDebugUnitTest",
-        ":demo-pixel:testDebugUnitTest",
-        ":demo-java-cunba:testDebugUnitTest",
-        ":demo-kotlin-cunba:testDebugUnitTest",
+        ":demo-java:testReleaseUnitTest",
+        ":demo-kotlin:testReleaseUnitTest",
+        ":demo-compose:testReleaseUnitTest",
+        ":demo-pixel:testReleaseUnitTest",
+        ":demo-java-cunba:testReleaseUnitTest",
+        ":demo-kotlin-cunba:testReleaseUnitTest",
     )
 }
 
@@ -283,57 +291,64 @@ tasks.register("cleanDemos") {
 tasks.register("buildDemoJava") {
     group = "demo"
     description = "Build Java demo application"
-    dependsOn(":demo-java:assembleDebug")
+    dependsOn(":demo-java:assembleRelease")
 }
 
 tasks.register("buildDemoKotlin") {
     group = "demo"
     description = "Build Kotlin demo application"
-    dependsOn(":demo-kotlin:assembleDebug")
+    dependsOn(":demo-kotlin:assembleRelease")
 }
 
 tasks.register("buildDemoCompose") {
     group = "demo"
     description = "Build Compose demo application"
-    dependsOn(":demo-compose:assembleDebug")
+    dependsOn(":demo-compose:assembleRelease")
 }
 
 tasks.register("buildDemoPixel") {
     group = "demo"
     description = "Build Pixel demo application"
-    dependsOn(":demo-pixel:assembleDebug")
+    dependsOn(":demo-pixel:assembleRelease")
 }
 
 tasks.register("installDemoJava") {
     group = "demo"
     description = "Install Java demo application to connected device"
-    dependsOn(":demo-java:installDebug")
+    dependsOn(":demo-java:installRelease")
 }
 
 tasks.register("installDemoKotlin") {
     group = "demo"
     description = "Install Kotlin demo application to connected device"
-    dependsOn(":demo-kotlin:installDebug")
+    dependsOn(":demo-kotlin:installRelease")
 }
 
 tasks.register("installDemoCompose") {
     group = "demo"
     description = "Install Compose demo application to connected device"
-    dependsOn(":demo-compose:installDebug")
+    dependsOn(":demo-compose:installRelease")
 }
 
 tasks.register("installDemoPixel") {
     group = "demo"
     description = "Install Pixel demo application to connected device"
-    dependsOn(":demo-pixel:installDebug")
+    dependsOn(":demo-pixel:installRelease")
 }
 
 // Demo start tasks
 tasks.register<Exec>("startDemoJava") {
     group = "demo"
     description = "Start Java demo application on connected device"
-    commandLine("adb", "shell", "am", "start", "-n", "ru.voboost.components.demojava/.MainActivity")
-    dependsOn(":demo-java:installDebug")
+    commandLine(
+        "adb",
+        "shell",
+        "am",
+        "start",
+        "-n",
+        "ru.voboost.components.demo.java/.MainActivity",
+    )
+    dependsOn(":demo-java:installRelease")
 }
 
 tasks.register<Exec>("startDemoKotlin") {
@@ -347,7 +362,7 @@ tasks.register<Exec>("startDemoKotlin") {
         "-n",
         "ru.voboost.components.demo.kotlin/.MainActivity",
     )
-    dependsOn(":demo-kotlin:installDebug")
+    dependsOn(":demo-kotlin:installRelease")
 }
 
 tasks.register<Exec>("startDemoCompose") {
@@ -361,7 +376,7 @@ tasks.register<Exec>("startDemoCompose") {
         "-n",
         "ru.voboost.components.demo.compose/.MainActivity",
     )
-    dependsOn(":demo-compose:installDebug")
+    dependsOn(":demo-compose:installRelease")
 }
 
 tasks.register<Exec>("startDemoPixel") {
@@ -375,19 +390,19 @@ tasks.register<Exec>("startDemoPixel") {
         "-n",
         "ru.voboost.components.demo.pixel/.MainActivity",
     )
-    dependsOn(":demo-pixel:installDebug")
+    dependsOn(":demo-pixel:installRelease")
 }
 
 tasks.register("buildDemoCunba") {
     group = "demo"
     description = "Build CunBA 3 demo application"
-    dependsOn(":demo-java-cunba:assembleDebug")
+    dependsOn(":demo-java-cunba:assembleRelease")
 }
 
 tasks.register("installDemoCunba") {
     group = "demo"
     description = "Install CunBA 3 demo application to connected device"
-    dependsOn(":demo-java-cunba:installDebug")
+    dependsOn(":demo-java-cunba:installRelease")
 }
 
 tasks.register<Exec>("startDemoCunba") {
@@ -399,9 +414,9 @@ tasks.register<Exec>("startDemoCunba") {
         "am",
         "start",
         "-n",
-        "ru.voboost.components.demo.cunba/.MainActivity",
+        "ru.voboost.components.demo.java.cunba/.MainActivity",
     )
-    dependsOn(":demo-java-cunba:installDebug")
+    dependsOn(":demo-java-cunba:installRelease")
 }
 
 // Demo validation tasks
@@ -414,13 +429,13 @@ tasks.register("validateDemos") {
 tasks.register("recordDemos") {
     group = "demo"
     description = "Record demo screenshots"
-    dependsOn(":demo-compose:recordRoborazziDebug")
+    dependsOn(":demo-compose:recordRoborazziRelease")
 }
 
 tasks.register("verifyDemos") {
     group = "demo"
     description = "Verify demo screenshots"
-    dependsOn(":demo-compose:verifyRoborazziDebug")
+    dependsOn(":demo-compose:verifyRoborazziRelease")
 }
 
 // Ensure demos are excluded from library build and distribution
@@ -438,43 +453,43 @@ tasks.register("ciValidate") {
 // Custom Gradle tasks for BEM Co-Located Test Structure
 // Use proper dependsOn chains instead of recursive Gradle invocation
 
-// Combined test tasks - depend on testDebugUnitTest with proper filtering
+// Combined test tasks - depend on testReleaseUnitTest with proper filtering
 tasks.register("testUnit") {
     description = "Run all unit tests (Java and Kotlin)"
     group = "verification"
-    dependsOn("testDebugUnitTest")
+    dependsOn("testReleaseUnitTest")
 }
 
 tasks.register("testVisual") {
     description = "Run all visual tests using Roborazzi"
     group = "verification"
-    dependsOn("testDebugUnitTest")
+    dependsOn("testReleaseUnitTest")
 }
 
 // Java test tasks
 tasks.register("testUnitJava") {
     description = "Run only Java unit tests"
     group = "verification"
-    dependsOn("testDebugUnitTest")
+    dependsOn("testReleaseUnitTest")
 }
 
 tasks.register("testVisualJava") {
     description = "Run only Java visual tests using Roborazzi"
     group = "verification"
-    dependsOn("testDebugUnitTest")
+    dependsOn("testReleaseUnitTest")
 }
 
 // Kotlin test tasks
 tasks.register("testUnitKotlin") {
     description = "Run only Kotlin unit tests (*.test-unit.kt files)"
     group = "verification"
-    dependsOn("testDebugUnitTest")
+    dependsOn("testReleaseUnitTest")
 }
 
 tasks.register("testVisualKotlin") {
     description = "Run only Kotlin visual tests using Roborazzi"
     group = "verification"
-    dependsOn("testDebugUnitTest")
+    dependsOn("testReleaseUnitTest")
 }
 
 // Java code style tasks are defined in checkstyle.gradle and spotless.gradle
@@ -518,7 +533,7 @@ tasks.register<Copy>("copyRoborazziScreenshots") {
     include("*.png")
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
-    dependsOn("recordRoborazziDebug")
+    dependsOn("recordRoborazziRelease")
     doNotTrackState("Screenshots are managed externally")
 }
 
