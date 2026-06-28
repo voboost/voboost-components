@@ -5,7 +5,7 @@ import java.util.Map;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.TypedValue;
-import android.widget.TextView;
+import androidx.appcompat.widget.AppCompatTextView;
 
 import ru.voboost.components.i18n.ILocalizable;
 import ru.voboost.components.i18n.Language;
@@ -19,7 +19,7 @@ import ru.voboost.components.theme.Theme;
  * with the rest of the demo (Section propagates theme/language to its
  * {@link IThemable}/{@link ILocalizable} descendants).
  */
-public class LocalizableTextView extends TextView implements IThemable, ILocalizable {
+public class LocalizableTextView extends AppCompatTextView implements IThemable, ILocalizable {
 
     /** Primary text color role (titles, price titles). */
     public static final int ROLE_TITLE = 0;

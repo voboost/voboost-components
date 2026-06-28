@@ -3,7 +3,7 @@ package ru.voboost.components.demo.kotlin.cunba
 import android.content.Context
 import android.graphics.Color
 import android.util.TypedValue
-import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 
 import ru.voboost.components.i18n.ILocalizable
 import ru.voboost.components.i18n.Language
@@ -18,7 +18,7 @@ import ru.voboost.components.theme.Theme
  * {@link IThemable}/{@link ILocalizable} descendants).
  */
 class LocalizableTextView(context: Context, textSizePx: Float, role: Int) :
-    TextView(context), IThemable, ILocalizable {
+    AppCompatTextView(context), IThemable, ILocalizable {
 
     companion object {
         /** Primary text color role (titles, price titles). */

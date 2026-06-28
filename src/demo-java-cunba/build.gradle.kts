@@ -17,26 +17,35 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-            vectorDrawables {
-                useSupportLibrary = true
-            }
+        vectorDrawables {
+            useSupportLibrary = true
         }
+    }
 
-        testOptions {
-            unitTests {
-                isIncludeAndroidResources = true
-                isReturnDefaultValues = true
-            }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            isDebuggable = (project.findProperty("debuggable")?.toString() == "true")
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    applicationVariants.all {
+        outputs.forEach { output ->
+            val apk = output as com.android.build.gradle.api.ApkVariantOutput
+            apk.outputFileName = apk.outputFileName.replace("-release", "")
         }
     }
 
@@ -73,9 +82,15 @@ android {
         getByName("test") {
             java {
                 srcDir("src/test/java")
-                srcDir("java/ru/voboost/components/demo/cunba/MainActivity.tests")
+                srcDir("java/ru/voboost/components/demo/java/cunba/MainActivity.tests")
             }
         }
+    }
+}
+
+androidComponents {
+    beforeVariants { variant ->
+        variant.enable = variant.buildType != "debug"
     }
 }
 
@@ -121,17 +136,17 @@ roborazzi {
 tasks.register("testDemoCunba") {
     group = "demo"
     description = "Run all tests for CunBA 3 demo application"
-    dependsOn("testDebugUnitTest")
+    dependsOn("testReleaseUnitTest")
 }
 
 tasks.register("testDemoCunbaVisual") {
     group = "demo"
     description = "Run only visual tests for CunBA 3 demo application"
-    dependsOn("verifyRoborazziDebug")
+    dependsOn("verifyRoborazziRelease")
 }
 
 tasks.register("testDemoCunbaVisualSave") {
     group = "demo"
     description = "Run visual tests and save screenshots for CunBA 3 demo application"
-    dependsOn("recordRoborazziDebug")
+    dependsOn("recordRoborazziRelease")
 }
