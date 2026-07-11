@@ -226,9 +226,6 @@ public class Section extends ViewGroup implements IThemable, ILocalizable {
         requestLayout();
         invalidate();
 
-        // Update accessibility content description
-        setContentDescription(getTitleText());
-
         if (titleCheckbox != null) {
             titleCheckbox.setLabel(title);
             titleCheckbox.setLabelBold(true);
@@ -504,9 +501,6 @@ public class Section extends ViewGroup implements IThemable, ILocalizable {
         requestLayout();
         invalidate();
 
-        // Update accessibility content description when language changes
-        setContentDescription(getTitleText());
-
         // Propagate language to all child views
         propagateLanguage(language);
     }
@@ -675,7 +669,21 @@ public class Section extends ViewGroup implements IThemable, ILocalizable {
 
             // Give children the content width (section width minus horizontal padding)
             int childWidthSpec = MeasureSpec.makeMeasureSpec(contentWidth, MeasureSpec.EXACTLY);
-            int childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+
+            // Respect a child's explicit fixed height. When the child's
+            // layoutParams.height is a concrete pixel value (not MATCH_PARENT
+            // or WRAP_CONTENT), measure it at exactly that height. Otherwise
+            // let the child wrap its content with an UNSPECIFIED height spec.
+            // This is required so a fixed-height child (e.g. the daemon-status
+            // diagnostic TextView with a 555px height) is measured at its
+            // requested height instead of its text-content height.
+            int childHeightSpec;
+            ViewGroup.LayoutParams childLp = child.getLayoutParams();
+            if (childLp != null && childLp.height > 0) {
+                childHeightSpec = MeasureSpec.makeMeasureSpec(childLp.height, MeasureSpec.EXACTLY);
+            } else {
+                childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+            }
 
             child.measure(childWidthSpec, childHeightSpec);
 

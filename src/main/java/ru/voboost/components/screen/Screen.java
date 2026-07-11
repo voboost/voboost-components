@@ -139,10 +139,11 @@ public class Screen extends ViewGroup implements IThemable, ILocalizable {
 
     /**
      * Returns the available content height in pixels.
-     * Currently fixed at 720px; will account for screen lift state in future.
+     * Fixed at {@link ScreenTheme#AVAILABLE_HEIGHT}; will account for screen
+     * lift state in future.
      */
     public int getAvailableHeight() {
-        return 720;
+        return ScreenTheme.AVAILABLE_HEIGHT;
     }
     /**
      * Sets the theme for the component.

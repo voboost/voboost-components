@@ -2,7 +2,7 @@
 
 ## Architecture
 
-- **[Text.java](Text.java)** — Extended `AppCompatTextView`: native text rendering, robust sizing, and theming integration
+- **[Text.java](Text.java)** — Extended platform `TextView`: native text rendering, robust sizing, and theming integration
 - **[Text.kt](Text.kt)** — Kotlin Compose wrapper + `TextData` model
 
 Java handles all logic. Kotlin wrapper bridges to Compose.
@@ -138,7 +138,7 @@ Role determines both visual appearance (size + weight) and color. Colors are def
 
 ## Rendering
 
-Native Android text rendering via `AppCompatTextView`. Avoids custom Canvas clipping bugs. Fonts are loaded and applied natively via `Font.getRegular(context)` and `Font.getBold(context, text)` depending on the role.
+Native Android text rendering via the platform `TextView`. Avoids custom Canvas clipping bugs. Fonts are loaded and applied natively via `Font.getRegular(context)` and `Font.getBold(context, text)` depending on the role.
 
 ## File Structure
 

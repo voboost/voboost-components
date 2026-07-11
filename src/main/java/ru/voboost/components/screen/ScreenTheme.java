@@ -33,6 +33,16 @@ public final class ScreenTheme {
     /** Padding inside the screen */
     public static final int PADDING = 32;
 
+    /**
+     * Available content height in pixels (the vertical space the Screen lays
+     * out Tabs and Panels into). Fixed for the target automotive screen.
+     * Exposed so host apps can size full-height children (e.g. a diagnostic
+     * section that must fill the panel viewport) without relying on
+     * DisplayMetrics, which can differ from this fixed design height on real
+     * devices.
+     */
+    public static final int AVAILABLE_HEIGHT = 720;
+
     /** Default horizontal offset for screen content */
     public static final int DEFAULT_OFFSET_X = 145;
 

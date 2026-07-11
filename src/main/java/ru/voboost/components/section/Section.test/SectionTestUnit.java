@@ -156,44 +156,6 @@ public class SectionTestUnit {
     }
 
     // ============================================================
-    // ACCESSIBILITY TESTS - Phase 5
-    // ============================================================
-
-    @Test
-    public void testAccessibilityContentDescription() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Settings");
-        title.put("ru", "Настройки");
-
-        section.setTitle(title);
-        section.setLanguage(Language.EN);
-
-        assertEquals("Settings", section.getContentDescription());
-    }
-
-    @Test
-    public void testAccessibilityContentDescriptionChangesWithLanguage() {
-        Map<String, String> title = new HashMap<>();
-        title.put("en", "Settings");
-        title.put("ru", "Настройки");
-
-        section.setTitle(title);
-        section.setLanguage(Language.EN);
-        assertEquals("Settings", section.getContentDescription());
-
-        section.setLanguage(Language.RU);
-        assertEquals("Настройки", section.getContentDescription());
-    }
-
-    @Test
-    public void testAccessibilityContentDescriptionEmptyWhenNoTitle() {
-        section.setLanguage(Language.EN);
-        // Content description will be empty string when no title is set
-        CharSequence desc = section.getContentDescription();
-        assertTrue("Content description should be null or empty", desc == null || desc.length() == 0);
-    }
-
-    // ============================================================
     // NULL SAFETY TESTS - Phase 5
     // ============================================================
 

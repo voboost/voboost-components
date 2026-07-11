@@ -76,7 +76,7 @@ public final class TabsTheme {
     public static final int FREE_LIGHT_SELECTED_BACKGROUND = Color.parseColor("#bfffffff");
 
     /** Text color for selected tab - Free Light */
-    public static final int FREE_LIGHT_SELECTED_TEXT = Color.parseColor("#4099F3");
+    public static final int FREE_LIGHT_SELECTED_TEXT = Color.parseColor("#4099f3");
 
     /** Text color for unselected tab - Free Light */
     public static final int FREE_LIGHT_UNSELECTED_TEXT = Color.parseColor("#2d3442");
@@ -98,10 +98,10 @@ public final class TabsTheme {
     public static final int FREE_DARK_SELECTED_BACKGROUND = Color.parseColor("#23272f");
 
     /** Text color for selected tab - Free Dark */
-    public static final int FREE_DARK_SELECTED_TEXT = Color.parseColor("#4099F3");
+    public static final int FREE_DARK_SELECTED_TEXT = Color.parseColor("#4099f3");
 
     /** Text color for unselected tab - Free Dark */
-    public static final int FREE_DARK_UNSELECTED_TEXT = Color.parseColor("#CACACA");
+    public static final int FREE_DARK_UNSELECTED_TEXT = Color.parseColor("#cacaca");
 
     /** Text color for disabled tab - Free Dark */
     public static final int FREE_DARK_DISABLED_TEXT = Color.parseColor("#666666");

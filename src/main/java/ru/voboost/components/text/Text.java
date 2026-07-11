@@ -5,9 +5,9 @@ import java.util.Map;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatTextView;
 
 import ru.voboost.components.font.Font;
 import ru.voboost.components.i18n.ILocalizable;
@@ -19,10 +19,12 @@ import ru.voboost.components.theme.Theme;
  * Text component — simple themed text rendering with localization.
  *
  * <p>
- * Extends AppCompatTextView for robust text measurement and rendering,
- * while integrating Voboost theme, language, and role-driven sizing.
+ * Extends the platform TextView, integrating Voboost theme, language, and
+ * role-driven sizing. On the target API levels (28-30) the platform TextView
+ * already provides native autosizing, tinting and custom fonts, so no AppCompat
+ * backport is needed.
  */
-public class Text extends AppCompatTextView implements IThemable, ILocalizable {
+public class Text extends TextView implements IThemable, ILocalizable {
 
     private Map<Language, String> localizedText;
     private TextRole role = TextRole.CONTROL;

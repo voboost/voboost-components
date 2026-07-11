@@ -19,6 +19,8 @@ import android.graphics.drawable.NinePatchDrawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewParent;
 import android.view.animation.OvershootInterpolator;
 
 import ru.voboost.components.font.Font;
@@ -61,6 +63,15 @@ class RadioPrimitive extends View implements IThemable, ILocalizable {
     private ValueAnimator widthAnimator;
     private float animatedX = 0f;
     private float animatedWidth = 0f;
+
+    // Touch tracking for tap-vs-scroll disambiguation. The Radio lives inside a
+    // ScrollView; a vertical drag must scroll the panel, not select a radio
+    // option. Selection is deferred to ACTION_UP and only fires when the
+    // gesture is a tap (movement stays within the touch slop).
+    private float touchDownX = 0f;
+    private float touchDownY = 0f;
+    private boolean touchIsScroll = false;
+    private boolean touchHasTrackedDown = false;
 
     // Paint objects for drawing
     private Paint backgroundPaint;
@@ -156,12 +167,13 @@ class RadioPrimitive extends View implements IThemable, ILocalizable {
         if (currentTheme != null) {
             colors = RadioTheme.getColors(currentTheme);
 
-            // Invalidate cached gradient when theme changes
+            // Invalidate cached gradient and slider when theme changes
             cachedSelectionGradient = null;
             cachedGradientLeft = Float.NaN;
             cachedGradientRight = Float.NaN;
             cachedGradientTop = Float.NaN;
             cachedGradientBottom = Float.NaN;
+            sliderDrawable = null;
         }
     }
 
@@ -651,34 +663,93 @@ class RadioPrimitive extends View implements IThemable, ILocalizable {
             return false;
         }
 
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            float touchX = event.getX();
+        int action = event.getActionMasked();
+        ViewParent parent = getParent();
 
-            // Find which item was touched
-            if (itemPositions != null && itemWidths != null && buttons != null) {
-                for (int i = 0; i < itemPositions.size(); i++) {
-                    float itemStart = itemPositions.get(i); // correct for current mode
-                    float itemEnd = itemStart + itemWidths.get(i);
+        switch (action) {
+            case MotionEvent.ACTION_DOWN: {
+                // Record the down position and start in tap mode. Request the
+                // parent (ScrollView) NOT to intercept so we can detect whether
+                // this is a tap or a scroll. Selection is deferred to UP.
+                touchDownX = event.getX();
+                touchDownY = event.getY();
+                touchIsScroll = false;
+                touchHasTrackedDown = true;
+                if (parent != null) {
+                    parent.requestDisallowInterceptTouchEvent(true);
+                }
+                return true;
+            }
 
-                    if (touchX >= itemStart && touchX <= itemEnd) {
-                        RadioButton button = buttons.get(i);
-                        if (button != null) {
-                            String newValue = button.getValue();
-
-                            if (selectedValue != null && !selectedValue.equals(newValue)) {
-                                // Store value to fire listener after animation completes
-                                pendingChangeValue = newValue;
-                                setSelectedValueWithAnimation(newValue);
-                            }
+            case MotionEvent.ACTION_MOVE: {
+                if (!touchHasTrackedDown) {
+                    return super.onTouchEvent(event);
+                }
+                float dx = event.getX() - touchDownX;
+                float dy = event.getY() - touchDownY;
+                // Once the movement exceeds the touch slop, treat the gesture
+                // as a scroll: let the parent ScrollView intercept the rest of
+                // the gesture so the panel scrolls instead of selecting.
+                if (!touchIsScroll) {
+                    float slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+                    if (Math.abs(dy) > slop || Math.abs(dx) > slop) {
+                        touchIsScroll = true;
+                        if (parent != null) {
+                            parent.requestDisallowInterceptTouchEvent(false);
                         }
-
-                        return true;
                     }
                 }
+                return true;
             }
-        }
 
-        return super.onTouchEvent(event);
+            case MotionEvent.ACTION_UP: {
+                if (!touchHasTrackedDown) {
+                    return super.onTouchEvent(event);
+                }
+                boolean wasScroll = touchIsScroll;
+                float downX = touchDownX;
+                touchHasTrackedDown = false;
+                touchIsScroll = false;
+
+                // Only select when the gesture was a tap (no significant move).
+                if (wasScroll) {
+                    return true;
+                }
+
+                float touchX = downX;
+                if (itemPositions != null && itemWidths != null && buttons != null) {
+                    for (int i = 0; i < itemPositions.size(); i++) {
+                        float itemStart = itemPositions.get(i);
+                        float itemEnd = itemStart + itemWidths.get(i);
+
+                        if (touchX >= itemStart && touchX <= itemEnd) {
+                            RadioButton button = buttons.get(i);
+                            if (button != null) {
+                                String newValue = button.getValue();
+
+                                if (selectedValue != null && !selectedValue.equals(newValue)) {
+                                    // Store value to fire listener after animation completes
+                                    pendingChangeValue = newValue;
+                                    setSelectedValueWithAnimation(newValue);
+                                }
+                            }
+                            performClick();
+                            return true;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            case MotionEvent.ACTION_CANCEL: {
+                touchHasTrackedDown = false;
+                touchIsScroll = false;
+                return true;
+            }
+
+            default:
+                return super.onTouchEvent(event);
+        }
     }
 
     private void setSelectedValueWithAnimation(String value) {
