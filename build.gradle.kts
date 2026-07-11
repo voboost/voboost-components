@@ -109,6 +109,7 @@ android {
             // ONLY include the font directory — not the entire source tree
             assets.srcDir("src/main/java/ru/voboost/components/font")
             // BEM-colocated primitive bitmaps as Java classpath resources
+            // Fonts are already in assets; duplicates are excluded in packaging {}
             resources.srcDir("src/main/java")
         }
         getByName("test") {

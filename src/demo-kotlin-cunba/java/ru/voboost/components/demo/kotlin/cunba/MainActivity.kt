@@ -308,10 +308,7 @@ class MainActivity : Activity() {
         val col1 = LinearLayout(this)
         col1.orientation = LinearLayout.VERTICAL
         col1.addView(titleView(mapOf("en" to "Photograph QR code with VIN", "ru" to "Сфотографируйте QR-код с VIN")))
-        val qr1ResId = resources.getIdentifier("activation_qr1", "drawable", packageName)
-        if (qr1ResId != 0) {
-            col1.addView(qrImageView(qr1ResId))
-        }
+        col1.addView(qrImageView(R.drawable.activation_qr1))
         col1.addView(hintView(mapOf("en" to "LDP95H966PE302009", "ru" to "LDP95H966PE302009")))
 
         // Column 2: Choose subscription (.activation__step_price width:100% -> fills remaining)
@@ -354,10 +351,7 @@ class MainActivity : Activity() {
         val col3Params = LinearLayout.LayoutParams(300, LinearLayout.LayoutParams.WRAP_CONTENT)
         col3Params.leftMargin = 80
         col3.addView(titleView(mapOf("en" to "Send photo to @cunba_ru", "ru" to "Отправьте фото @cunba_ru")))
-        val qr2ResId = resources.getIdentifier("activation_qr2", "drawable", packageName)
-        if (qr2ResId != 0) {
-            col3.addView(qrImageView(qr2ResId))
-        }
+        col3.addView(qrImageView(R.drawable.activation_qr2))
         col3.addView(
             hintView(
                 mapOf(
