@@ -6,7 +6,6 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.widget.TextView;
-
 import androidx.annotation.Nullable;
 
 import ru.voboost.components.font.Font;

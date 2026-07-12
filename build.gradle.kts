@@ -58,6 +58,12 @@ android {
         }
     }
 
+    lint {
+        // Target API is 28-30; platform TextView provides all needed features natively.
+        // AppCompat backport is unnecessary for this library.
+        disable.add("AppCompatCustomView")
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
